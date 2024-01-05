@@ -1,0 +1,2 @@
+# DermatoAI
+Bachelor Final Project
