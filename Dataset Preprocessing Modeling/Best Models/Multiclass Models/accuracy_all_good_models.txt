@@ -1,0 +1,167 @@
+Confusion matrix for C:\Users\Andrei\Desktop\best_models\MulticlassModel\DenseNet169\Model2\Model2.h5:
+                            actinic keratosis  basal cell carcinoma  \
+actinic keratosis                        18.0                  26.0   
+basal cell carcinoma                      0.0                 111.0   
+dermatofibroma                            1.0                  12.0   
+melanoma                                  4.0                  29.0   
+nevus                                     2.0                  24.0   
+pigmented benign keratosis                2.0                  12.0   
+squamous cell carcinoma                   5.0                  36.0   
+vascular lesion                           0.0                   7.0   
+
+                            dermatofibroma  melanoma  nevus  \
+actinic keratosis                     14.0       6.0    5.0   
+basal cell carcinoma                  12.0       8.0    2.0   
+dermatofibroma                        52.0       8.0   21.0   
+melanoma                               6.0      33.0   32.0   
+nevus                                  6.0      10.0   63.0   
+pigmented benign keratosis             2.0      14.0   19.0   
+squamous cell carcinoma                4.0      12.0    2.0   
+vascular lesion                        0.0       3.0    3.0   
+
+                            pigmented benign keratosis  \
+actinic keratosis                                100.0   
+basal cell carcinoma                              91.0   
+dermatofibroma                                    64.0   
+melanoma                                          43.0   
+nevus                                             37.0   
+pigmented benign keratosis                       197.0   
+squamous cell carcinoma                           29.0   
+vascular lesion                                   12.0   
+
+                            squamous cell carcinoma  vascular lesion  
+actinic keratosis                              23.0              2.0  
+basal cell carcinoma                           13.0              7.0  
+dermatofibroma                                  9.0              6.0  
+melanoma                                       14.0             16.0  
+nevus                                          16.0             42.0  
+pigmented benign keratosis                      4.0              3.0  
+squamous cell carcinoma                        88.0              2.0  
+vascular lesion                                 0.0            147.0  
+Accuracy for C:\Users\Andrei\Desktop\best_models\MulticlassModel\DenseNet169\Model2\Model2.h5: 44.56%
+
+Confusion matrix for C:\Users\Andrei\Desktop\best_models\MulticlassModel\DenseNet201\Model2\Model2.h5:
+                            actinic keratosis  basal cell carcinoma  \
+actinic keratosis                        28.0                  22.0   
+basal cell carcinoma                      6.0                  78.0   
+dermatofibroma                            4.0                   2.0   
+melanoma                                  3.0                  19.0   
+nevus                                     2.0                  13.0   
+pigmented benign keratosis                3.0                   5.0   
+squamous cell carcinoma                   5.0                  21.0   
+vascular lesion                           0.0                  10.0   
+
+                            dermatofibroma  melanoma  nevus  \
+actinic keratosis                     13.0      15.0   12.0   
+basal cell carcinoma                  14.0      17.0   13.0   
+dermatofibroma                        61.0       3.0   38.0   
+melanoma                               6.0      61.0   27.0   
+nevus                                 10.0      36.0   79.0   
+pigmented benign keratosis             0.0      23.0   12.0   
+squamous cell carcinoma                3.0      16.0    1.0   
+vascular lesion                        0.0       5.0    3.0   
+
+                            pigmented benign keratosis  \
+actinic keratosis                                 89.0   
+basal cell carcinoma                              87.0   
+dermatofibroma                                    50.0   
+melanoma                                          34.0   
+nevus                                             30.0   
+pigmented benign keratosis                       199.0   
+squamous cell carcinoma                           37.0   
+vascular lesion                                    9.0   
+
+                            squamous cell carcinoma  vascular lesion  
+actinic keratosis                              10.0              5.0  
+basal cell carcinoma                           20.0              9.0  
+dermatofibroma                                  4.0             11.0  
+melanoma                                        3.0             24.0  
+nevus                                           5.0             25.0  
+pigmented benign keratosis                      4.0              7.0  
+squamous cell carcinoma                        90.0              5.0  
+vascular lesion                                 0.0            145.0  
+Accuracy for C:\Users\Andrei\Desktop\best_models\MulticlassModel\DenseNet201\Model2\Model2.h5: 46.57%
+
+Confusion matrix for C:\Users\Andrei\Desktop\best_models\MulticlassModel\InceptionResNetV2\Model2\Model2.h5:
+                            actinic keratosis  basal cell carcinoma  \
+actinic keratosis                        76.0                  14.0   
+basal cell carcinoma                     46.0                  84.0   
+dermatofibroma                           11.0                   5.0   
+melanoma                                 26.0                  38.0   
+nevus                                    20.0                  26.0   
+pigmented benign keratosis               19.0                  10.0   
+squamous cell carcinoma                  14.0                  13.0   
+vascular lesion                           0.0                   0.0   
+
+                            dermatofibroma  melanoma  nevus  \
+actinic keratosis                     15.0       9.0    1.0   
+basal cell carcinoma                  11.0       8.0    1.0   
+dermatofibroma                       106.0       9.0   13.0   
+melanoma                              10.0      44.0    8.0   
+nevus                                 41.0      20.0   36.0   
+pigmented benign keratosis             3.0      29.0   10.0   
+squamous cell carcinoma                1.0       9.0    2.0   
+vascular lesion                        1.0      12.0    4.0   
+
+                            pigmented benign keratosis  \
+actinic keratosis                                 16.0   
+basal cell carcinoma                               6.0   
+dermatofibroma                                     6.0   
+melanoma                                           7.0   
+nevus                                             15.0   
+pigmented benign keratosis                       154.0   
+squamous cell carcinoma                           30.0   
+vascular lesion                                   10.0   
+
+                            squamous cell carcinoma  vascular lesion  
+actinic keratosis                              61.0              2.0  
+basal cell carcinoma                           82.0              6.0  
+dermatofibroma                                 21.0              2.0  
+melanoma                                       28.0             16.0  
+nevus                                          18.0             24.0  
+pigmented benign keratosis                     23.0              5.0  
+squamous cell carcinoma                       106.0              3.0  
+vascular lesion                                 0.0            145.0  
+Accuracy for C:\Users\Andrei\Desktop\best_models\MulticlassModel\InceptionResNetV2\Model2\Model2.h5: 47.20%
+
+Confusion matrix for ensemble:
+                            actinic keratosis  basal cell carcinoma  \
+actinic keratosis                        26.0                  18.0   
+basal cell carcinoma                      2.0                  95.0   
+dermatofibroma                            1.0                   2.0   
+melanoma                                  3.0                  22.0   
+nevus                                     1.0                  14.0   
+pigmented benign keratosis                4.0                   4.0   
+squamous cell carcinoma                   3.0                  18.0   
+vascular lesion                           0.0                   4.0   
+
+                            dermatofibroma  melanoma  nevus  \
+actinic keratosis                      6.0       7.0    2.0   
+basal cell carcinoma                   2.0       6.0    1.0   
+dermatofibroma                        59.0       4.0   17.0   
+melanoma                               2.0      40.0   15.0   
+nevus                                  5.0       9.0   43.0   
+pigmented benign keratosis             0.0      19.0    7.0   
+squamous cell carcinoma                0.0       7.0    0.0   
+vascular lesion                        0.0       2.0    2.0   
+
+                            pigmented benign keratosis  \
+actinic keratosis                                 69.0   
+basal cell carcinoma                              53.0   
+dermatofibroma                                    39.0   
+melanoma                                          14.0   
+nevus                                             15.0   
+pigmented benign keratosis                       191.0   
+squamous cell carcinoma                           26.0   
+vascular lesion                                    7.0   
+
+                            squamous cell carcinoma  vascular lesion  
+actinic keratosis                              19.0              2.0  
+basal cell carcinoma                           15.0              3.0  
+dermatofibroma                                  7.0              3.0  
+melanoma                                        9.0             12.0  
+nevus                                           6.0             18.0  
+pigmented benign keratosis                      6.0              1.0  
+squamous cell carcinoma                        93.0              3.0  
+vascular lesion                                 0.0            147.0  
+Ensemble accuracy: 56.42%

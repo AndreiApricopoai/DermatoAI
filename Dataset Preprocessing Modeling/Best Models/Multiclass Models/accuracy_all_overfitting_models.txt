@@ -1,0 +1,55 @@
+Confusion matrix for C:\Users\Andrei\Desktop\best_models\MulticlassModel\DenseNet169\Model1\Model1.h5:
+                            actinic keratosis  ...  vascular lesion
+actinic keratosis                        18.0  ...              2.0
+basal cell carcinoma                      1.0  ...              2.0
+dermatofibroma                            1.0  ...              1.0
+melanoma                                  2.0  ...              2.0
+nevus                                     2.0  ...              4.0
+pigmented benign keratosis                3.0  ...              0.0
+squamous cell carcinoma                   4.0  ...              0.0
+vascular lesion                           2.0  ...            143.0
+
+[8 rows x 8 columns]
+Accuracy for C:\Users\Andrei\Desktop\best_models\MulticlassModel\DenseNet169\Model1\Model1.h5: 47.52%
+
+Confusion matrix for C:\Users\Andrei\Desktop\best_models\MulticlassModel\DenseNet201\Model1\Model1.h5:
+                            actinic keratosis  ...  vascular lesion
+actinic keratosis                        39.0  ...              7.0
+basal cell carcinoma                      6.0  ...              7.0
+dermatofibroma                            3.0  ...              3.0
+melanoma                                  2.0  ...              6.0
+nevus                                     1.0  ...              9.0
+pigmented benign keratosis                0.0  ...              0.0
+squamous cell carcinoma                   2.0  ...              5.0
+vascular lesion                           0.0  ...            144.0
+
+[8 rows x 8 columns]
+Accuracy for C:\Users\Andrei\Desktop\best_models\MulticlassModel\DenseNet201\Model1\Model1.h5: 50.22%
+
+Confusion matrix for C:\Users\Andrei\Desktop\best_models\MulticlassModel\InceptionResNetV2\Model1\Model1.h5:
+                            actinic keratosis  ...  vascular lesion
+actinic keratosis                        56.0  ...              3.0
+basal cell carcinoma                      8.0  ...              5.0
+dermatofibroma                            4.0  ...              2.0
+melanoma                                  7.0  ...             24.0
+nevus                                     0.0  ...             33.0
+pigmented benign keratosis               10.0  ...              3.0
+squamous cell carcinoma                   4.0  ...              1.0
+vascular lesion                           0.0  ...            155.0
+
+[8 rows x 8 columns]
+Accuracy for C:\Users\Andrei\Desktop\best_models\MulticlassModel\InceptionResNetV2\Model1\Model1.h5: 49.15%
+
+Confusion matrix for ensemble:
+                            actinic keratosis  ...  vascular lesion
+actinic keratosis                        33.0  ...              2.0
+basal cell carcinoma                      1.0  ...              2.0
+dermatofibroma                            0.0  ...              1.0
+melanoma                                  2.0  ...              5.0
+nevus                                     0.0  ...              5.0
+pigmented benign keratosis                1.0  ...              0.0
+squamous cell carcinoma                   2.0  ...              1.0
+vascular lesion                           0.0  ...            146.0
+
+[8 rows x 8 columns]
+Ensemble accuracy: 61.96%
