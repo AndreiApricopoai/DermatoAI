@@ -6,17 +6,25 @@ class PasswordInputField extends StatefulWidget {
   final double labelFontSize;
   final double padding;
   final double iconSize;
+  final double borderThickness;
+  final Color borderColorDisabled;
   final Color colorTheme;
+  final TextEditingController? controller;
+  final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onChanged;
 
   const PasswordInputField({
     super.key,
     this.labelText = 'Password',
-    this.labelFontSize = 14,
+    this.labelFontSize = 13,
     this.padding = 10.0,
-    this.iconSize = 15.0,
+    this.iconSize = 13.0,
+    this.borderThickness = 1.5,
+    this.borderColorDisabled = AppMainTheme.black,
     this.colorTheme = AppMainTheme.black,
     this.onChanged,
+    this.controller,
+    this.validator,
   });
 
   @override
@@ -58,29 +66,31 @@ class _PasswordInputFieldState extends State<PasswordInputField> {
         suffixIcon: IconButton(
           icon: Icon(
             _isObscured ? Icons.visibility : Icons.visibility_off,
-            size: 20,
+            size: 18,
           ),
           onPressed: _togglePasswordVisibility,
         ),
-        border:  OutlineInputBorder(
+        border: OutlineInputBorder(
           borderSide: BorderSide(
-            color: widget.colorTheme,
+            color: AppMainTheme.black,
+            width: widget.borderThickness,
           ),
         ),
-        focusedBorder:  OutlineInputBorder(
+        focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(
             color: widget.colorTheme,
-            width: 2.0,
+            width: widget.borderThickness,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: AppMainTheme.black,
+            width: widget.borderThickness,
           ),
         ),
       ),
       onChanged: widget.onChanged,
-      validator: (value) {
-        if (value == null || value.isEmpty || value.length < 8) {
-          return 'Password must be at least 8 characters';
-        }
-        return null;
-      },
+      validator: widget.validator,
     );
   }
 }
