@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  google_fonts: ^6.2.1
   flutter:
     sdk: flutter
 
@@ -55,6 +56,9 @@ flutter_launcher_name:
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+    - assets/icons/
+    - assets/images/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
