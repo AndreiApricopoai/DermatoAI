@@ -1,34 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_flutter/utils/app_main_theme.dart';
 
-class GeneralInputField extends StatelessWidget {
+class EmailInputField extends StatelessWidget {
   final String labelText;
   final double labelFontSize;
   final double padding;
   final double iconSize;
-  final double borderThickness;
-  final Color borderColorDisabled;
   final Color colorTheme;
-  final IconData icon;
-  final Color iconColor;
-  final TextEditingController? controller;
-  final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onChanged;
 
-  const GeneralInputField({
+  const EmailInputField({
     super.key,
-    this.labelText = 'Default Text',
-    this.labelFontSize = 13,
+    this.labelText = 'Email',
+    this.labelFontSize = 14,
     this.padding = 10.0,
-    this.iconSize = 13.0,
-    this.borderThickness = 1.5,
-    this.borderColorDisabled = AppMainTheme.black,
+    this.iconSize = 15.0,
     this.colorTheme = AppMainTheme.black,
-    this.iconColor = AppMainTheme.black,
     this.onChanged,
-    this.validator,
-    required this.icon,
-    this.controller,
   });
 
   @override
@@ -52,32 +40,29 @@ class GeneralInputField extends StatelessWidget {
         prefixIcon: Padding(
           padding: const EdgeInsets.only(right: 10.0),
           child: Icon(
-            icon,
+            Icons.email,
             size: iconSize,
-            color: iconColor,
           ),
         ),
         border: OutlineInputBorder(
           borderSide: BorderSide(
-            color: AppMainTheme.black,
-            width: borderThickness,
+            color: colorTheme,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(
             color: colorTheme,
-            width: borderThickness,
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: AppMainTheme.black,
-            width: borderThickness,
+            width: 2.0,
           ),
         ),
       ),
       onChanged: onChanged,
-      validator: validator,
+      validator: (value) {
+        if (value == null || value.isEmpty || !value.contains('@')) {
+          return 'Please enter a valid email';
+        }
+        return null;
+      },
     );
   }
 }
