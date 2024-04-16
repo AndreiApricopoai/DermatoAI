@@ -11,4 +11,6 @@ class AppMainTheme {
   static const Color warning = Color(0xFF123456);
   static const Color fieldValidationError = Color(0xFF123456);
   static const Color popupError = Color(0xFF123456);
+  static const Color infoGray = Color(0xFF666666);
+  static const Color googleButtonOrange = Color(0xFF339966);
 }

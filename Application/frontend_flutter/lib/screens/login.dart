@@ -4,7 +4,7 @@ import 'package:frontend_flutter/widgets/button_outline_icon.dart';
 import 'package:frontend_flutter/widgets/button_rounded.dart';
 import 'package:frontend_flutter/widgets/button_text.dart';
 import 'package:frontend_flutter/widgets/divider_options.dart';
-import 'package:frontend_flutter/widgets/input_email.dart';
+import 'package:frontend_flutter/widgets/input_general_field.dart';
 import 'package:frontend_flutter/widgets/input_password.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../widgets/text_title.dart';
@@ -18,14 +18,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  bool _isObscured = true;
   bool _rememberMe = false;
 
-  void _togglePasswordVisibility() {
-    setState(() {
-      _isObscured = !_isObscured;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,18 +45,39 @@ class _LoginScreenState extends State<LoginScreen> {
                 fontWeight: FontWeight.w400,
               ),
               const SizedBox(height: 40),
-              EmailInputField(
+              GeneralInputField(
                   labelText: 'Email',
+                  icon: Icons.email,
+                  labelFontSize: 14,
+                  padding: 10.0,
+                  iconSize: 15.0,
                   colorTheme: AppMainTheme.blueLevelFive,
-                  onChanged: (value) {
-                    // do something
+                  onChanged: (value) {},
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
+                      return 'Please enter a valid email';
+                    }
+                    return null;
                   }),
               const SizedBox(height: 30),
               PasswordInputField(
                 labelText: 'Password',
+                labelFontSize: 14,
+                padding: 10.0,
+                iconSize: 15.0,
                 colorTheme: AppMainTheme.blueLevelFive,
-                onChanged: (value) {
-                  // do something
+                onChanged: (value) {},
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  if (value.length < 8) {
+                    return 'Password must be at least 8 characters';
+                  }
+                  return null;
                 },
               ),
               const SizedBox(height: 15),
@@ -103,7 +118,9 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 25),
               CustomElevatedButton(
                 onPressed: () {
-                  if (_formKey.currentState?.validate() == true) {}
+                  if (_formKey.currentState?.validate() == true) {
+                    // Proceed with login
+                  }
                 },
                 text: 'Login',
                 buttonColor: AppMainTheme.blueLevelFour,
@@ -126,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 40,
                   borderColor: AppMainTheme.black,
                   pressColor: AppMainTheme.black,
-                  borderWidth: 1.5,
+                  borderWidth: 2.0,
                   icon: const AssetImage("assets/icons/google_logo.png"),
                   iconSize: 20,
                   text: 'Login with Google',
@@ -142,7 +159,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const Text(
                     "Don’t have an account?",
-                    style: TextStyle(fontSize: 14),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppMainTheme.infoGray,),
                   ),
                   CustomTextButton(
                     text: 'Sign up',
