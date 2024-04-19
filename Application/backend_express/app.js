@@ -1,15 +1,19 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const userRoutes = require('./src/routes/userRoutes');
+const authMiddleware = require('./src/middlewares/authMiddleware');
 
 const app = express();
 
-app.listen(3000, () => console.log('Server is running on port 3000'));
+//middlewares
+app.use(express.json());
+app.use(authMiddleware);
+
 
 //routes
+app.use('/api/users', userRoutes);
 
-app.get('/', (req, res) => {
-  res.send('Hello World');
-});
-
+module.exports = app;
 
 
 

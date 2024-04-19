@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend_flutter/screens/home.dart';
 import 'package:frontend_flutter/screens/login.dart';
 import 'package:frontend_flutter/screens/register.dart';
 import 'package:frontend_flutter/screens/splash.dart';
@@ -9,7 +10,6 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    systemNavigationBarColor: Colors.transparent
   ));
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
-        //'/home': (context) => const SplashScreen(),
+        '/home': (context) =>  HomeScreen(),
         '/register': (context) => RegisterScreen(),
       },
     );

@@ -20,7 +20,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _rememberMe = false;
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,7 +150,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   onPressed: () {
-                    // do something
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/home',
+                      (Route<dynamic> route) => false 
+                    );
                   }),
               const SizedBox(height: 20),
               Row(
@@ -161,7 +163,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     "Don’t have an account?",
                     style: TextStyle(
                       fontSize: 14,
-                      color: AppMainTheme.infoGray,),
+                      color: AppMainTheme.infoGray,
+                    ),
                   ),
                   CustomTextButton(
                     text: 'Sign up',
