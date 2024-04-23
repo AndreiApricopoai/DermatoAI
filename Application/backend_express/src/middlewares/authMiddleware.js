@@ -1,24 +1,54 @@
-// src/middlewares/authMiddleware.js
+const { isValidJwt, extractPayloadJwt } = require('../utils/authUtils');
+const ApiResponse = require('../responses/apiResponse');
+require('dotenv').config();
 
-const jwt = require('jsonwebtoken');
-
-const authMiddleware = (req, res, next) => {
-  // Assume the token is sent in the Authorization header as "Bearer <token>"
+// Middleware to validate access token in the Authorization header
+const checkAccessToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Authentication token is missing or invalid' });
+    return ApiResponse.error(res, {
+      statusCode: 401,
+      error: 'Access token is missing or invalid.'
+    });
   }
 
   const token = authHeader.split(' ')[1];
 
-  try {
-    const decoded = jwt.verify(token, process.env.ACCES_TOKEN_SECRET);
-    req.user = decoded; // Assign the payload to req.user
-    next();
-  } catch (error) {
-    return res.status(403).json({ message: 'Authentication failed' });
+  if (!isValidJwt(token, process.env.ACCESS_TOKEN_SECRET)) {
+    return ApiResponse.error(res, {
+      statusCode: 403,
+      error: 'Authentication failed due to an invalid token.'
+    });
   }
+
+  req.user = extractPayloadJwt(token);
+  next();
 };
 
-module.exports = authMiddleware;
+// Middleware to validate refresh token in the request body
+const checkRefreshToken = (req, res, next) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return ApiResponse.error(res, {
+      statusCode: 401,
+      error: 'Refresh token is missing or invalid.'
+    });
+  }
+
+  if (!isValidJwt(refreshToken, process.env.REFRESH_TOKEN_SECRET)) {
+    return ApiResponse.error(res, {
+      statusCode: 403,
+      error: 'Invalid refresh token.'
+    });
+  }
+
+  req.user = extractPayloadJwt(refreshToken);
+  next();
+};
+
+module.exports = {
+  checkAccessToken,
+  checkRefreshToken
+};

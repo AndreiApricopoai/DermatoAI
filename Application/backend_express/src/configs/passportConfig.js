@@ -1,7 +1,8 @@
-// src/config/passportConfig.js
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const User = require('../models/user'); // Your User model
+const User = require('../models/user');
+
+require('dotenv').config();
 
 const verifyCallback = async (accessToken, refreshToken, profile, done, action) => {
   const email = profile.emails[0].value;
@@ -33,7 +34,7 @@ const verifyCallback = async (accessToken, refreshToken, profile, done, action) 
 passport.use('google-login', new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/auth/google/login/callback"
+    callbackURL: "/api/auth/google/login/callback"
   },
   (accessToken, refreshToken, profile, done) => {
     verifyCallback(accessToken, refreshToken, profile, done, 'login');
@@ -43,7 +44,7 @@ passport.use('google-login', new GoogleStrategy({
 passport.use('google-register', new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/auth/google/register/callback"
+    callbackURL: "/api/auth/google/register/callback"
   },
   (accessToken, refreshToken, profile, done) => {
     verifyCallback(accessToken, refreshToken, profile, done, 'register');

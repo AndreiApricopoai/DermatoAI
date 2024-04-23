@@ -1,8 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-
-const nameValidator = /^[\w'\-,.][^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]]{2,}$/;
-const emailValidator = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+const { nameRegex, emailRegex } = require('../utils/constants');
 
 const userSchema = new mongoose.Schema({
   firstName: { 
@@ -11,7 +9,7 @@ const userSchema = new mongoose.Schema({
     trim: true,
     minlength: [2, "First name is too short"],
     maxlength: [50, "First name is too long"],
-    match: [nameValidator, "First name is not valid"],
+    match: [nameRegex, "First name is not valid"],
   },
   lastName: { 
     type: String, 
@@ -19,7 +17,7 @@ const userSchema = new mongoose.Schema({
     trim: true,
     minlength: [2, "Last name is too short"],
     maxlength: [50, "Last name is too long"],
-    match: [nameValidator, "Last name is not valid"],
+    match: [nameRegex, "Last name is not valid"],
    },
   email: { 
     type: String, 
@@ -27,7 +25,7 @@ const userSchema = new mongoose.Schema({
     trim: true, 
     unique: [true, "Email already exists"],
     lowercase: true,
-    match: [emailValidator, "Email is not valid"]
+    match: [emailRegex, "Email is not valid"]
   },
   passwordHash: { 
     type: String 

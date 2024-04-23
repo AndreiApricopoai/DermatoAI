@@ -1,77 +1,137 @@
-// src/controllers/authController.js
-const ApiResponse = require('../responses/apiResponse'); // Ensure the path is correct
-const authService = require('../services/authService'); // Handle the logic
-//const loginValidator = require('../validators/loginValidator'); // For validating login input
-//const registerValidator = require('../validators/registerValidator'); // For validating registration input
+const ApiResponse = require('../responses/apiResponse');
+const authService = require('../services/authService');
+require('dotenv').config();
 
-const jwt = require('jsonwebtoken');
-
-const googleAuthCallback = (req, res) => {
-  if (!req.user) {
-    return res.status(401).json({ message: 'Authentication failed' });
-  }
-  // Generate JWT
-  const token = jwt.sign({
-    sub: req.user._id,
-    email: req.user.email
-  }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-  res.json({ token });
-};
-
-// Standard account registration
-const register = async (req, res) => {
-  //const { error } = registerValidator(req.body);
-  //if (error) return res.status(400).json({ message: error.details[0].message });
-
-  // authService.register would contain the logic to register a user with the provided credentials
-  const result = await authService.register(req.body);
-  res.status(result.status).json(result.data);
-};
-
-// Standard account login
+// DermatoAI account login
 const login = async (req, res) => {
-  //const { error } = loginValidator(req.body);
-  //if (error) return res.status(400).json({ message: error.details[0].message });
+  try {
+    const { email, password } = req.body;
+    const payload = { email, password };
 
-  // authService.login would contain the logic to authenticate a user with the provided credentials
-  const result = await authService.login(req.body);
+    const result = await authService.login(payload);
 
-  ApiResponse.handleResponse(res, result);
+    if (result && result.type) {
+      ApiResponse.handleResponse(res, result);
+    }
+    else {
+      ApiResponse.error(res, {
+        statusCode: 500,
+        error: 'The service failed to provide a valid login response.'
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    ApiResponse.error(res, {
+      statusCode: 500,
+      error: 'An unexpected error occurred during login. Please try again later.'
+    });
+  }
 };
 
-// Google account registration
-const googleRegister = async (req, res) => {
-  // authService.googleRegister would handle the logic of registering a user with their Google account
-  const result = await authService.googleRegister(req.body);
-  res.status(result.status).json(result.data);
+// DermatoAI account register
+const register = async (req, res) => {
+  try {
+    const { firstName, lastName, email, password, confirmPassword } = req.body;
+    const payload = { firstName, lastName, email, password, confirmPassword };
+
+    const result = await authService.register(payload);
+
+    if (result && result.type) {
+      ApiResponse.handleResponse(res, result);
+    }
+    else {
+      ApiResponse.error(res, {
+        statusCode: 500,
+        error: 'The service failed to provide a valid registration response.'
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    ApiResponse.error(res, {
+      statusCode: 500,
+      error: 'An unexpected error occurred during registration. Please try again later.'
+    });
+  }
 };
 
-// Google account login
-const googleLogin = async (req, res) => {
-  // authService.googleLogin would handle the logic of logging in a user with their Google account
-  const result = await authService.googleLogin(req.body);
-  res.status(result.status).json(result.data);
+// Google OAuth callback called by the register and login routes
+const googleCallback = async (req, res) => {
+  try {
+    const { firstName, lastName, email, googleId } = req.body;
+    const payload = { firstName, lastName, email, googleId };
+
+    const result = await authService.handleGoogleCallback(payload);
+
+    if (result && result.type) {
+      ApiResponse.handleResponse(res, result);
+    }
+    else {
+      ApiResponse.error(res, {
+        statusCode: 500,
+        error: 'The service failed to provide a valid Google authentication response.'
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    ApiResponse.error(res, {
+      statusCode: 500,
+      error: 'An unexpected error occurred during Google authentication. Please try again later.'
+    });
+  }
 };
 
+// Logout both DermatoAI and Google accounts
 const logout = async (req, res) => {
-    // authService.logout would handle the logic of logging out a user
-    const result = await authService.logout(req.body.refreshToken);
-    res.status(result.status).json(result.data);
+  try {
+    const refreshToken = req.body.refreshToken;
+    const result = await authService.invalidateToken(refreshToken);
+
+    if (result && result.type) {
+      ApiResponse.handleResponse(res, result);
+    }
+    else {
+      ApiResponse.error(res, {
+        statusCode: 500,
+        error: 'The service failed to perform a valid logout operation.'
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    ApiResponse.error(res, {
+      statusCode: 500,
+      error: 'An unexpected error occurred during logout. Please try again later.'
+    });
+  }
 };
 
-const getToken = async (req, res) => {
-    // authService.getToken would handle the logic of getting a new token using a refresh token
-    const result = await authService.getToken(req.body.refreshToken);
-    res.status(result.status).json(result.data);
+// Get a new access token based on the refresh token
+const getAccesToken = async (req, res) => {
+  try {
+    const refreshToken = req.body.refreshToken;
+    const result = await authService.getAccesToken(refreshToken);
+
+    if (result && result.type) {
+      ApiResponse.handleResponse(res, result);
+    }
+    else {
+      ApiResponse.error(res, {
+        statusCode: 500,
+        error: 'The service failed to retrieve acces token.'
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    ApiResponse.error(res, {
+      statusCode: 500,
+      error: 'An unexpected error occurred during access token retrieval. Please try again later.'
+    });
+  }
 };
 
 module.exports = {
   register,
   login,
-  googleRegister,
-  googleLogin,
-  googleAuthCallback,
+  googleCallback,
   logout,
-  getToken
+  getAccesToken
 };
