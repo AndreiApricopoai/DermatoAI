@@ -1,5 +1,5 @@
-const ApiResponse = require('../responses/apiResponse');
-const authService = require('../services/authService');
+const ApiResponse = require('../responses/apiResponses');
+const authService = require('../services/authServices');
 require('dotenv').config();
 
 // DermatoAI account login
@@ -57,8 +57,8 @@ const register = async (req, res) => {
 // Google OAuth callback called by the register and login routes
 const googleCallback = async (req, res) => {
   try {
-    const { firstName, lastName, email, googleId } = req.body;
-    const payload = { firstName, lastName, email, googleId };
+    const { _id, firstName, lastName, email, googleId } = req.user;
+    const payload = { _id, firstName, lastName, email, googleId };
 
     const result = await authService.handleGoogleCallback(payload);
 
@@ -84,7 +84,8 @@ const googleCallback = async (req, res) => {
 const logout = async (req, res) => {
   try {
     const refreshToken = req.body.refreshToken;
-    const result = await authService.invalidateToken(refreshToken);
+    const userId = req.body.userId;
+    const result = await authService.logout(refreshToken, userId);
 
     if (result && result.type) {
       ApiResponse.handleResponse(res, result);
@@ -105,10 +106,11 @@ const logout = async (req, res) => {
 };
 
 // Get a new access token based on the refresh token
-const getAccesToken = async (req, res) => {
+const getAccessToken = async (req, res) => {
   try {
     const refreshToken = req.body.refreshToken;
-    const result = await authService.getAccesToken(refreshToken);
+    const userId = req.body.userId;
+    const result = await authService.getAccessToken(refreshToken, userId);
 
     if (result && result.type) {
       ApiResponse.handleResponse(res, result);
@@ -133,5 +135,5 @@ module.exports = {
   login,
   googleCallback,
   logout,
-  getAccesToken
+  getAccessToken
 };

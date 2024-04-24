@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const ApiResponse = require('../responses/apiResponse');
+const ApiResponse = require('../responses/apiResponses');
 const { nameRegex, emailRegex } = require('../utils/constants');
 
 // Register validation schema using DermatoAI account
@@ -13,7 +13,7 @@ const registerSchema = Joi.object({
 
 const registerValidator = (req, res, next) => {
   const payload = req.body;
-  const { error } = registerSchema.validate(payload);
+  const { error } = registerSchema.validate(payload, { abortEarly: false });
 
   if (error) {
     return ApiResponse.validationError(res, {
@@ -35,7 +35,32 @@ const loginSchema = Joi.object({
 
 const loginValidator = (req, res, next) => {
   const payload = req.body;
-  const { error } = loginSchema.validate(payload);
+  const { error } = loginSchema.validate(payload, { abortEarly: false });
+
+  if (error) {
+    return ApiResponse.validationError(res, {
+      statusCode: 400,
+      errors: error.details.map(detail => ({
+        message: detail.message,
+        path: detail.path.join('.')
+      }))
+    });
+  }
+  next();
+};
+
+// Authentication using Google OAuth validation schema
+const googleAuthSchema = Joi.object({
+  _id: Joi.string().required(),
+  firstName: Joi.string().min(2).max(50).required().regex(nameRegex),
+  lastName: Joi.string().min(2).max(50).required().regex(nameRegex),
+  email: Joi.string().email().required().regex(emailRegex),
+  googleId: Joi.string().required()
+});
+
+const googleAuthValidator = (req, res, next) => {
+  const payload = req.body;
+  const { error } = googleAuthSchema.validate(payload, { abortEarly: false });
 
   if (error) {
     return ApiResponse.validationError(res, {
@@ -51,5 +76,6 @@ const loginValidator = (req, res, next) => {
 
 module.exports = {
   registerValidator,
-  loginValidator
+  loginValidator,
+  googleAuthValidator
 };

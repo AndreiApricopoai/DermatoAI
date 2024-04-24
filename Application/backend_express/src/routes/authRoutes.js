@@ -1,9 +1,9 @@
 const express = require('express');
 const passport = require('passport');
 const router = express.Router();
-const authController = require('../controllers/authController');
-const { loginValidator, registerValidator } = require('../frontend-validators/authValidator');
-const { checkAccessToken, checkRefreshToken} = require('../middlewares/authMiddleware');
+const authController = require('../controllers/authControllers');
+const { loginValidator, registerValidator, googleAuthValidator } = require('../frontend-validators/authValidators');
+const { checkAccessToken, checkRefreshToken } = require('../middlewares/authMiddlewares');
 
 // DermatoAI account routes
 router.post('/login', loginValidator, authController.login);
@@ -15,6 +15,7 @@ router.get('/google/login',
 );
 router.get('/google/login/callback',
   passport.authenticate('google-login', { session: false }),
+  googleAuthValidator,
   authController.googleCallback
 );
 router.get('/google/register',
@@ -22,6 +23,7 @@ router.get('/google/register',
 );
 router.get('/google/register/callback',
   passport.authenticate('google-register', { session: false }),
+  googleAuthValidator,
   authController.googleCallback
 );
 
@@ -29,6 +31,6 @@ router.get('/google/register/callback',
 router.delete('/logout', checkAccessToken, checkRefreshToken, authController.logout);
 
 // Get a new access token based on the refresh token
-router.post('/token', checkRefreshToken, authController.getAccesToken);
+router.get('/token', checkRefreshToken, authController.getAccessToken);
 
 module.exports = router;

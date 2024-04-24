@@ -5,7 +5,7 @@ const createJwtToken = (secretKey, expirationDate, payload) => {
   try {
     const token = jwt.sign(
       {
-        userID: payload.userID,
+        userId: payload.userId,
         firstName: payload.firstName,
         lastName: payload.lastName
       },
@@ -37,8 +37,8 @@ const extractPayloadJwt = (jwtToken) => {
     if (!decoded) {
       return null;
     }
-    const { userID, firstName, lastName } = decoded;
-    return { userID, firstName, lastName };
+    const { userId, firstName, lastName } = decoded;
+    return { userId, firstName, lastName };
   } catch (error) {
     console.error('Error extracting JWT payload:', error);
     return null;
