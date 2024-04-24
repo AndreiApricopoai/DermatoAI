@@ -56,7 +56,15 @@ const register = async (req, res) => {
 
 // Google OAuth callback called by the register and login routes
 const googleCallback = async (req, res) => {
+
   try {
+    if (!req.user) {
+      return ApiResponse.error(res, {
+        statusCode: 401,
+        error: 'Google authentication failed. Please try again.'
+      });
+    }
+
     const { _id, firstName, lastName, email, googleId } = req.user;
     const payload = { _id, firstName, lastName, email, googleId };
 

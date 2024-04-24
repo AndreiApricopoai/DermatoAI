@@ -1,5 +1,5 @@
 const express = require('express');
-const passport = require('passport');
+const passport = require('../configs/passportConfigs');
 const router = express.Router();
 const authController = require('../controllers/authControllers');
 const { loginValidator, registerValidator, googleAuthValidator } = require('../frontend-validators/authValidators');

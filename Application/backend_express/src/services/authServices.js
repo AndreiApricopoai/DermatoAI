@@ -154,7 +154,7 @@ const handleGoogleCallback = async (payload) => {
     console.error('Google authentication service error.', error);
     return {
       type: 'error',
-      status: 500, // Internal Server Error
+      status: 500,
       error: 'An error occurred while trying to authenticate using Google. Please try again later.'
     };
   }

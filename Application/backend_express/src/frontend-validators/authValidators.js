@@ -59,7 +59,14 @@ const googleAuthSchema = Joi.object({
 });
 
 const googleAuthValidator = (req, res, next) => {
-  const payload = req.body;
+  const user = req.user;
+  const payload = {
+    _id: user._id.toString(),
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    googleId: user.googleId
+  };  
   const { error } = googleAuthSchema.validate(payload, { abortEarly: false });
 
   if (error) {
