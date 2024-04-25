@@ -1,9 +1,9 @@
 const express = require('express');
-const passport = require('../configs/passportConfigs');
+const passport = require('../config/passportConfig');
 const router = express.Router();
-const authController = require('../controllers/authControllers');
-const { loginValidator, registerValidator, googleAuthValidator } = require('../frontend-validators/authValidators');
-const { checkAccessToken, checkRefreshToken } = require('../middlewares/authMiddlewares');
+const authController = require('../controllers/authController');
+const { loginValidator, registerValidator, googleAuthValidator } = require('../request-validators/authValidator');
+const { checkAccessToken, checkRefreshToken } = require('../middlewares/authMiddleware');
 
 // DermatoAI account routes
 router.post('/login', loginValidator, authController.login);

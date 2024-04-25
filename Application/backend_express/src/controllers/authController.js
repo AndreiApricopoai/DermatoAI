@@ -1,5 +1,5 @@
-const ApiResponse = require('../responses/apiResponses');
-const authService = require('../services/authServices');
+const ApiResponse = require('../responses/apiResponse');
+const authService = require('../services/authService');
 require('dotenv').config();
 
 // DermatoAI account login

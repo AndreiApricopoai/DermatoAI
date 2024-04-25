@@ -1,5 +1,5 @@
 const { isValidJwt, extractPayloadJwt } = require('../utils/authUtils');
-const ApiResponse = require('../responses/apiResponses');
+const ApiResponse = require('../responses/apiResponse');
 require('dotenv').config();
 
 // Middleware to validate access token in the Authorization header
@@ -22,7 +22,7 @@ const checkAccessToken = (req, res, next) => {
     });
   }
 
-  req.user = extractPayloadJwt(token);
+  req.currentUser = extractPayloadJwt(token);
   next();
 };
 
@@ -44,7 +44,7 @@ const checkRefreshToken = (req, res, next) => {
     });
   }
 
-  req.user = extractPayloadJwt(refreshToken);
+  req.currentUser = extractPayloadJwt(refreshToken);
   next();
 };
 

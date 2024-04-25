@@ -1,6 +1,6 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const User = require('../models/user');
+const User = require('../models/userModel');
 require('dotenv').config();
 
 const verifyCallback = async (accessToken, refreshToken, profile, done, action) => {

@@ -1,12 +1,12 @@
 const Joi = require('joi');
-const ApiResponse = require('../responses/apiResponses');
-const { nameRegex, emailRegex } = require('../utils/constants');
+const ApiResponse = require('../responses/apiResponse');
+const { regexPatterns } = require('../utils/constants');
 
 // Register validation schema using DermatoAI account
 const registerSchema = Joi.object({
-  firstName: Joi.string().min(2).max(50).required().regex(nameRegex),
-  lastName: Joi.string().min(2).max(50).required().regex(nameRegex),
-  email: Joi.string().email().required().regex(emailRegex),
+  firstName: Joi.string().min(2).max(50).required().regex(regexPatterns.nameRegex),
+  lastName: Joi.string().min(2).max(50).required().regex(regexPatterns.nameRegex),
+  email: Joi.string().email().required().regex(regexPatterns.emailRegex),
   password: Joi.string().min(3).required(),
   confirmPassword: Joi.string().min(3).required().valid(Joi.ref('password'))
 });
@@ -29,7 +29,7 @@ const registerValidator = (req, res, next) => {
 
 // Login validation schema using DermatoAI account
 const loginSchema = Joi.object({
-  email: Joi.string().email().required().regex(emailRegex),
+  email: Joi.string().email().required().regex(regexPatterns.emailRegex),
   password: Joi.string().min(3).required(),
 });
 
@@ -52,9 +52,9 @@ const loginValidator = (req, res, next) => {
 // Authentication using Google OAuth validation schema
 const googleAuthSchema = Joi.object({
   _id: Joi.string().required(),
-  firstName: Joi.string().min(2).max(50).required().regex(nameRegex),
-  lastName: Joi.string().min(2).max(50).required().regex(nameRegex),
-  email: Joi.string().email().required().regex(emailRegex),
+  firstName: Joi.string().min(2).max(50).required().regex(regexPatterns.nameRegex),
+  lastName: Joi.string().min(2).max(50).required().regex(regexPatterns.nameRegex),
+  email: Joi.string().email().required().regex(regexPatterns.emailRegex),
   googleId: Joi.string().required()
 });
 

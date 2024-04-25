@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const { nameRegex, emailRegex } = require('../utils/constants');
+const { regexPatterns } = require('../utils/constants');
 
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     trim: true,
     minlength: [2, "First name is too short"],
     maxlength: [50, "First name is too long"],
-    match: [nameRegex, "First name is not valid"],
+    match: [regexPatterns.nameRegex, "First name is not valid"],
   },
   lastName: {
     type: String,
@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
     trim: true,
     minlength: [2, "Last name is too short"],
     maxlength: [50, "Last name is too long"],
-    match: [nameRegex, "Last name is not valid"],
+    match: [regexPatterns.nameRegex, "Last name is not valid"],
   },
   email: {
     type: String,
@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
     trim: true,
     unique: [true, "Email already exists"],
     lowercase: true,
-    match: [emailRegex, "Email is not valid"]
+    match: [regexPatterns.emailRegex, "Email is not valid"]
   },
   passwordHash: {
     type: String

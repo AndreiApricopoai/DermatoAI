@@ -1,7 +1,8 @@
-const nameRegex = /^[a-zA-Z',.\- ]+$/;
-const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+const regexPatterns = {
+  nameRegex : /^[a-zA-Z',.\- ]+$/,
+  emailRegex: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+};
 
 module.exports = {
-  nameRegex,
-  emailRegex
+  regexPatterns
 };

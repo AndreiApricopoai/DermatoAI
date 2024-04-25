@@ -1,5 +1,5 @@
-const User = require('../models/user');
-const RefreshToken = require('../models/refreshToken');
+const User = require('../models/userModel');
+const RefreshToken = require('../models/refreshTokenModel');
 const crypto = require('crypto');
 const { createJwtToken, extractPayloadJwt } = require('../utils/authUtils');
 require('dotenv').config();
@@ -243,8 +243,8 @@ const saveRefreshTokenToCollection = async (refreshToken, userId) => {
   const hash = crypto.createHash('sha256').update(refreshToken).digest('hex'); // SHA-256 hash
 
   await new RefreshToken({
-    tokenHash: hash,
     user: userId,
+    tokenHash: hash,
     expires: expirationDate
   }).save();
 };
