@@ -11,17 +11,17 @@ const login = async (req, res) => {
     const result = await authService.login(payload);
 
     if (result && result.type) {
-      ApiResponse.handleResponse(res, result);
+      return ApiResponse.handleResponse(res, result);
     }
     else {
-      ApiResponse.error(res, {
+      return ApiResponse.error(res, {
         statusCode: 500,
         error: 'The service failed to provide a valid login response.'
       });
     }
   } catch (error) {
     console.log(error);
-    ApiResponse.error(res, {
+    return ApiResponse.error(res, {
       statusCode: 500,
       error: 'An unexpected error occurred during login. Please try again later.'
     });
@@ -37,17 +37,17 @@ const register = async (req, res) => {
     const result = await authService.register(payload);
 
     if (result && result.type) {
-      ApiResponse.handleResponse(res, result);
+      return ApiResponse.handleResponse(res, result);
     }
     else {
-      ApiResponse.error(res, {
+      return ApiResponse.error(res, {
         statusCode: 500,
         error: 'The service failed to provide a valid registration response.'
       });
     }
   } catch (error) {
     console.log(error);
-    ApiResponse.error(res, {
+    return ApiResponse.error(res, {
       statusCode: 500,
       error: 'An unexpected error occurred during registration. Please try again later.'
     });
@@ -56,7 +56,6 @@ const register = async (req, res) => {
 
 // Google OAuth callback called by the register and login routes
 const googleCallback = async (req, res) => {
-
   try {
     if (!req.user) {
       return ApiResponse.error(res, {
@@ -71,17 +70,17 @@ const googleCallback = async (req, res) => {
     const result = await authService.handleGoogleCallback(payload);
 
     if (result && result.type) {
-      ApiResponse.handleResponse(res, result);
+      return ApiResponse.handleResponse(res, result);
     }
     else {
-      ApiResponse.error(res, {
+      return ApiResponse.error(res, {
         statusCode: 500,
         error: 'The service failed to provide a valid Google authentication response.'
       });
     }
   } catch (error) {
     console.log(error);
-    ApiResponse.error(res, {
+    return ApiResponse.error(res, {
       statusCode: 500,
       error: 'An unexpected error occurred during Google authentication. Please try again later.'
     });
@@ -96,17 +95,17 @@ const logout = async (req, res) => {
     const result = await authService.logout(refreshToken, userId);
 
     if (result && result.type) {
-      ApiResponse.handleResponse(res, result);
+      return ApiResponse.handleResponse(res, result);
     }
     else {
-      ApiResponse.error(res, {
+      return ApiResponse.error(res, {
         statusCode: 500,
         error: 'The service failed to perform a valid logout operation.'
       });
     }
   } catch (error) {
     console.log(error);
-    ApiResponse.error(res, {
+    return ApiResponse.error(res, {
       statusCode: 500,
       error: 'An unexpected error occurred during logout. Please try again later.'
     });
@@ -121,17 +120,17 @@ const getAccessToken = async (req, res) => {
     const result = await authService.getAccessToken(refreshToken, userId);
 
     if (result && result.type) {
-      ApiResponse.handleResponse(res, result);
+      return ApiResponse.handleResponse(res, result);
     }
     else {
-      ApiResponse.error(res, {
+      return ApiResponse.error(res, {
         statusCode: 500,
         error: 'The service failed to retrieve acces token.'
       });
     }
   } catch (error) {
     console.log(error);
-    ApiResponse.error(res, {
+    return ApiResponse.error(res, {
       statusCode: 500,
       error: 'An unexpected error occurred during access token retrieval. Please try again later.'
     });

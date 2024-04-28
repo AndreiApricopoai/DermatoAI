@@ -1,22 +1,38 @@
 const predictionService = require('../services/predictionService');
+const ApiResponse = require('../responses/apiResponse');
 
-exports.createPrediction = async (req, res) => {
-    if (!req.file) {
-        return res.status(400).send('Image upload failed.');
+const createPrediction = async (req, res) => {
+  try {
+    if (!req.file || !req.file.buffer) {
+      return ApiResponse.error(res, {
+        statusCode: 400,
+        error: 'No image uploaded.'
+      });
     }
-    
-    try {
-      console.log(req.file);
-      return res.status(200).send('Image uploaded successfully.');
-        //const { title, description } = req.body;
-        //const userId = req.user._id; // Assuming user ID is attached to req.user
-        
-        // Service handles all logic
-        //const prediction = await predictionService.createPrediction(userId, title, description, req.file.buffer);
-        
-        //res.status(201).json({ success: true, message: 'Prediction created and job queued.', predictionId: prediction._id });
-    } catch (error) {
-        console.error('Error in creating prediction:', error);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+
+    const userId = req.currentUser.userId;
+    const imageBuffer = req.file.buffer;
+
+    const result = await predictionService.createPrediction(userId, imageBuffer);
+
+    if (result && result.type) {
+      return ApiResponse.handleResponse(res, result);
     }
+    else {
+      return ApiResponse.error(res, {
+        statusCode: 500,
+        error: 'The service failed to perform a valid image processing operation.'
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return ApiResponse.error(res, {
+      statusCode: 500,
+      error: 'An unexpected error occurred during image processing. Please try again later.'
+    });
+  }
+};
+
+module.exports = {
+  createPrediction
 };

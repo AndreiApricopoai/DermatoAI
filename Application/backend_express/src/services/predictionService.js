@@ -1,13 +1,13 @@
 const Prediction = require('../models/predictionModel');
-const blobUtils = require('../services/azureStorageService');
+const azure = require('../services/azureStorageService');
 
-const createPrediction = async (userId, title, description, imageBuffer) => {
+const createPrediction = async (userId, imageBuffer) => {
     try {
         // Generate a unique blob name using a timestamp to prevent naming conflicts
         const blobName = `prediction-${Date.now()}.jpg`;
 
         // Upload the image to Azure Blob Storage and receive the URL back
-        const imageUrl = await blobUtils.uploadImageToBlob(imageBuffer, blobName);
+        const imageUrl = await azure.uploadImageToBlob(imageBuffer, blobName);
 
         // Create a new prediction record in MongoDB with the received image URL
         const prediction = new Prediction({
@@ -29,7 +29,7 @@ const createPrediction = async (userId, title, description, imageBuffer) => {
         };
 
         // Send the message to the queue for further processing
-        await blobUtils.addToQueue(queueMessage);
+        await azure.addToQueue(queueMessage);
 
         return prediction;
     } catch (error) {
