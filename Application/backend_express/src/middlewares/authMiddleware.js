@@ -22,7 +22,15 @@ const checkAccessToken = (req, res, next) => {
     });
   }
 
-  req.currentUser = extractPayloadJwt(token);
+  const payload = extractPayloadJwt(token);
+  if (!payload) {
+    return ApiResponse.error(res, {
+      statusCode: 403,
+      error: 'Authentication failed due to an invalid token.'
+    });
+  }
+
+  req.currentUser = payload;
   next();
 };
 
@@ -44,11 +52,42 @@ const checkRefreshToken = (req, res, next) => {
     });
   }
 
+  const payload = extractPayloadJwt(token);
+  if (!payload) {
+    return ApiResponse.error(res, {
+      statusCode: 403,
+      error: 'Invalid refresh token.'
+    });
+  }
+
+  req.currentUser = payload;
+  next();
+};
+
+// Middleware to validate worker token in the request body
+const checkWorkerToken = (req, res, next) => {
+  const { workerToken } = req.body;
+
+  if (!workerToken) {
+    return ApiResponse.error(res, {
+      statusCode: 401,
+      error: 'Worker validation token is missing or invalid.'
+    });
+  }
+
+  if (!isValidJwt(refreshToken, process.env.REFRESH_TOKEN_SECRET)) {
+    return ApiResponse.error(res, {
+      statusCode: 403,
+      error: 'Invalid refresh token.'
+    });
+  }
+
   req.currentUser = extractPayloadJwt(refreshToken);
   next();
 };
 
 module.exports = {
   checkAccessToken,
-  checkRefreshToken
+  checkRefreshToken,
+  checkWorkerToken
 };

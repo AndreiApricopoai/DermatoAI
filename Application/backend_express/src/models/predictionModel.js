@@ -6,9 +6,13 @@ const predictionSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  workerTokenHash: {
+    type: String,
+    required: true
+  },
   title: {
     type: String,
-    required: true,
+    required: [true, 'Title is required'],
     default: 'No title',
     trim: true,
     minlength: [1, 'Title must be at least 1 character long'],
@@ -16,7 +20,7 @@ const predictionSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true,
+    required: [true, 'Description is required'],
     default: 'No description',
     trim: true,
     minlength: [0, 'Description can be empty'],
@@ -24,7 +28,7 @@ const predictionSchema = new mongoose.Schema({
   },
   imageUrl: {
     type: String,
-    required: true
+    required: [true, 'Image URL is required']
   },
   isHealthy: {
     type: Boolean,
@@ -53,7 +57,6 @@ const predictionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    required: true,
     enum: ['pending', 'processed', 'failed'],
     default: 'pending'
   }

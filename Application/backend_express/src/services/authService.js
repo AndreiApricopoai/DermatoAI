@@ -1,7 +1,6 @@
 const User = require('../models/userModel');
 const RefreshToken = require('../models/refreshTokenModel');
-const crypto = require('crypto');
-const { createJwtToken, extractPayloadJwt } = require('../utils/authUtils');
+const { createJwtToken, extractPayloadJwt, getTokenHash } = require('../utils/authUtils');
 require('dotenv').config();
 
 // Login function for DermatoAI account
@@ -44,6 +43,14 @@ const login = async (payload) => {
 
     const token = createJwtToken(process.env.ACCESS_TOKEN_SECRET, '15m', tokenPayload);
     const refreshToken = createJwtToken(process.env.REFRESH_TOKEN_SECRET, '7d', tokenPayload);
+
+    if (!token || !refreshToken) {
+      return {
+        type: 'error',
+        status: 500,
+        error: 'An error occurred while creating the tokens.'
+      };
+    }
 
     // Store refresh token in database
     await saveRefreshTokenToCollection(refreshToken, user._id);
@@ -100,6 +107,14 @@ const register = async (payload) => {
     const token = createJwtToken(process.env.ACCESS_TOKEN_SECRET, '15m', tokenPayload);
     const refreshToken = createJwtToken(process.env.REFRESH_TOKEN_SECRET, '7d', tokenPayload);
 
+    if (!token || !refreshToken) {
+      return {
+        type: 'error',
+        status: 500,
+        error: 'An error occurred while creating the tokens.'
+      };
+    }
+
     // Store refresh token in database
     await saveRefreshTokenToCollection(refreshToken, user._id);
 
@@ -137,6 +152,14 @@ const handleGoogleCallback = async (payload) => {
     const token = createJwtToken(process.env.ACCESS_TOKEN_SECRET, '15m', tokenPayload);
     const refreshToken = createJwtToken(process.env.REFRESH_TOKEN_SECRET, '7d', tokenPayload);
 
+    if (!token || !refreshToken) {
+      return {
+        type: 'error',
+        status: 500,
+        error: 'An error occurred while creating the tokens.'
+      };
+    }
+
     // Store refresh token in database
     await saveRefreshTokenToCollection(refreshToken, _id);
 
@@ -163,7 +186,7 @@ const handleGoogleCallback = async (payload) => {
 // Logout function from both DermatoAI and Google accounts
 const logout = async (refreshToken, userId) => {
   try {
-    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    const refreshTokenHash = getTokenHash(refreshToken);
     const result = await RefreshToken.findOneAndDelete({ user: userId, tokenHash: refreshTokenHash }).exec();
 
     if (!result) {
@@ -193,7 +216,7 @@ const logout = async (refreshToken, userId) => {
 // Get a new access token using a refresh token
 const getAccessToken = async (refreshToken, userId) => {
   try {
-    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    const refreshTokenHash = getTokenHash(refreshToken);
     const existsRefreshToken = await RefreshToken.findOne({ user: userId, tokenHash: refreshTokenHash }).exec();
 
     if (!existsRefreshToken) {
@@ -214,7 +237,22 @@ const getAccessToken = async (refreshToken, userId) => {
     }
 
     const newAccessTokenPayload = extractPayloadJwt(refreshToken);
+    if (!newAccessTokenPayload) {
+      return {
+        type: 'error',
+        status: 401,
+        error: 'Token payload could not be extracted.'
+      };
+    }
     const newAccessToken = createJwtToken(process.env.ACCESS_TOKEN_SECRET, '15m', newAccessTokenPayload);
+
+    if (!newAccessToken) {
+      return {
+        type: 'error',
+        status: 500,
+        error: 'An error occurred while creating a new acces token.'
+      };
+    }
 
     return {
       type: 'success',
@@ -240,7 +278,7 @@ const saveRefreshTokenToCollection = async (refreshToken, userId) => {
   const expirationDate = new Date();
   expirationDate.setDate(expirationDate.getDate() + 7); // 7 days in the future
 
-  const hash = crypto.createHash('sha256').update(refreshToken).digest('hex'); // SHA-256 hash
+  const hash = getTokenHash(refreshToken);
 
   await new RefreshToken({
     user: userId,

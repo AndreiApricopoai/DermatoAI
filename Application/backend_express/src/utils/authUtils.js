@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 // Helper function to create JWT token
 const createJwtToken = (secretKey, expirationDate, payload) => {
@@ -45,8 +46,13 @@ const extractPayloadJwt = (jwtToken) => {
   }
 };
 
+const getTokenHash = (token) => {
+  return crypto.createHash('sha256').update(token).digest('hex');
+};
+
 module.exports = {
   createJwtToken,
   isValidJwt,
-  extractPayloadJwt
+  extractPayloadJwt,
+  getTokenHash
 };

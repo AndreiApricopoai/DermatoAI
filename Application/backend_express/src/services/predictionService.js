@@ -1,43 +1,86 @@
 const Prediction = require('../models/predictionModel');
 const azure = require('../services/azureStorageService');
+const { createJwtToken, getTokenHash } = require('../utils/authUtils');
+const crypto = require('crypto');
+require('dotenv').config();
 
 const createPrediction = async (userId, imageBuffer) => {
-    try {
-        // Generate a unique blob name using a timestamp to prevent naming conflicts
-        const blobName = `prediction-${Date.now()}.jpg`;
 
-        // Upload the image to Azure Blob Storage and receive the URL back
-        const imageUrl = await azure.uploadImageToBlob(imageBuffer, blobName);
+  let imageUrl;
+  let prediction;
 
-        // Create a new prediction record in MongoDB with the received image URL
-        const prediction = new Prediction({
-            userId,
-            title,
-            description,
-            imageUrl,
-            diagnosisName: null,  // Placeholder for future updates
-            diagnosisCode: null,  // Placeholder for future updates
-            status: 'pending'     // Initial status
-        });
-        await prediction.save();
+  try {
+    const imageName = `prediction-${Date.now()}.jpg`;
+    imageUrl = await azure.uploadImageToBlob(imageBuffer, imageName);
 
-        // Prepare a message for Azure Queue Storage
-        const queueMessage = {
-            predictionId: prediction._id.toString(),
-            imageUrl,
-            userId: userId.toString()
-        };
-
-        // Send the message to the queue for further processing
-        await azure.addToQueue(queueMessage);
-
-        return prediction;
-    } catch (error) {
-        console.error('Error in createPrediction service:', error);
-        throw error; // Ensure this error can be handled or logged by the caller
+    const tokenPayload = {userId};
+    const workerToken = createJwtToken(process.env.WORKER_TOKEN_SECRET, '7d', tokenPayload);
+    if (!workerToken) {
+      return {
+        type: 'error',
+        status: 500,
+        error: 'An error occurred while creating the worker token.'
+      };
     }
+    const workerTokenHash = getTokenHash(workerToken);
+
+    prediction = new Prediction({
+      userId,
+      workerTokenHash,
+      imageUrl
+    });
+    await prediction.save();
+
+    const queueMessage = {
+      predictionId: prediction._id.toString(),
+      userId: userId.toString(),
+      workerToken,
+      imageUrl
+    };
+    await azure.addToQueue(queueMessage);
+
+    return {
+      type: 'success',
+      status: 201,
+      data: {
+        message: 'Prediction created successfully and added to queue for processing.',
+        prediction: {
+          predictionId: prediction._id,
+          userId,
+          imageUrl
+        }
+      }
+    };
+  }
+  catch (error) {
+    console.error('Error in createPrediction service:', error);
+
+    try {
+      if (imageUrl) {
+        const blobName = imageUrl.split('/').pop();
+        await azure.deleteImageFromBlob(blobName);
+      }
+      if (prediction && prediction._id) {
+        await Prediction.findByIdAndDelete(prediction._id);
+      }
+      console.error('Rollback successful after initial failure.');
+
+    } catch (rollbackError) {
+      console.error('Error during rollback:', rollbackError);
+      return {
+        type: 'error',
+        status: 500,
+        error: 'An unexpected error occurred during prediction creation and operation rollback failed. Please try again later.'
+      };
+    }
+    return {
+      type: 'error',
+      status: 500,
+      error: 'An unexpected error occurred during prediction creation and operation rollback succeeded. Please try again later.'
+    };
+  }
 };
 
 module.exports = {
-    createPrediction
+  createPrediction
 };
