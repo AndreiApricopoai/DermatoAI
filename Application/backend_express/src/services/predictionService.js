@@ -15,14 +15,15 @@ const createPrediction = async (userId, imageBuffer) => {
 
     const tokenPayload = {userId};
     const workerToken = createJwtToken(process.env.WORKER_TOKEN_SECRET, '7d', tokenPayload);
-    if (!workerToken) {
+    const workerTokenHash = getTokenHash(workerToken);
+
+    if (!workerToken || !workerTokenHash) {
       return {
         type: 'error',
         status: 500,
         error: 'An error occurred while creating the worker token.'
       };
     }
-    const workerTokenHash = getTokenHash(workerToken);
 
     prediction = new Prediction({
       userId,

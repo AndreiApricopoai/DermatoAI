@@ -2,6 +2,37 @@ const { isValidJwt, extractPayloadJwt } = require('../utils/authUtils');
 const ApiResponse = require('../responses/apiResponse');
 require('dotenv').config();
 
+// Helper function to check if token is valid and extract payload
+const checkToken = (req, res, token, secretKey, tokenType) => {
+  if (!token) {
+    ApiResponse.error(res, {
+      statusCode: 401,
+      error: `${tokenType} is missing or invalid.`
+    });
+    return false
+  }
+
+  if (!isValidJwt(token, secretKey)) {
+    ApiResponse.error(res, {
+      statusCode: 403,
+      error: `Invalid ${tokenType}.`
+    });
+    return false;
+  }
+
+  const payload = extractPayloadJwt(token);
+  if (!payload) {
+    ApiResponse.error(res, {
+      statusCode: 403,
+      error: `Invalid ${tokenType} payload information.`
+    });
+    return false;
+  }
+
+  req.currentUser = payload;
+  return true;
+};
+
 // Middleware to validate access token in the Authorization header
 const checkAccessToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -14,76 +45,22 @@ const checkAccessToken = (req, res, next) => {
   }
 
   const token = authHeader.split(' ')[1];
-
-  if (!isValidJwt(token, process.env.ACCESS_TOKEN_SECRET)) {
-    return ApiResponse.error(res, {
-      statusCode: 403,
-      error: 'Authentication failed due to an invalid token.'
-    });
-  }
-
-  const payload = extractPayloadJwt(token);
-  if (!payload) {
-    return ApiResponse.error(res, {
-      statusCode: 403,
-      error: 'Authentication failed due to an invalid token.'
-    });
-  }
-
-  req.currentUser = payload;
-  next();
+  const checkResult = checkToken(req, res, token, process.env.ACCESS_TOKEN_SECRET, 'access token');
+  if (checkResult) next();
 };
 
 // Middleware to validate refresh token in the request body
 const checkRefreshToken = (req, res, next) => {
   const { refreshToken } = req.body;
-
-  if (!refreshToken) {
-    return ApiResponse.error(res, {
-      statusCode: 401,
-      error: 'Refresh token is missing or invalid.'
-    });
-  }
-
-  if (!isValidJwt(refreshToken, process.env.REFRESH_TOKEN_SECRET)) {
-    return ApiResponse.error(res, {
-      statusCode: 403,
-      error: 'Invalid refresh token.'
-    });
-  }
-
-  const payload = extractPayloadJwt(token);
-  if (!payload) {
-    return ApiResponse.error(res, {
-      statusCode: 403,
-      error: 'Invalid refresh token.'
-    });
-  }
-
-  req.currentUser = payload;
-  next();
+  const checkResult = checkToken(req, res, refreshToken, process.env.REFRESH_TOKEN_SECRET, 'refresh token');
+  if (checkResult) next();
 };
 
 // Middleware to validate worker token in the request body
 const checkWorkerToken = (req, res, next) => {
   const { workerToken } = req.body;
-
-  if (!workerToken) {
-    return ApiResponse.error(res, {
-      statusCode: 401,
-      error: 'Worker validation token is missing or invalid.'
-    });
-  }
-
-  if (!isValidJwt(refreshToken, process.env.REFRESH_TOKEN_SECRET)) {
-    return ApiResponse.error(res, {
-      statusCode: 403,
-      error: 'Invalid refresh token.'
-    });
-  }
-
-  req.currentUser = extractPayloadJwt(refreshToken);
-  next();
+  const checkResult = checkToken(req, res, workerToken, process.env.WORKER_TOKEN_SECRET, 'worker validation token');
+  if (checkResult) next();
 };
 
 module.exports = {

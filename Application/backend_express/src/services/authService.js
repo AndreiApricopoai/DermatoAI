@@ -53,7 +53,15 @@ const login = async (payload) => {
     }
 
     // Store refresh token in database
-    await saveRefreshTokenToCollection(refreshToken, user._id);
+    const saveResult = await saveRefreshTokenToCollection(refreshToken, user._id);
+
+    if (!saveResult) {
+      return {
+        type: 'error',
+        status: 500,
+        error: 'An error occurred while saving the refresh token.'
+      };
+    }
 
     return {
       type: 'success',
@@ -116,7 +124,15 @@ const register = async (payload) => {
     }
 
     // Store refresh token in database
-    await saveRefreshTokenToCollection(refreshToken, user._id);
+    const saveResult = await saveRefreshTokenToCollection(refreshToken, user._id);
+
+    if (!saveResult) {
+      return {
+        type: 'error',
+        status: 500,
+        error: 'An error occurred while saving the refresh token.'
+      };
+    }
 
     return {
       type: 'success',
@@ -161,7 +177,15 @@ const handleGoogleCallback = async (payload) => {
     }
 
     // Store refresh token in database
-    await saveRefreshTokenToCollection(refreshToken, _id);
+    const saveResult = await saveRefreshTokenToCollection(refreshToken, _id);
+
+    if (!saveResult) {
+      return {
+        type: 'error',
+        status: 500,
+        error: 'An error occurred while saving the refresh token.'
+      };
+    }
 
     return {
       type: 'success',
@@ -188,8 +212,9 @@ const logout = async (refreshToken, userId) => {
   try {
     const refreshTokenHash = getTokenHash(refreshToken);
     const result = await RefreshToken.findOneAndDelete({ user: userId, tokenHash: refreshTokenHash }).exec();
+    console.log('Logout result:', result);
 
-    if (!result) {
+    if (!refreshTokenHash || !result) {
       return {
         type: 'error',
         status: 404,
@@ -219,7 +244,7 @@ const getAccessToken = async (refreshToken, userId) => {
     const refreshTokenHash = getTokenHash(refreshToken);
     const existsRefreshToken = await RefreshToken.findOne({ user: userId, tokenHash: refreshTokenHash }).exec();
 
-    if (!existsRefreshToken) {
+    if (!refreshTokenHash || !existsRefreshToken) {
       return {
         type: 'error',
         status: 404,
@@ -236,14 +261,20 @@ const getAccessToken = async (refreshToken, userId) => {
       };
     }
 
-    const newAccessTokenPayload = extractPayloadJwt(refreshToken);
-    if (!newAccessTokenPayload) {
+    const extracted = extractPayloadJwt(refreshToken);
+
+    if (!extracted) {
       return {
         type: 'error',
         status: 401,
         error: 'Token payload could not be extracted.'
       };
     }
+    const newAccessTokenPayload = {
+      userId: extracted.userId,
+      firstName: extracted.firstName,
+      lastName: extracted.lastName
+    };
     const newAccessToken = createJwtToken(process.env.ACCESS_TOKEN_SECRET, '15m', newAccessTokenPayload);
 
     if (!newAccessToken) {
@@ -279,12 +310,18 @@ const saveRefreshTokenToCollection = async (refreshToken, userId) => {
   expirationDate.setDate(expirationDate.getDate() + 7); // 7 days in the future
 
   const hash = getTokenHash(refreshToken);
+  if (!hash) {
+    console.error('Error creating token hash.');
+    return false;
+  }
 
   await new RefreshToken({
     user: userId,
     tokenHash: hash,
     expires: expirationDate
   }).save();
+
+  return true;
 };
 
 module.exports = {
