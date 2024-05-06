@@ -1,7 +1,6 @@
 const Prediction = require('../models/predictionModel');
 const azure = require('../services/azureStorageService');
 const { createJwtToken, getTokenHash } = require('../utils/authUtils');
-const crypto = require('crypto');
 require('dotenv').config();
 
 const createPrediction = async (userId, imageBuffer) => {
@@ -13,7 +12,7 @@ const createPrediction = async (userId, imageBuffer) => {
     const imageName = `prediction-${Date.now()}.jpg`;
     imageUrl = await azure.uploadImageToBlob(imageBuffer, imageName);
 
-    const tokenPayload = {userId};
+    const tokenPayload = { userId };
     const workerToken = createJwtToken(process.env.WORKER_TOKEN_SECRET, '7d', tokenPayload);
     const workerTokenHash = getTokenHash(workerToken);
 

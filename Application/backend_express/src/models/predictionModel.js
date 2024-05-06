@@ -4,11 +4,11 @@ const predictionSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: [true, 'User ID is required']
   },
   workerTokenHash: {
     type: String,
-    required: true
+    required: [true, 'Worker token hash is required']
   },
   title: {
     type: String,
@@ -53,7 +53,7 @@ const predictionSchema = new mongoose.Schema({
     type: Number,
     default: null,
     min: 0,
-    max: 1
+    max: 100
   },
   status: {
     type: String,
