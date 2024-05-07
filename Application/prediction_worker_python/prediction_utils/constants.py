@@ -8,6 +8,7 @@ class DiagnosisType:
     CANCER = "cancer"
     NOT_CANCER = "not_cancer"
     POTENTIALLY_CANCER = "potentially_cancer"
+    UNKNOWN = "unknown"
 
 
 CLASS_INDICES_NAMES = {
@@ -70,4 +71,12 @@ HEALTHY_DIAGNOSIS_INFO = {
     'name': 'healthy',
     'code': 8,
     'type': DiagnosisType.NOT_CANCER
+}
+
+
+UNKNOWN_DIAGNOSIS_INFO = {
+    'name': 'unknown',
+    'code': 9,
+    'type': DiagnosisType.UNKNOWN,
+    "confidenceLevel": 0
 }

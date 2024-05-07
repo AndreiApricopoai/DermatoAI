@@ -91,7 +91,7 @@ const googleCallback = async (req, res) => {
 const logout = async (req, res) => {
   try {
     const refreshToken = req.body.refreshToken;
-    const userId = req.body.userId;
+    const userId = req.currentUser.userId;
     const result = await authService.logout(refreshToken, userId);
 
     if (result && result.type) {

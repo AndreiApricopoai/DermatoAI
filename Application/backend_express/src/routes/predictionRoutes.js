@@ -8,6 +8,6 @@ const router = express.Router();
 
 router.post('/', upload.single('image'), handleMulterUpload, checkAccessToken, validateImage, predictionController.createPrediction);
 router.patch('/:id', checkAccessToken, predictionController.updatePredictionUser);
-router.patch('/:id', checkWorkerToken, predictionController.updatePredictionWorker);
+router.patch('worker-updates/:id', checkWorkerToken, predictionController.updatePredictionWorker);
 
 module.exports = router;
