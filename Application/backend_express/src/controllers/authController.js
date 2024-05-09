@@ -116,7 +116,7 @@ const logout = async (req, res) => {
 const getAccessToken = async (req, res) => {
   try {
     const refreshToken = req.body.refreshToken;
-    const userId = req.body.userId;
+    const userId = req.currentUser.userId;
     const result = await authService.getAccessToken(refreshToken, userId);
 
     if (result && result.type) {

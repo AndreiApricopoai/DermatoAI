@@ -13,17 +13,16 @@ const predictionSchema = new mongoose.Schema({
   title: {
     type: String,
     required: [true, 'Title is required'],
-    default: 'No title',
+    default: 'Untitled',
     trim: true,
     minlength: [1, 'Title must be at least 1 character long'],
     maxlength: [100, 'Title can be no more than 100 characters long']
   },
   description: {
     type: String,
-    required: [true, 'Description is required'],
     default: 'No description',
     trim: true,
-    minlength: [0, 'Description can be empty'],
+    minlength: [1, 'Description must be at least 1 character long'],
     maxlength: [1000, 'Description can be no more than 1000 characters long']
   },
   imageUrl: {
@@ -46,7 +45,7 @@ const predictionSchema = new mongoose.Schema({
   },
   diagnosisType: {
     type: String,
-    enum: ['cancer', 'not_cancer', 'potentially_cancer'],
+    enum: ['cancer', 'not_cancer', 'potentially_cancer', 'unknown'],
     default: null
   },
   confidenceLevel: {

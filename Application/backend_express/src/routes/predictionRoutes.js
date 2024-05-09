@@ -4,6 +4,8 @@ const { checkAccessToken, checkWorkerToken } = require('../middlewares/authMiddl
 const { handleMulterUpload } = require('../middlewares/predictionMiddleware');
 const predictionController = require('../controllers/predictionController');
 const upload = require('../config/imageUploadConfig');
+
+// Create a new router for the prediction routes
 const router = express.Router();
 
 router.post('/', upload.single('image'), handleMulterUpload, checkAccessToken, validateImage, predictionController.createPrediction);

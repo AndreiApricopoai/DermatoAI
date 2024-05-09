@@ -5,11 +5,11 @@ require('dotenv').config();
 
 // Login function for DermatoAI account
 const login = async (payload) => {
-  const email = payload.email.toLowerCase();
-  const password = payload.password;
-
   try {
+    const email = payload.email.toLowerCase();
+    const password = payload.password;
     const user = await User.findOne({ email: email }).exec();
+
     if (!user) {
       return {
         type: 'error',
@@ -85,10 +85,10 @@ const login = async (payload) => {
 
 // Register function for DermatoAI account
 const register = async (payload) => {
-  const { firstName, lastName, email, password } = payload;
-
   try {
+    const { firstName, lastName, email, password } = payload;
     const userExists = await User.findOne({ email: email.toLowerCase() }).exec();
+
     if (userExists) {
       return {
         type: 'error',
@@ -156,9 +156,8 @@ const register = async (payload) => {
 
 // Google OAuth callback function
 const handleGoogleCallback = async (payload) => {
-  const { _id, firstName, lastName } = payload;
-
   try {
+    const { _id, firstName, lastName } = payload;
     const tokenPayload = {
       userId: _id,
       firstName: firstName,

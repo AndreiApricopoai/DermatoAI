@@ -1,6 +1,6 @@
 const Joi = require('joi');
-const ApiResponse = require('../responses/apiResponse');
 const { regexPatterns } = require('../utils/constants');
+const { handleValidationError } = require('../utils/validatorUtils');
 
 // Register validation schema using DermatoAI account
 const registerSchema = Joi.object({
@@ -9,21 +9,13 @@ const registerSchema = Joi.object({
   email: Joi.string().email().required().regex(regexPatterns.emailRegex),
   password: Joi.string().min(3).required(),
   confirmPassword: Joi.string().min(3).required().valid(Joi.ref('password'))
-});
+}).unknown(false);
 
 const registerValidator = (req, res, next) => {
   const payload = req.body;
   const { error } = registerSchema.validate(payload, { abortEarly: false });
 
-  if (error) {
-    return ApiResponse.validationError(res, {
-      statusCode: 400,
-      errors: error.details.map(detail => ({
-        message: detail.message,
-        path: detail.path.join('.')
-      }))
-    });
-  }
+  if (handleValidationError(error, res)) return;
   next();
 };
 
@@ -31,21 +23,13 @@ const registerValidator = (req, res, next) => {
 const loginSchema = Joi.object({
   email: Joi.string().email().required().regex(regexPatterns.emailRegex),
   password: Joi.string().min(3).required(),
-});
+}).unknown(false);
 
 const loginValidator = (req, res, next) => {
   const payload = req.body;
   const { error } = loginSchema.validate(payload, { abortEarly: false });
 
-  if (error) {
-    return ApiResponse.validationError(res, {
-      statusCode: 400,
-      errors: error.details.map(detail => ({
-        message: detail.message,
-        path: detail.path.join('.')
-      }))
-    });
-  }
+  if (handleValidationError(error, res)) return;
   next();
 };
 
@@ -56,7 +40,7 @@ const googleAuthSchema = Joi.object({
   lastName: Joi.string().min(2).max(50).required().regex(regexPatterns.nameRegex),
   email: Joi.string().email().required().regex(regexPatterns.emailRegex),
   googleId: Joi.string().required()
-});
+}).unknown(false);
 
 const googleAuthValidator = (req, res, next) => {
   const user = req.user;
@@ -69,15 +53,7 @@ const googleAuthValidator = (req, res, next) => {
   };  
   const { error } = googleAuthSchema.validate(payload, { abortEarly: false });
 
-  if (error) {
-    return ApiResponse.validationError(res, {
-      statusCode: 400,
-      errors: error.details.map(detail => ({
-        message: detail.message,
-        path: detail.path.join('.')
-      }))
-    });
-  }
+  if (handleValidationError(error, res)) return;
   next();
 };
 

@@ -13,7 +13,9 @@
   "dependencies": {
     "@azure/storage-blob": "^12.17.0",
     "@azure/storage-queue": "^12.16.0",
+    "@googlemaps/google-maps-services-js": "^3.4.0",
     "bcrypt": "^5.1.1",
+    "core-js": "^3.37.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "install": "^0.13.0",
@@ -22,8 +24,12 @@
     "mongodb": "^6.5.0",
     "mongoose": "^8.3.1",
     "multer": "^1.4.5-lts.1",
+    "openai": "^4.42.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "sharp": "^0.33.3"
+  },
+  "devDependencies": {
+    "prettier": "3.2.5"
   }
 }

@@ -8,6 +8,7 @@ const verifyCallback = async (accessToken, refreshToken, profile, done, action) 
     return done(null, false, { message: 'No email found from Google profile.' });
   }
   const email = profile.emails[0].value;
+  const googleId = profile.id;
 
   try {
     let user = await User.findOne({ email: email });
@@ -26,7 +27,7 @@ const verifyCallback = async (accessToken, refreshToken, profile, done, action) 
         firstName: profile.name.givenName,
         lastName: profile.name.familyName,
         email: email,
-        googleId: profile.id
+        googleId: googleId
       });
     }
     return done(null, user);
