@@ -102,9 +102,8 @@ const updateConversation = async (conversationId, userId, updatePayload) => {
     }
 
     Object.keys(updatePayload).forEach((key) => {
-      if (key in conversation) {
         conversation[key] = updatePayload[key];
-      }
+      
     });
 
     await conversation.save();

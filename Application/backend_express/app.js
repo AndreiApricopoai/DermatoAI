@@ -6,6 +6,7 @@ const authRoutes = require('./src/routes/authRoutes');
 const predictionRoutes = require('./src/routes/predictionRoutes');
 const conversationRoutes = require('./src/routes/conversationRoutes');
 const locationRoutes = require('./src/routes/locationRoutes');
+const appointmentRoutes = require('./src/routes/appointmentRoutes');
 const ApiResponse = require('./src/responses/apiResponse');
 
 const app = express();
@@ -21,5 +22,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/predictions', predictionRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/locations', locationRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 module.exports = app;

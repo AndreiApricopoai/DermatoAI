@@ -9,6 +9,7 @@ const verifyCallback = async (accessToken, refreshToken, profile, done, action) 
   }
   const email = profile.emails[0].value;
   const googleId = profile.id;
+  const profilePhoto = profile.photos ? profile.photos[0].value : null;
 
   try {
     let user = await User.findOne({ email: email });
@@ -27,7 +28,8 @@ const verifyCallback = async (accessToken, refreshToken, profile, done, action) 
         firstName: profile.name.givenName,
         lastName: profile.name.familyName,
         email: email,
-        googleId: googleId
+        googleId: googleId,
+        profilePhoto: profilePhoto
       });
     }
     return done(null, user);

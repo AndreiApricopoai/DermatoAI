@@ -64,8 +64,8 @@ const googleCallback = async (req, res) => {
       });
     }
 
-    const { _id, firstName, lastName, email, googleId } = req.user;
-    const payload = { _id, firstName, lastName, email, googleId };
+    const { _id, firstName, lastName } = req.user;
+    const payload = { _id, firstName, lastName };
 
     const result = await authService.handleGoogleCallback(payload);
 

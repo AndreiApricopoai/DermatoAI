@@ -39,7 +39,8 @@ const googleAuthSchema = Joi.object({
   firstName: Joi.string().min(2).max(50).required().regex(regexPatterns.nameRegex),
   lastName: Joi.string().min(2).max(50).required().regex(regexPatterns.nameRegex),
   email: Joi.string().email().required().regex(regexPatterns.emailRegex),
-  googleId: Joi.string().required()
+  googleId: Joi.string().required(),
+  profilePhoto: Joi.string().optional()
 }).unknown(false);
 
 const googleAuthValidator = (req, res, next) => {
@@ -49,7 +50,8 @@ const googleAuthValidator = (req, res, next) => {
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.email,
-    googleId: user.googleId
+    googleId: user.googleId,
+    profilePhoto: user.profilePhoto
   };  
   const { error } = googleAuthSchema.validate(payload, { abortEarly: false });
 

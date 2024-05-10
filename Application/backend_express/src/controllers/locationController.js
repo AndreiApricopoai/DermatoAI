@@ -1,6 +1,5 @@
 const ApiResponse = require("../responses/apiResponse");
 const locationService = require("../services/locationService");
-require("dotenv").config();
 
 const getAllLocations = async (req, res) => {
   try {
@@ -11,8 +10,7 @@ const getAllLocations = async (req, res) => {
 
     if (result && result.type) {
       return ApiResponse.handleResponse(res, result);
-    } 
-    else {
+    } else {
       return ApiResponse.error(res, {
         statusCode: 500,
         error: "The service failed to povide the nearby locations.",
@@ -30,26 +28,29 @@ const getAllLocations = async (req, res) => {
 
 const getLocationImage = async (req, res) => {
   try {
-      const photoReference = req.params.photoReference;
-      const imageUrl = imageService.getImageUrl(photoReference);  // Get URL from the service
+    const photoReference = req.params.photoReference;
 
-      return ApiResponse.success(res, { data: { imageUrl } });
-  } catch (error) {
-      console.log(error);
-      if (error.message === "The photo reference is required.") {
-          return ApiResponse.error(res, {
-              statusCode: 400,
-              error: error.message
-          });
-      }
+    const result = await locationService.getImageFromMapsUrl(photoReference);
+
+    if (result && result.type) {
+      return ApiResponse.handleResponse(res, result);
+    } else {
       return ApiResponse.error(res, {
-          statusCode: 500,
-          error: "An unexpected error occurred while fetching the location image. Please try again later."
+        statusCode: 500,
+        error: "The service failed to povide the image for the location.",
       });
+    }
+  } catch (error) {
+    console.log(error);
+    return ApiResponse.error(res, {
+      statusCode: 500,
+      error:
+        "An unexpected error occurred while fetching the image for the location. Please try again later.",
+    });
   }
 };
 
 module.exports = {
   getAllLocations,
-  getLocationImage
+  getLocationImage,
 };

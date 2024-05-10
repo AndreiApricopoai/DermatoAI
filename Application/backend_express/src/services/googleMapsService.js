@@ -29,8 +29,8 @@ const findDermatologicalClinics = async (latitude, longitude, radius) => {
       placeId: clinic.place_id,
       googleMapsLink: `https://www.google.com/maps/place/?q=place_id:${clinic.place_id}`,
       address: clinic.vicinity,
-      imageUrl: clinic.photos && clinic.photos.length > 0 
-                ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${clinic.photos[0].photo_reference}&key=${apiKey}` 
+      photoReference: clinic.photos && clinic.photos.length > 0 
+                ? clinic.photos[0].photo_reference
                 : null
     }));
 
