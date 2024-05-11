@@ -36,6 +36,11 @@ const userSchema = new mongoose.Schema({
   },
   profilePhoto: {
     type: String
+  },
+  verified: {
+    type: Boolean,
+    default: false,
+    required: true
   }
 }, {
   collection: 'users',

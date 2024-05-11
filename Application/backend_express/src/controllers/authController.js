@@ -137,10 +137,140 @@ const getAccessToken = async (req, res) => {
   }
 };
 
+// Send verification email
+const sendVerificationEmail = async (req, res) => {
+  try {
+    const email = req.body.email;
+    const result = await authService.sendVerificationEmail(email);
+
+    if (result && result.type) {
+      return ApiResponse.handleResponse(res, result);
+    }
+    else {
+      return ApiResponse.error(res, {
+        statusCode: 500,
+        error: 'The service failed to send a verification email.'
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return ApiResponse.error(res, {
+      statusCode: 500,
+      error: 'An unexpected error occurred during email verification. Please try again later.'
+    });
+  }
+};
+
+// Verify email sent to the user to the email address
+const verifyEmail = async (req, res) => {
+  try {
+    const verificationToken = req.query.token;
+    const result = await authService.verifyEmail(verificationToken);
+
+    if (result && result.type) {
+      return ApiResponse.handleResponse(res, result);
+    }
+    else {
+      return ApiResponse.error(res, {
+        statusCode: 500,
+        error: 'The service failed to verify the email.'
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return ApiResponse.error(res, {
+      statusCode: 500,
+      error: 'An unexpected error occurred during email verification. Please try again later.'
+    });
+  }
+};
+
+// Change password
+const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, password } = req.body;
+    const userId = req.currentUser.userId;
+    const payload = { oldPassword, password };
+
+    const result = await authService.changePassword(userId, payload);
+
+    if (result && result.type) {
+      return ApiResponse.handleResponse(res, result);
+    }
+    else {
+      return ApiResponse.error(res, {
+        statusCode: 500,
+        error: 'The service failed to change the password.'
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return ApiResponse.error(res, {
+      statusCode: 500,
+      error: 'An unexpected error occurred during password change. Please try again later.'
+    });
+  }
+};
+
+// Send forgot password email
+const sendForgotPasswordEmail = async (req, res) => {
+  try {
+    const email = req.body.email;
+    const result = await authService.sendForgotPasswordEmail(email);
+
+    if (result && result.type) {
+      return ApiResponse.handleResponse(res, result);
+    }
+    else {
+      return ApiResponse.error(res, {
+        statusCode: 500,
+        error: 'The service failed to send a forgot password email.'
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return ApiResponse.error(res, {
+      statusCode: 500,
+      error: 'An unexpected error occurred during forgot password email sending. Please try again later.'
+    });
+  }
+};
+
+// Reset password
+const resetPassword = async (req, res) => {
+  try {
+    const {forgotPasswordToken, password } = req.body;
+    const payload = { forgotPasswordToken, password };
+    const userId = req.currentUser.userId;
+    const result = await authService.resetPassword(userId, payload);
+
+    if (result && result.type) {
+      return ApiResponse.handleResponse(res, result);
+    }
+    else {
+      return ApiResponse.error(res, {
+        statusCode: 500,
+        error: 'The service failed to reset the password.'
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return ApiResponse.error(res, {
+      statusCode: 500,
+      error: 'An unexpected error occurred during password reset. Please try again later.'
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
   googleCallback,
   logout,
-  getAccessToken
+  getAccessToken,
+  sendVerificationEmail,
+  verifyEmail,
+  changePassword,
+  sendForgotPasswordEmail,
+  resetPassword
 };

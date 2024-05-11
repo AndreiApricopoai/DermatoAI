@@ -56,6 +56,20 @@ const checkRefreshToken = (req, res, next) => {
   if (checkResult) next();
 };
 
+// Middleware to validate email verification token in the query parameters
+const checkEmailVerificationToken = (req, res, next) => {
+  const { token } = req.query;
+  const checkResult = checkToken(req, res, token, process.env.VERIFICATION_TOKEN_SECRET, 'email verification token');
+  if (checkResult) next();
+};
+
+// Middleware to validate forgot password token in the request body
+const checkForgotPasswordToken = (req, res, next) => {
+  const { forgotPasswordToken } = req.body;
+  const checkResult = checkToken(req, res, forgotPasswordToken, process.env.FORGOT_PASSWORD_TOKEN_SECRET, 'forgot password token');
+  if (checkResult) next();
+};
+
 // Middleware to validate worker token in the request body
 const checkWorkerToken = (req, res, next) => {
   const { workerToken } = req.body;
@@ -66,5 +80,7 @@ const checkWorkerToken = (req, res, next) => {
 module.exports = {
   checkAccessToken,
   checkRefreshToken,
+  checkEmailVerificationToken,
+  checkForgotPasswordToken,
   checkWorkerToken
 };

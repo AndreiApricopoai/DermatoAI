@@ -1,6 +1,7 @@
 const Joi = require('joi');
 const { regexPatterns } = require('../utils/constants');
 const { handleValidationError } = require('../utils/validatorUtils');
+const { verify } = require('jsonwebtoken');
 
 // Register validation schema using DermatoAI account
 const registerSchema = Joi.object({
@@ -40,7 +41,8 @@ const googleAuthSchema = Joi.object({
   lastName: Joi.string().min(2).max(50).required().regex(regexPatterns.nameRegex),
   email: Joi.string().email().required().regex(regexPatterns.emailRegex),
   googleId: Joi.string().required(),
-  profilePhoto: Joi.string().optional()
+  profilePhoto: Joi.string().optional(),
+  verified: Joi.boolean().required()
 }).unknown(false);
 
 const googleAuthValidator = (req, res, next) => {
@@ -51,9 +53,55 @@ const googleAuthValidator = (req, res, next) => {
     lastName: user.lastName,
     email: user.email,
     googleId: user.googleId,
-    profilePhoto: user.profilePhoto
+    profilePhoto: user.profilePhoto,
+    verified: user.verified
   };  
   const { error } = googleAuthSchema.validate(payload, { abortEarly: false });
+
+  if (handleValidationError(error, res)) return;
+  next();
+};
+
+// Email validation schema for email verification
+const emailSchema = Joi.object({
+  email: Joi.string().email().required().regex(regexPatterns.emailRegex),
+}).unknown(false);
+
+const emailValidator = (req, res, next) => {
+  const { email } = req.body;
+  const payload = { email };
+  const { error } = emailSchema.validate(payload, { abortEarly: false });
+
+  if (handleValidationError(error, res)) return;
+  next();
+};
+
+// Change password validation schema
+const changePasswordSchema = Joi.object({
+  oldPassword: Joi.string().min(3).required(),
+  password: Joi.string().min(3).required(),
+  confirmPassword: Joi.string().min(3).required().valid(Joi.ref('password'))
+}).unknown(false);
+
+const changePasswordValidator = (req, res, next) => {
+  const { oldPassword, password, confirmPassword } = req.body;
+  const payload = { oldPassword, password, confirmPassword };
+  const { error } = changePasswordSchema.validate(payload, { abortEarly: false });
+
+  if (handleValidationError(error, res)) return;
+  next();
+};
+
+//  Reset password validation schema
+const resetPasswordSchema = Joi.object({
+  password: Joi.string().min(3).required(),
+  confirmPassword: Joi.string().min(3).required().valid(Joi.ref('password'))
+}).unknown(false);
+
+const resetPasswordValidator = (req, res, next) => {
+  const { password, confirmPassword } = req.body;
+  const payload = { oldPassword, password, confirmPassword };
+  const { error } = resetPasswordSchema.validate(payload, { abortEarly: false });
 
   if (handleValidationError(error, res)) return;
   next();
@@ -62,5 +110,8 @@ const googleAuthValidator = (req, res, next) => {
 module.exports = {
   registerValidator,
   loginValidator,
-  googleAuthValidator
+  googleAuthValidator,
+  emailValidator,
+  changePasswordValidator,
+  resetPasswordValidator
 };

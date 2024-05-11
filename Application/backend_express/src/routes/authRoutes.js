@@ -1,8 +1,8 @@
 const express = require('express');
 const passport = require('../config/passportConfig');
 const authController = require('../controllers/authController');
-const { loginValidator, registerValidator, googleAuthValidator } = require('../request-validators/authValidator');
-const { checkAccessToken, checkRefreshToken } = require('../middlewares/authMiddleware');
+const { loginValidator, registerValidator, googleAuthValidator, emailValidator, changePasswordValidator, resetPasswordValidator } = require('../request-validators/authValidator');
+const { checkAccessToken, checkRefreshToken, checkEmailVerificationToken, checkForgotPasswordToken } = require('../middlewares/authMiddleware');
 
 // Create a new router for the auth routes
 const router = express.Router();
@@ -34,5 +34,18 @@ router.delete('/logout', checkAccessToken, checkRefreshToken, authController.log
 
 // Get a new access token based on the refresh token
 router.get('/token', checkRefreshToken, authController.getAccessToken);
+
+
+// Email verification routes
+router.post('/send-verification-email', emailValidator, authController.sendVerificationEmail);
+router.get('/verify-email', checkEmailVerificationToken,  authController.verifyEmail);
+
+// Change password routes
+router.post('/change-password', changePasswordValidator, checkAccessToken, authController.changePassword);
+
+// Forgot password routes
+router.post('/send-forgot-password-email', emailValidator, authController.sendForgotPasswordEmail);
+router.post('/reset-password', checkForgotPasswordToken, resetPasswordValidator, authController.resetPassword);
+
 
 module.exports = router;

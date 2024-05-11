@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const RefreshToken = require('../models/refreshTokenModel');
-const { createJwtToken, extractPayloadJwt, getTokenHash } = require('../utils/authUtils');
+const emailService = require('../services/emailService');
+const { createJwtToken, extractPayloadJwt, getTokenHash, isValidJwt } = require('../utils/authUtils');
 require('dotenv').config();
 
 // Login function for DermatoAI account
@@ -104,8 +105,6 @@ const register = async (payload) => {
       passwordHash: password
     });
 
-    await user.save();
-
     const tokenPayload = {
       userId: user._id,
       firstName: user.firstName,
@@ -134,13 +133,19 @@ const register = async (payload) => {
       };
     }
 
+    await user.save();
+
+    const sendVerificationResult = await sendVerificationEmail(user.email);
+
+
     return {
       type: 'success',
       status: 200,
       data: {
         message: 'Registration successful.',
+        sentVerification: sendVerificationResult.type === 'success' ? true : false,
         token,
-        refreshToken,
+        refreshToken
       }
     };
   }
@@ -303,6 +308,327 @@ const getAccessToken = async (refreshToken, userId) => {
   }
 };
 
+const sendVerificationEmail = async (email) => {
+  try {
+    const user = await User.findOne({ email }).exec();
+    if (!user) {
+      return {
+        type: 'error',
+        status: 404,
+        error: 'User not found for this email address.'
+      };    
+    }
+
+    if (user.verified) {
+      return {
+        type: 'error',
+        status: 400,
+        error: 'User is already verified.'
+      };
+    }
+    
+    const payload = {
+      userId: user._id,
+      email: user.email
+    };
+  
+
+    const verificationToken = createJwtToken(process.env.VERIFICATION_TOKEN_SECRET, '24h', payload);
+    if (!verificationToken) {
+      return {
+        type: 'error',
+        status: 500,
+        error: 'An error occurred while creating the verification token.'
+      };
+    }
+
+    const verificationUrl = `http://localhost:3000/api/auth/verify-email?token=${verificationToken}`;
+
+    const html = `<h1>Verify Your Email</h1><p>Please click on the link below to verify your email address:</p><a href="${verificationUrl}">${"click here!"}</a>`;
+    const sendResult = await emailService.sendEmail(email, 'Verify Your Email', html);
+    
+    if (!sendResult) {
+      return {
+        type: 'error',
+        status: 500,
+        error: 'Failed to send verification email.'
+      };
+    }
+
+    return {
+      type: 'success',
+      status: 200,
+      data: {
+        message: 'Verification email sent successfully.'
+      }
+    };
+
+  } catch (error) {
+    console.error("Failed to send verification email:", error);
+    return {
+      type: 'error',
+      status: 500,
+      error: 'An unexpected error occurred during email verification. Please try again later.'
+    };  
+  }
+};
+
+const verifyEmail = async (verificationToken) => {
+  try {
+    const secretKey = process.env.VERIFICATION_TOKEN_SECRET;
+
+    if (!isValidJwt(verificationToken, secretKey)) {
+      return {
+        type: 'error',
+        status: 400,
+        error: 'Invalid verification token or expired.'
+      };
+    }
+  
+    const payload = extractPayloadJwt(verificationToken);
+    if (!payload) {
+      return {
+        type: 'error',
+        status: 400,
+        error: 'Invalid token payload.'
+      };
+    }
+
+    const { userId, email } = payload;
+    const user = await User.findOne({_id: userId }).exec();
+    if (!user) {
+      return {
+        type: 'error',
+        status: 404,
+        error: 'User not found for this email address.'
+      };
+    }
+
+    if (user.verified) {
+      return {
+        type: 'error',
+        status: 400,
+        error: 'User is already verified.'
+      };
+    }
+
+    if (user.email !== email) {
+      return {
+        type: 'error',
+        status: 400,
+        error: 'Invalid email address.'
+      };
+    }
+
+    user.verified = true;
+    await user.save();
+   
+    return {
+      type: 'success',
+      status: 200,
+      data: {
+        message: 'Email verified successfully.'
+      }
+    };
+   
+  } catch (error) {
+    console.error('Error verifying email:', error);
+    return {
+      type: 'error',
+      status: 500,
+      error: 'An unexpected error occurred during email verification. Please try again later.'
+  }
+}
+};
+
+//change password function
+
+const changePassword = async (userId, payload) => {
+  try {
+    const { oldPassword, password } = payload;
+    const user = await User.findOne({ _id: userId }).exec();
+    if (!user) {
+      return {
+        type: 'error',
+        status: 404,
+        error: 'User not found.'
+      };
+    }
+
+    if (user.googleId) {
+      return {
+        type: 'error',
+        status: 400,
+        error: 'User with this email exists. Please change password from Google.'
+      };
+    }
+    
+    const oldPasswordValid = await user.validatePassword(oldPassword);
+    if (!oldPasswordValid) {
+      return {
+        type: 'error',
+        status: 400,
+        error: 'Invalid old password.'
+      };
+    }
+
+    user.passwordHash = password;
+    await user.save();
+
+    return {
+      type: 'success',
+      status: 200,
+      data: {
+        message: 'Password changed successfully.'
+      }
+    };
+  }
+  catch (error) {
+    console.error('Error changing password:', error);
+    return {
+      type: 'error',
+      status: 500,
+      error: 'An unexpected error occurred during password change. Please try again later.'
+    };
+  }
+};
+
+// Forgot password send email
+const sendForgotPasswordEmail = async (email) => {
+  try {
+    const user = await User.findOne({ email }).exec();
+    if (!user) {
+      return {
+        type: 'error',
+        status: 404,
+        error: 'User not found for this email address.'
+      };
+    }
+
+    if (user.googleId) {
+      return {
+        type: 'error',
+        status: 400,
+        error: 'User with this email exists. Please reset password from Google.'
+      };
+    }
+
+    const payload = {
+      userId: user._id,
+      email: user.email
+    };
+
+    const forgotPasswordToken = createJwtToken(process.env.FORGOT_PASSWORD_TOKEN_SECRET, '24h', payload);
+
+    if (!forgotPasswordToken) {
+      return {
+        type: 'error',
+        status: 500,
+        error: 'An error occurred while creating the forgot password token.'
+      };
+    }
+
+    const html = `<h1>Reset Your Password</h1><p>Please copy the following token and paste it inside the mobile application : </p> ${forgotPasswordToken}`;
+
+    const sendResult = await emailService.sendEmail(email, 'Reset Your Password', html);
+    
+    if (!sendResult) {
+      return {
+        type: 'error',
+        status: 500,
+        error: 'Failed to send forgot password email.'
+      };
+    }
+
+    return {
+      type: 'success',
+      status: 200,
+      data: {
+        message: 'Forgot password email sent successfully.'
+      }
+    };
+
+  } catch (error) {
+
+    console.error("Failed to send forgot password email:", error);
+
+    return {
+      type: 'error',
+      status: 500,
+      error: 'An unexpected error occurred during forgot password email. Please try again later.'
+    };
+  }
+};
+
+// Reset password function
+const resetPassword = async (userId, payload) => {
+  try {
+    const { forgotPasswordToken, password } = payload;
+    const user = await User.findOne({ _id: userId }).exec();
+    if (!user) {
+      return {
+        type: 'error',
+        status: 404,
+        error: 'User not found.'
+      };
+    }
+
+    if (user.googleId) {
+      return {
+        type: 'error',
+        status: 400,
+        error: 'User with this email exists. Please reset password from Google.'
+      };
+    }
+
+    const secretKey = process.env.FORGOT_PASSWORD_TOKEN_SECRET;
+
+    if (!isValidJwt(forgotPasswordToken, secretKey)) {
+      return {
+        type: 'error',
+        status: 400,
+        error: 'Invalid forgot password token or expired.'
+      };
+    }
+
+    const payload = extractPayloadJwt(forgotPasswordToken);
+    if (!payload) {
+      return {
+        type: 'error',
+        status: 400,
+        error: 'Invalid token payload.'
+      };
+    }
+
+    if (payload.userId !== userId) {
+      return {
+        type: 'error',
+        status: 400,
+        error: 'Invalid user ID.'
+      };
+    }
+
+    user.passwordHash = password;
+    await user.save();
+
+    return {
+      type: 'success',
+      status: 200,
+      data: {
+        message: 'Password reset successfully.'
+      }
+    };
+  }
+  catch (error) {
+    console.error('Error resetting password:', error);
+    return {
+      type: 'error',
+      status: 500,
+      error: 'An unexpected error occurred during password reset. Please try again later.'
+    };
+  }
+};
+
 // PRIVATE helper function to create a refresh token in the database
 const saveRefreshTokenToCollection = async (refreshToken, userId) => {
   const expirationDate = new Date();
@@ -328,5 +654,10 @@ module.exports = {
   register,
   logout,
   getAccessToken,
-  handleGoogleCallback
+  handleGoogleCallback,
+  sendVerificationEmail,
+  verifyEmail,
+  changePassword,
+  sendForgotPasswordEmail,
+  resetPassword
 };

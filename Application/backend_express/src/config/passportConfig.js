@@ -29,7 +29,8 @@ const verifyCallback = async (accessToken, refreshToken, profile, done, action) 
         lastName: profile.name.familyName,
         email: email,
         googleId: googleId,
-        profilePhoto: profilePhoto
+        profilePhoto: profilePhoto,
+        verified: true
       });
     }
     return done(null, user);
