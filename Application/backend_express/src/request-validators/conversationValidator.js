@@ -39,8 +39,30 @@ const addMessageValidator = (req, res, next) => {
   next();
 };
 
+
+const paginationSchema = Joi.object({
+  page: Joi.number().integer().min(1),
+  limit: Joi.number().integer().min(1)
+}).unknown(true);
+
+const paginationValidator = (req, res, next) => {
+  const payload = req.query;
+
+  const { error } = paginationSchema.validate(payload, { abortEarly: false });
+
+  if (handleValidationError(error, res)) return;
+  // Set default values if not provided
+  req.pagination = {
+    page: payload.page || 1,
+    limit: payload.limit || 0
+  };
+
+  next();
+};
+
 module.exports = {
   createConversationValidator,
   updateConversationValidator,
-  addMessageValidator
+  addMessageValidator,
+  paginationValidator
 };

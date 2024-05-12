@@ -6,8 +6,9 @@ const getAllMessagesFromConversation = async (req, res) => {
   try {
     const conversationId = req.params.conversationId;
     const userId = req.currentUser.userId;
+    const { page, limit } = req.pagination;
 
-    const result = await messageService.getAllMessagesByConversationId(conversationId, userId);
+    const result = await messageService.getAllMessagesByConversationId(conversationId, userId, page, limit);
 
     if (result && result.type) {
       return ApiResponse.handleResponse(res, result);

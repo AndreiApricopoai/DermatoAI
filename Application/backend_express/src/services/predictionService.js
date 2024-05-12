@@ -3,6 +3,83 @@ const azure = require('../services/azureStorageService');
 const { createJwtToken, getTokenHash } = require('../utils/authUtils');
 require('dotenv').config();
 
+const getPredictionById = async (userId, predictionId) => {
+  try {
+    const prediction = await Prediction.findOne(
+      { _id: predictionId, userId }
+    ).exec();
+
+    if (!prediction) {
+      return {
+        type: "error",
+        status: 404,
+        error: "Prediction not found.",
+      };
+    }
+
+    const responseData = {
+      id: prediction._id.toString(),
+      userId: prediction.userId,
+      title: prediction.title,
+      description: prediction.description,
+      imageUrl: prediction.imageUrl,
+      isHealthy: prediction.isHealthy,
+      diagnosisName: prediction.diagnosisName,
+      diagnosisCode: prediction.diagnosisCode,
+      diagnosisType: prediction.diagnosisType,
+      confidenceLevel: prediction.confidenceLevel,
+      status: prediction.status,
+    };
+
+    return {
+      type: "success",
+      status: 200,
+      data: responseData
+    };
+  } catch (error) {
+    console.error("Error retrieving prediction:", error);
+    return {
+      type: "error",
+      status: 500,
+      error: "Failed to retrieve prediction.",
+    };
+  }
+};
+
+const getAllPredictionsByUserId = async (userId) => {
+  try {
+    const predictions = await Prediction.find({ userId }).sort({ dateTime: 1 }).exec();
+
+    const formattedPredictions = predictions.map((prediction) => ({
+      id: prediction._id.toString(),
+      userId: prediction.userId,
+      title: prediction.title,
+      description: prediction.description,
+      imageUrl: prediction.imageUrl,
+      isHealthy: prediction.isHealthy,
+      diagnosisName: prediction.diagnosisName,
+      diagnosisCode: prediction.diagnosisCode,
+      diagnosisType: prediction.diagnosisType,
+      confidenceLevel: prediction.confidenceLevel,
+      status: prediction.status,
+    }));
+
+    return {
+      type: "success",
+      status: 200,
+      data: formattedPredictions,
+    };
+  } catch (error) {
+    console.error("Error retrieving all predictions", error);
+    return {
+      type: "error",
+      status: 500,
+      error: "Failed to retrieve all predictions.",
+    };
+  }
+};
+
+
 const createPrediction = async (userId, imageBuffer) => {
 
   let imageUrl;
@@ -81,6 +158,157 @@ const createPrediction = async (userId, imageBuffer) => {
   }
 };
 
+const updatePredictionUser = async (predictionId, userId, updatePayload) => {
+  try {
+    const prediction = await Prediction.findOne({ _id: predictionId, userId }).exec();
+
+    if (!prediction) {
+      return {
+        type: "error",
+        status: 404,
+        error: "Prediction not found.",
+      };
+    }
+
+    Object.keys(updatePayload).forEach((key) => {
+      prediction[key] = updatePayload[key];
+    });
+
+    await prediction.save();
+
+    const updatedPredictionData = {
+      id: prediction._id.toString(),
+      userId: prediction.userId,
+      title: prediction.title,
+      description: prediction.description,
+      imageUrl: prediction.imageUrl,
+      isHealthy: prediction.isHealthy,
+      diagnosisName: prediction.diagnosisName,
+      diagnosisCode: prediction.diagnosisCode,
+      diagnosisType: prediction.diagnosisType,
+      confidenceLevel: prediction.confidenceLevel,
+      status: prediction.status,
+    };
+
+    return {
+      type: "success",
+      status: 200,
+      data: updatedPredictionData,
+    };
+  } catch (error) {
+    console.error("Error updating prediction:", error);
+    return {
+      type: "error",
+      status: 500,
+      error: "Failed to update the prediction.",
+    };
+  }
+};
+
+
+const updatePredictionWorker = async (predictionId, userId, workerUpdatePayload) => {
+  try {
+    const prediction = await Prediction.findOne({ _id: predictionId, userId }).exec();
+
+    if (!prediction) {
+      return {
+        type: "error",
+        status: 404,
+        error: "Prediction not found.",
+      };
+    }
+
+    const workerTokenHash = getTokenHash(workerUpdatePayload.workerToken);
+    if (workerTokenHash === null || workerTokenHash !== prediction.workerTokenHash) {
+      return {
+        type: "error",
+        status: 401,
+        error: "Unauthorized worker token.",
+      };
+    }
+
+    workerUpdatePayload.workerToken = workerTokenHash;
+
+    Object.keys(workerUpdatePayload).forEach((key) => {
+      prediction[key] = workerUpdatePayload[key];
+    });
+
+    await prediction.save();
+
+    const updatedWorkerPredictiontData = {
+      id: prediction._id.toString(),
+      userId: prediction.userId,
+      title: prediction.title,
+      description: prediction.description,
+      imageUrl: prediction.imageUrl,
+      isHealthy: prediction.isHealthy,
+      diagnosisName: prediction.diagnosisName,
+      diagnosisCode: prediction.diagnosisCode,
+      diagnosisType: prediction.diagnosisType,
+      confidenceLevel: prediction.confidenceLevel,
+      status: prediction.status
+    };
+
+    return {
+      type: "success",
+      status: 200,
+      data: updatedWorkerPredictiontData,
+    };
+  } catch (error) {
+    console.error("Error updating worker prediction:", error);
+    return {
+      type: "error",
+      status: 500,
+      error: "Failed to update the worker prediction.",
+    };
+  }
+};
+
+const deletePrediction = async (predictionId, userId) => {
+  let prediction;
+  try {
+    prediction = await Prediction.findOne({ _id: predictionId, userId }).exec();
+    if (!prediction) {
+      return {
+        type: "error",
+        status: 404,
+        error: "Prediction not found for deletion.",
+      };
+    }
+
+    const blobName = prediction.imageUrl.split('/').pop();
+    await azure.deleteImageFromBlob(blobName);
+
+    try {
+      await prediction.remove();
+      return {
+        type: "success",
+        status: 204,
+      };
+    } catch (error) {
+      console.error("Error during prediction document deletion, attempting retry:", error);
+      await prediction.remove(); 
+      return {
+        type: "success",
+        status: 204,
+      };
+    }
+
+  } catch (error) {
+    console.error("Error deleting prediction or failure after retry:", error);
+    return {
+      type: "error",
+      status: 500,
+      error: "Failed to delete the prediction after retry. Manual intervention required.",
+    };
+  }
+};
+
 module.exports = {
-  createPrediction
+  createPrediction,
+  getPredictionById,
+  getAllPredictionsByUserId,
+  updatePredictionUser,
+  updatePredictionWorker,
+  deletePrediction
 };

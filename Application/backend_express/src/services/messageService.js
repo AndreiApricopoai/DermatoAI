@@ -4,7 +4,7 @@ const { getOpenAIResponse } = require("../services/openaiService");
 const { dermatologicalChat } = require("../utils/constants");
 mongoose = require("mongoose");
 
-const getAllMessagesByConversationId = async (conversationId, userId) => {
+const getAllMessagesByConversationId = async (conversationId, userId, page, limit) => {
   try {
     console.log("conversationId", conversationId);
     console.log("userId", userId);
@@ -21,14 +21,18 @@ const getAllMessagesByConversationId = async (conversationId, userId) => {
       };
     }
 
-    const messages = await Message.find(
-      { conversationId },
-      "sender messageContent"
-    )
-      .sort({ createdAt: 1 })
-      .exec();
+    const query = Message.find({ conversationId });
+    query.sort({ createdAt: -1 }); // Assuming newer messages should come first
 
-    const formattedMessages = messages.map((message) => ({
+    // Implement pagination only if limit is specified
+    if (limit > 0) {
+      const skip = (page - 1) * limit;
+      query.skip(skip).limit(limit);
+    }
+
+    const messages = await query.exec();
+
+    const formattedMessages = messages.map(message => ({
       sender: message.sender,
       content: message.messageContent,
     }));

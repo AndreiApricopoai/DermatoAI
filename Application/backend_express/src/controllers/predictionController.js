@@ -1,27 +1,26 @@
 const predictionService = require('../services/predictionService');
 const ApiResponse = require('../responses/apiResponse');
 
-
 const getPrediction = async (req, res) => {
   try {
-    const appointmentId = req.params.id;
+    const predictionId = req.params.id;
     const userId = req.currentUser.userId;
 
-    const result = await appointmentService.getAppointmentById(appointmentId, userId);
+    const result = await predictionService.getPredictionById(userId, predictionId);
 
     if (result && result.type) {
       return ApiResponse.handleResponse(res, result);
     } else {
       return ApiResponse.error(res, {
         statusCode: 500,
-        error: 'The service failed to retrieve the appointment.'
+        error: 'The service failed to retrieve the prediction.'
       });
     }
   } catch (error) {
     console.log(error);
     return ApiResponse.error(res, {
       statusCode: 500,
-      error: 'An unexpected error occurred during the appointment retrieval. Please try again later.'
+      error: 'An unexpected error occurred during prediction retrieval. Please try again later.'
     });
   }
 };
@@ -31,21 +30,21 @@ const getAllPredictions = async (req, res) => {
   try {
     const userId = req.currentUser.userId;
 
-    const result = await appointmentService.getAllAppointmentsByUserId(userId);
+    const result = await predictionService.getAllPredictionsByUserId(userId);
 
     if (result && result.type) {
       return ApiResponse.handleResponse(res, result);
     } else {
       return ApiResponse.error(res, {
         statusCode: 500,
-        error: 'The service failed to retrieve all appointments.'
+        error: 'The service failed to retrieve the predictions.'
       });
     }
   } catch (error) {
     console.log(error);
     return ApiResponse.error(res, {
       statusCode: 500,
-      error: 'An unexpected error occurred during appointments retrieval. Please try again later.'
+      error: 'An unexpected error occurred during predictions retrieval. Please try again later.'
     });
   }
 };
@@ -86,12 +85,9 @@ const updatePredictionUser = async (req, res) => {
   try {
     const predictionId = req.params.id;
     const userId = req.currentUser.userId;
-    const diagnosisName = req.body.diagnosisName;
-    const diagnosisCode = req.body.diagnosisCode;
-    const diagnosisType = req.body.diagnosisType;
-    const confidenceLevel = req.body.confidenceLevel;
+    const updatePayload = req.body;
 
-    const result = await predictionService.updatePredictionUser(predictionId, userId, diagnosisName, diagnosisCode, diagnosisType, confidenceLevel);
+    const result = await predictionService.updatePredictionUser(predictionId, userId, updatePayload);
 
     if (result && result.type) {
       return ApiResponse.handleResponse(res, result);
@@ -114,13 +110,10 @@ const updatePredictionUser = async (req, res) => {
 const updatePredictionWorker = async (req, res) => {
   try {
     const predictionId = req.params.id;
-    const workerToken = req.headers['worker-token'];
-    const diagnosisName = req.body.diagnosisName;
-    const diagnosisCode = req.body.diagnosisCode;
-    const diagnosisType = req.body.diagnosisType;
-    const confidenceLevel = req.body.confidenceLevel;
+    const userId = req.currentUser.userId;
+    const workerUpdatePayload = req.body;
 
-    const result = await predictionService.updatePredictionWorker(predictionId, workerToken, diagnosisName, diagnosisCode, diagnosisType, confidenceLevel);
+    const result = await predictionService.updatePredictionWorker(predictionId, userId, workerUpdatePayload);
 
     if (result && result.type) {
       return ApiResponse.handleResponse(res, result);
@@ -143,24 +136,24 @@ const updatePredictionWorker = async (req, res) => {
 
 const deletePrediction = async (req, res) => {
   try {
-    const appointmentId = req.params.id;
+    const predictionId = req.params.id;
     const userId = req.currentUser.userId;
 
-    const result = await appointmentService.deleteAppointment(appointmentId, userId);
+    const result = await predictionService.deletePrediction(predictionId, userId);
 
     if (result && result.type) {
       return ApiResponse.handleResponse(res, result);
     } else {
       return ApiResponse.error(res, {
         statusCode: 500,
-        error: 'The service failed to delete the appointment.'
+        error: 'The service failed to delete the prediction.'
       });
     }
   } catch (error) {
     console.log(error);
     return ApiResponse.error(res, {
       statusCode: 500,
-      error: 'An unexpected error occurred during appointment deletion. Please try again later.'
+      error: 'An unexpected error occurred during prediction deletion. Please try again later.'
     });
   }
 };
