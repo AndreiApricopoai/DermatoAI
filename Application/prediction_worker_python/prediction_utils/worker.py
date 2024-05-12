@@ -79,13 +79,13 @@ class Worker:
                         'status': PredictionStatus.PROCESSED
                     }
                     print(f"Payload: {payload}")
-                    # response = requests.patch(server_endpoint, json=payload)
-                    #
-                    # if response.status_code == 200:
-                    #     print(f'Prediction with id {prediction_id} processed:', response.status_code, response.text)
-                    # else:
-                    #     print(f'Failed to process prediction with id {prediction_id}:', response.status_code,
-                    #           response.text)
+                    response = requests.patch(server_endpoint, json=payload)
+
+                    if response.status_code == 200:
+                        print(f'Prediction with id {prediction_id} processed:', response.status_code, response.text)
+                    else:
+                        print(f'Failed to process prediction with id {prediction_id}:', response.status_code,
+                              response.text)
                 # If the skin condition is not found, report the image as unhealthy
                 else:
                     payload = {
@@ -100,13 +100,13 @@ class Worker:
                     }
                     print(f"Payload: {payload}")
 
-                    # response = requests.patch(server_endpoint, json=payload)
-                    #
-                    # if response.status_code == 200:
-                    #     print(f'Prediction with id {prediction_id} processed:', response.status_code, response.text)
-                    # else:
-                    #     print(f'Failed to process prediction with id {prediction_id}:', response.status_code,
-                    #           response.text)
+                    response = requests.patch(server_endpoint, json=payload)
+
+                    if response.status_code == 200:
+                        print(f'Prediction with id {prediction_id} processed:', response.status_code, response.text)
+                    else:
+                        print(f'Failed to process prediction with id {prediction_id}:', response.status_code,
+                              response.text)
             # If the image is healthy, report the image as healthy
             else:
                 payload = {
@@ -121,13 +121,13 @@ class Worker:
                 }
                 print(f"Payload: {payload}")
 
-                #response = requests.patch(server_endpoint, json=payload)
+                response = requests.patch(server_endpoint, json=payload)
 
-                # if response.status_code == 200:
-                #     print(f'Prediction with id {prediction_id} processed:', response.status_code, response.text)
-                # else:
-                #     print(f'Failed to process prediction with id {prediction_id}:', response.status_code,
-                #           response.text)
+                if response.status_code == 200:
+                    print(f'Prediction with id {prediction_id} processed:', response.status_code, response.text)
+                else:
+                    print(f'Failed to process prediction with id {prediction_id}:', response.status_code,
+                          response.text)
         except Exception as e:
             print(f"Error processing message: {e}")
 

@@ -14,6 +14,7 @@ const app = express();
 
 //middlewares
 app.use(express.json());
+app.use(express.static('./src/public'));
 app.use(passportConfig.initialize());
 
 //routes

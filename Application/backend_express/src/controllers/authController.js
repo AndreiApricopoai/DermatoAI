@@ -168,8 +168,11 @@ const verifyEmail = async (req, res) => {
     const result = await authService.verifyEmail(verificationToken);
 
     if (result && result.type) {
-      return ApiResponse.handleResponse(res, result);
-    }
+      if (result.type === 'success') {
+        res.redirect('/email-verification-succes.html'); 
+      } else {
+        res.redirect('/email-verification-failure.html'); 
+      }    }
     else {
       return ApiResponse.error(res, {
         statusCode: 500,
