@@ -6,7 +6,6 @@ from .constants import CLASS_INDICES_NAMES
 
 class SkinConditionPredictor:
     def __init__(self, models_paths):
-        # Load all multiclass models in the list
         self.models = [load_model(path) for path in models_paths]
 
     def predict_condition(self, image):

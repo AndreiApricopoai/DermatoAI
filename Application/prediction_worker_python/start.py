@@ -45,30 +45,43 @@ def main(number_of_workers):
                 skin_condition_models_paths=skin_condition_models_paths,
                 sas_token=blob_container_sas_token,
                 receiver_server_endpoint=server_endpoint
-            )  # Create a new worker instance
-            process = Process(target=worker.start_processing)  # Create a new process that runs the worker method
-            processes.append(process)  # Add the process to the processes list
+            )
+            process = Process(target=worker.start_processing)
+            processes.append(process)
 
-        # Start the worker processes
         for process in processes:
             process.start()
 
     except Exception as e:
         print(f"Error starting worker processes: {e}")
-        # If an error occurs while starting the worker processes, terminate all processes and exit the program
-        for p in processes:
-            if p.is_alive():
-                p.terminate()  # Send termination request
-                p.join()  # Wait for process to terminate
-        sys.exit(1)  # Exit the whole program
+        try:
+            for p in processes:
+                if p.is_alive():
+                    p.terminate()
+                    p.join()
 
+        except Exception as join_error:
+            print(f"Error joining process: {join_error}")
+
+        try:
+            queue_client.close()
+        except Exception as azure_queue_close_error:
+            print(f"Error closing azure queue client: {azure_queue_close_error}")
+
+        try:
+            process_queue.close()
+        except Exception as process_queue_error:
+            print(f"Error closing process queue: {process_queue_error}")
+
+        sys.exit(1)
+
+# Receive messages from the azure queue service and put the message content inside the shared process queue
     try:
         while True:
-            # Receive messages from the azure queue service
             messages = queue_client.receive_messages(messages_per_page=5)
             for message in messages:
-                print(f"Received message: {message}")
-                process_queue.put(message['content'])  # Put the message content inside the shared process queue
+                print(f"Received message from azure queue: {message}")
+                process_queue.put(message['content'])
                 try:
                     queue_client.delete_message(message)
                 except Exception as e:
@@ -78,14 +91,28 @@ def main(number_of_workers):
                 time.sleep(10)
 
     except KeyboardInterrupt:
-        print("CTRL+C pressed, waiting for workers to terminate and exiting...")
+        print("CTRL+C pressed, waiting for workers to terminate and exiting worker...")
     except Exception as e:
         print(f"Unexpected error occurred: {e}")
     finally:
         for _ in range(number_of_workers):
             process_queue.put(None)
-        for process in processes:
-            process.join()
+
+        try:
+            for process in processes:
+                process.join()
+        except Exception as join_error:
+            print(f"Error joining process: {join_error}")
+
+        try:
+            queue_client.close()
+        except Exception as azure_queue_close_error:
+            print(f"Error closing azure queue client: {azure_queue_close_error}")
+
+        try:
+            process_queue.close()
+        except Exception as process_queue_error:
+            print(f"Error closing process queue: {process_queue_error}")
 
 
 if __name__ == "__main__":
