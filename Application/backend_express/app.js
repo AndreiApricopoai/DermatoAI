@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const ApiResponse = require('./src/responses/apiResponse');
 const passportConfig = require('./src/config/passportConfig');
 const userRoutes = require('./src/routes/userRoutes');
 const authRoutes = require('./src/routes/authRoutes');
@@ -8,7 +9,6 @@ const conversationRoutes = require('./src/routes/conversationRoutes');
 const locationRoutes = require('./src/routes/locationRoutes');
 const appointmentRoutes = require('./src/routes/appointmentRoutes');
 const feedbackRoutes = require('./src/routes/feedbackRoutes');
-const ApiResponse = require('./src/responses/apiResponse');
 
 const app = express();
 

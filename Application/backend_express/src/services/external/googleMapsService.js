@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { getGoogleMapsPlaceUrl, GOOGLE_DERMATOLOGICAL_PLACE } = require('../utils/constants');
 const { Client } = require("@googlemaps/google-maps-services-js");
 const client = new Client({});
 
@@ -10,8 +11,8 @@ const findDermatologicalClinics = async (latitude, longitude, radius) => {
       params: {
         location: { lat: latitude, lng: longitude },
         radius: radius,
-        type: 'doctor',
-        keyword: 'dermatological clinic',
+        type: GOOGLE_DERMATOLOGICAL_PLACE.type,
+        keyword: GOOGLE_DERMATOLOGICAL_PLACE.keyword,
         key: apiKey,
       },
       timeout: 10000
@@ -27,7 +28,7 @@ const findDermatologicalClinics = async (latitude, longitude, radius) => {
       numberOfReviews: clinic.user_ratings_total,
       openStatus: clinic.opening_hours ? (clinic.opening_hours.open_now ? "Open" : "Closed") : "Not Available",
       placeId: clinic.place_id,
-      googleMapsLink: `https://www.google.com/maps/place/?q=place_id:${clinic.place_id}`,
+      googleMapsLink: getGoogleMapsPlaceUrl(clinic.place_id),
       address: clinic.vicinity,
       photoReference: clinic.photos && clinic.photos.length > 0 
                 ? clinic.photos[0].photo_reference

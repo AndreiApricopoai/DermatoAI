@@ -1,13 +1,11 @@
-const Message = require("../models/messageModel");
-const Conversation = require("../models/conversationModel");
-const { getOpenAIResponse } = require("../services/openaiService");
-const { dermatologicalChat } = require("../utils/constants");
-mongoose = require("mongoose");
+const Message = require("../../models/messageModel");
+const Conversation = require("../../models/conversationModel");
+const mongoose = require("mongoose");
+const { getOpenAIResponse } = require("../external/openaiService");
+const { dermatologicalChat } = require("../../utils/constants");
 
 const getAllMessagesByConversationId = async (conversationId, userId, page, limit) => {
   try {
-    console.log("conversationId", conversationId);
-    console.log("userId", userId);
     const conversationExists = await Conversation.findOne({
       _id: conversationId,
       userId,
@@ -22,9 +20,8 @@ const getAllMessagesByConversationId = async (conversationId, userId, page, limi
     }
 
     const query = Message.find({ conversationId });
-    query.sort({ createdAt: -1 }); // Assuming newer messages should come first
+    query.sort({ createdAt: -1 });
 
-    // Implement pagination only if limit is specified
     if (limit > 0) {
       const skip = (page - 1) * limit;
       query.skip(skip).limit(limit);

@@ -3,7 +3,7 @@ const ApiResponse = require('../responses/apiResponse');
 
 const validateImage = async (req, res, next) => {
   try {
-    if (!req.file) {
+    if (!req.file || !req.file.buffer) {
       return ApiResponse.error(res, {
         statusCode: 400,
         error: 'No image uploaded.'

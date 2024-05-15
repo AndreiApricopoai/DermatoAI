@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const validateObjectId = (req, res, next) => {
+const validateParamId = (req, res, next) => {
   for (const key in req.params) {
     if (req.params.hasOwnProperty(key)) {
       const value = req.params[key];
@@ -15,4 +15,4 @@ const validateObjectId = (req, res, next) => {
   next(); 
 };
 
-module.exports = { validateObjectId };
+module.exports = { validateParamId };

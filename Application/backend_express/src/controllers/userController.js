@@ -1,7 +1,6 @@
 const ApiResponse = require('../responses/apiResponse');
-const userService = require('../services/userService');
+const userService = require('../services/internal/userService');
 
-// Get a single appointment by appointment ID for the current user
 const getProfile = async (req, res) => {
   try {
     const userId = req.currentUser.userId;
@@ -25,7 +24,6 @@ const getProfile = async (req, res) => {
   }
 };
 
-// Get all appointments for the current user
 const getVerifiedStatus = async (req, res) => {
   try {
     const userId = req.currentUser.userId;
@@ -48,7 +46,6 @@ const getVerifiedStatus = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   getProfile,

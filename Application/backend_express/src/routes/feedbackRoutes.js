@@ -1,12 +1,13 @@
-const express = require('express');
-const { checkAccessToken } = require('../middlewares/authMiddleware');
-const { feedbackCreateValidator } = require('../request-validators/feedbackValidator');
-const feedbackController = require('../controllers/feedbackController');
+const express = require("express");
+const { checkAccessToken } = require("../middlewares/authMiddleware");
+const {
+  createFeedbackValidator,
+} = require("../request-validators/feedbackValidator");
+const feedbackController = require("../controllers/feedbackController");
 
-// Create a new router for the appointment routes
 const router = express.Router();
-
 router.use(checkAccessToken);
-router.post('/', feedbackCreateValidator, feedbackController.createFeedback);
+
+router.post("/", createFeedbackValidator, feedbackController.createFeedback);
 
 module.exports = router;

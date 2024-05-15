@@ -1,8 +1,7 @@
-const User = require("../models/userModel");
+const User = require("../../models/userModel");
 
 const getProfileInformation = async (userId) => {
   try {
-
     const user = await User.findOne({ _id: userId }).exec();
 
     if (!user) {
@@ -18,7 +17,7 @@ const getProfileInformation = async (userId) => {
       lastName: user.lastName,
       email: user.email,
       profilePhoto: user.profilePhoto,
-      verified: user.verified
+      verified: user.verified,
     };
 
     return {
@@ -26,7 +25,6 @@ const getProfileInformation = async (userId) => {
       status: 200,
       data: responseData,
     };
-
   } catch (error) {
     console.error("Error retrieving user:", error);
     return {
@@ -39,28 +37,28 @@ const getProfileInformation = async (userId) => {
 
 const getVerifiedStatus = async (userId) => {
   try {
-      const user = await User.findOne({ _id: userId }).exec();
+    const user = await User.findOne({ _id: userId }).exec();
 
-      if (!user) {
-          return {
-              type: "error",
-              status: 404,
-              error: "User not found.",
-          };
-      }
-
-      const responseData = {
-          verified: user.verified,
-      };
-
+    if (!user) {
       return {
-          type: "success",
-          status: 200,
-          data: responseData,
+        type: "error",
+        status: 404,
+        error: "User not found.",
       };
+    }
 
+    const responseData = {
+      verified: user.verified,
+    };
+
+    return {
+      type: "success",
+      status: 200,
+      data: responseData,
+    };
+    
   } catch (error) {
-      console.error("Error retrieving user:", error);
+    console.error("Error retrieving user:", error);
     return {
       type: "error",
       status: 500,
@@ -71,5 +69,5 @@ const getVerifiedStatus = async (userId) => {
 
 module.exports = {
   getProfileInformation,
-  getVerifiedStatus
+  getVerifiedStatus,
 };

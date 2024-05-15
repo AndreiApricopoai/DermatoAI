@@ -1,29 +1,25 @@
 const Joi = require("joi");
 const { handleValidationError } = require("../utils/validatorUtils");
+const {
+  CLASS_INDICES_NAMES,
+  PREDICTION_STATUS,
+  DIAGNOSIS_TYPE,
+} = require("../utils/constants");
 
-
-const CLASS_INDICES_NAMES = {
-  0: 'actinic keratosis',
-  1: 'basal cell carcinoma',
-  2: 'dermatofibroma',
-  3: 'melanoma',
-  4: 'nevus',
-  5: 'pigmented benign keratosis',
-  6: 'squamous cell carcinoma',
-  7: 'vascular lesion'
-};
 const diagnosisOptions = Object.values(CLASS_INDICES_NAMES);
+const statusOptions = Object.values(PREDICTION_STATUS);
+const diagnosisTypeOptions = Object.values(DIAGNOSIS_TYPE);
 
+const updateUserPredictionSchema = Joi.object({
+  title: Joi.string().trim().min(1).max(100).optional(),
+  description: Joi.string().trim().max(1000).optional(),
+})
+  .or("title", "description")
+  .unknown(false);
 
-const predictionUserUpdateSchema = Joi.object({
-  title: Joi.string().min(1).max(100).optional(),
-  description: Joi.string().min(1).max(1000).optional(),
-}).or("title", "description")
-.unknown(false);
-
-const predictionUserUpdateValidator = (req, res, next) => {
+const updateUserPredictionValidator = (req, res, next) => {
   const payload = req.body;
-  const { error } = predictionUserUpdateSchema.validate(payload, {
+  const { error } = updateUserPredictionSchema.validate(payload, {
     abortEarly: false,
   });
 
@@ -31,19 +27,20 @@ const predictionUserUpdateValidator = (req, res, next) => {
   next();
 };
 
-// Update appointment validation schema
 const predictionWorkerUpdateSchema = Joi.object({
   userId: Joi.string().required(),
   workerToken: Joi.string().required(),
   isHealthy: Joi.boolean(),
   diagnosisName: Joi.string().valid(...diagnosisOptions),
   diagnosisCode: Joi.number().integer().min(0).max(9),
-  diagnosisType: Joi.string().valid('cancer', 'not_cancer', 'potentially_cancer', 'unknown'),
+  diagnosisType: Joi.string().valid(...diagnosisTypeOptions),
   confidenceLevel: Joi.number().min(0).max(100),
-  status: Joi.string().valid('pending', 'processed', 'failed').required(),
+  status: Joi.string()
+    .valid(...statusOptions)
+    .required(),
 }).unknown(false);
 
-const predictionWorkerUpdateValidator = (req, res, next) => {
+const updateWorkerPredictionValidator = (req, res, next) => {
   const payload = req.body;
   const { error } = predictionWorkerUpdateSchema.validate(payload, {
     abortEarly: false,
@@ -54,6 +51,6 @@ const predictionWorkerUpdateValidator = (req, res, next) => {
 };
 
 module.exports = {
-  predictionUserUpdateValidator,
-  predictionWorkerUpdateValidator,
+  updateUserPredictionValidator,
+  updateWorkerPredictionValidator,
 };

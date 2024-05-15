@@ -1,7 +1,7 @@
-const Prediction = require('../models/predictionModel');
-const azure = require('../services/azureStorageService');
-const { createJwtToken, getTokenHash } = require('../utils/authUtils');
 require('dotenv').config();
+const Prediction = require('../../models/predictionModel');
+const azure = require('../external/azureStorageService');
+const { createJwtToken, getTokenHash } = require('../../utils/authUtils');
 
 const getPredictionById = async (userId, predictionId) => {
   try {
@@ -79,7 +79,6 @@ const getAllPredictionsByUserId = async (userId) => {
   }
 };
 
-
 const createPrediction = async (userId, imageBuffer) => {
 
   let imageUrl;
@@ -124,6 +123,8 @@ const createPrediction = async (userId, imageBuffer) => {
         prediction: {
           predictionId: prediction._id,
           userId,
+          title,
+          status,
           imageUrl
         }
       }
@@ -204,7 +205,6 @@ const updatePredictionUser = async (predictionId, userId, updatePayload) => {
     };
   }
 };
-
 
 const updatePredictionWorker = async (predictionId, userId, workerUpdatePayload) => {
   try {

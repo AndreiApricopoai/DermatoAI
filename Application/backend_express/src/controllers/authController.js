@@ -1,6 +1,11 @@
-const ApiResponse = require('../responses/apiResponse');
-const authService = require('../services/authService');
-require('dotenv').config();
+require("dotenv").config();
+const ApiResponse = require("../responses/apiResponse");
+const authService = require("../services/internal/authService");
+const {
+  StatusCodes,
+  AuthMessages,
+  GoogleMessages,
+} = require("../responses/apiConstants");
 
 // DermatoAI account login
 const login = async (req, res) => {
@@ -9,21 +14,13 @@ const login = async (req, res) => {
     const payload = { email, password };
 
     const result = await authService.login(payload);
+    ApiResponse.handleResponse(res, result);
 
-    if (result && result.type) {
-      return ApiResponse.handleResponse(res, result);
-    }
-    else {
-      return ApiResponse.error(res, {
-        statusCode: 500,
-        error: 'The service failed to provide a valid login response.'
-      });
-    }
   } catch (error) {
     console.log(error);
-    return ApiResponse.error(res, {
-      statusCode: 500,
-      error: 'An unexpected error occurred during login. Please try again later.'
+    ApiResponse.error(res, {
+      statusCode: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorLogin,
     });
   }
 };
@@ -35,21 +32,13 @@ const register = async (req, res) => {
     const payload = { firstName, lastName, email, password, confirmPassword };
 
     const result = await authService.register(payload);
+    ApiResponse.handleResponse(res, result);
 
-    if (result && result.type) {
-      return ApiResponse.handleResponse(res, result);
-    }
-    else {
-      return ApiResponse.error(res, {
-        statusCode: 500,
-        error: 'The service failed to provide a valid registration response.'
-      });
-    }
   } catch (error) {
     console.log(error);
-    return ApiResponse.error(res, {
-      statusCode: 500,
-      error: 'An unexpected error occurred during registration. Please try again later.'
+    ApiResponse.error(res, {
+      statusCode: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorRegister,
     });
   }
 };
@@ -59,8 +48,8 @@ const googleCallback = async (req, res) => {
   try {
     if (!req.user) {
       return ApiResponse.error(res, {
-        statusCode: 401,
-        error: 'Google authentication failed. Please try again.'
+        statusCode: StatusCodes.Unauthorized,
+        error: GoogleMessages.AuthFailed,
       });
     }
 
@@ -68,21 +57,13 @@ const googleCallback = async (req, res) => {
     const payload = { _id, firstName, lastName };
 
     const result = await authService.handleGoogleCallback(payload);
+    ApiResponse.handleResponse(res, result);
 
-    if (result && result.type) {
-      return ApiResponse.handleResponse(res, result);
-    }
-    else {
-      return ApiResponse.error(res, {
-        statusCode: 500,
-        error: 'The service failed to provide a valid Google authentication response.'
-      });
-    }
   } catch (error) {
     console.log(error);
-    return ApiResponse.error(res, {
-      statusCode: 500,
-      error: 'An unexpected error occurred during Google authentication. Please try again later.'
+    ApiResponse.error(res, {
+      statusCode: StatusCodes.InternalServerError,
+      error: GoogleMessages.Error,
     });
   }
 };
@@ -90,24 +71,17 @@ const googleCallback = async (req, res) => {
 // Logout both DermatoAI and Google accounts
 const logout = async (req, res) => {
   try {
-    const refreshToken = req.body.refreshToken;
     const userId = req.currentUser.userId;
-    const result = await authService.logout(refreshToken, userId);
+    const refreshToken = req.body.refreshToken;
 
-    if (result && result.type) {
-      return ApiResponse.handleResponse(res, result);
-    }
-    else {
-      return ApiResponse.error(res, {
-        statusCode: 500,
-        error: 'The service failed to perform a valid logout operation.'
-      });
-    }
+    const result = await authService.logout(userId, refreshToken);
+    ApiResponse.handleResponse(res, result);
+
   } catch (error) {
     console.log(error);
-    return ApiResponse.error(res, {
-      statusCode: 500,
-      error: 'An unexpected error occurred during logout. Please try again later.'
+    ApiResponse.error(res, {
+      statusCode: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorLogout,
     });
   }
 };
@@ -115,24 +89,17 @@ const logout = async (req, res) => {
 // Get a new access token based on the refresh token
 const getAccessToken = async (req, res) => {
   try {
-    const refreshToken = req.body.refreshToken;
     const userId = req.currentUser.userId;
-    const result = await authService.getAccessToken(refreshToken, userId);
+    const refreshToken = req.body.refreshToken;
 
-    if (result && result.type) {
-      return ApiResponse.handleResponse(res, result);
-    }
-    else {
-      return ApiResponse.error(res, {
-        statusCode: 500,
-        error: 'The service failed to retrieve acces token.'
-      });
-    }
+    const result = await authService.getAccessToken(userId, refreshToken);
+    ApiResponse.handleResponse(res, result);
+
   } catch (error) {
     console.log(error);
-    return ApiResponse.error(res, {
-      statusCode: 500,
-      error: 'An unexpected error occurred during access token retrieval. Please try again later.'
+    ApiResponse.error(res, {
+      statusCode: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorGetAccessToken,
     });
   }
 };
@@ -141,22 +108,15 @@ const getAccessToken = async (req, res) => {
 const sendVerificationEmail = async (req, res) => {
   try {
     const email = req.body.email;
-    const result = await authService.sendVerificationEmail(email);
 
-    if (result && result.type) {
-      return ApiResponse.handleResponse(res, result);
-    }
-    else {
-      return ApiResponse.error(res, {
-        statusCode: 500,
-        error: 'The service failed to send a verification email.'
-      });
-    }
+    const result = await authService.sendVerificationEmail(email);
+    ApiResponse.handleResponse(res, result);
+
   } catch (error) {
     console.log(error);
-    return ApiResponse.error(res, {
-      statusCode: 500,
-      error: 'An unexpected error occurred during email verification. Please try again later.'
+    ApiResponse.error(res, {
+      statusCode: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorSendVerificationEmail,
     });
   }
 };
@@ -167,23 +127,17 @@ const verifyEmail = async (req, res) => {
     const verificationToken = req.query.token;
     const result = await authService.verifyEmail(verificationToken);
 
-    if (result && result.type) {
-      if (result.type === 'success') {
-        res.redirect('/email-verification-succes.html'); 
-      } else {
-        res.redirect('/email-verification-failure.html'); 
-      }    }
-    else {
-      return ApiResponse.error(res, {
-        statusCode: 500,
-        error: 'The service failed to verify the email.'
-      });
+    if (result.type === "success") {
+      res.redirect("/email-verification-succes.html");
+    } else {
+      res.redirect("/email-verification-failure.html");
     }
+
   } catch (error) {
     console.log(error);
-    return ApiResponse.error(res, {
-      statusCode: 500,
-      error: 'An unexpected error occurred during email verification. Please try again later.'
+    ApiResponse.error(res, {
+      statusCode: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorVerifyEmail,
     });
   }
 };
@@ -191,26 +145,18 @@ const verifyEmail = async (req, res) => {
 // Change password
 const changePassword = async (req, res) => {
   try {
-    const { oldPassword, password } = req.body;
     const userId = req.currentUser.userId;
+    const { oldPassword, password } = req.body;
     const payload = { oldPassword, password };
 
     const result = await authService.changePassword(userId, payload);
+    ApiResponse.handleResponse(res, result);
 
-    if (result && result.type) {
-      return ApiResponse.handleResponse(res, result);
-    }
-    else {
-      return ApiResponse.error(res, {
-        statusCode: 500,
-        error: 'The service failed to change the password.'
-      });
-    }
   } catch (error) {
     console.log(error);
-    return ApiResponse.error(res, {
-      statusCode: 500,
-      error: 'An unexpected error occurred during password change. Please try again later.'
+    ApiResponse.error(res, {
+      statusCode: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorPasswordChange,
     });
   }
 };
@@ -219,22 +165,15 @@ const changePassword = async (req, res) => {
 const sendForgotPasswordEmail = async (req, res) => {
   try {
     const email = req.body.email;
-    const result = await authService.sendForgotPasswordEmail(email);
 
-    if (result && result.type) {
-      return ApiResponse.handleResponse(res, result);
-    }
-    else {
-      return ApiResponse.error(res, {
-        statusCode: 500,
-        error: 'The service failed to send a forgot password email.'
-      });
-    }
+    const result = await authService.sendForgotPasswordEmail(email);
+    ApiResponse.handleResponse(res, result);
+
   } catch (error) {
     console.log(error);
-    return ApiResponse.error(res, {
-      statusCode: 500,
-      error: 'An unexpected error occurred during forgot password email sending. Please try again later.'
+    ApiResponse.error(res, {
+      statusCode: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorForgotPassword,
     });
   }
 };
@@ -242,25 +181,18 @@ const sendForgotPasswordEmail = async (req, res) => {
 // Reset password
 const resetPassword = async (req, res) => {
   try {
-    const {forgotPasswordToken, password } = req.body;
-    const payload = { forgotPasswordToken, password };
     const userId = req.currentUser.userId;
-    const result = await authService.resetPassword(userId, payload);
+    const { forgotPasswordToken, password } = req.body;
+    const payload = { forgotPasswordToken, password };
 
-    if (result && result.type) {
-      return ApiResponse.handleResponse(res, result);
-    }
-    else {
-      return ApiResponse.error(res, {
-        statusCode: 500,
-        error: 'The service failed to reset the password.'
-      });
-    }
+    const result = await authService.resetPassword(userId, payload);
+    ApiResponse.handleResponse(res, result);
+
   } catch (error) {
     console.log(error);
-    return ApiResponse.error(res, {
-      statusCode: 500,
-      error: 'An unexpected error occurred during password reset. Please try again later.'
+    ApiResponse.error(res, {
+      statusCode: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorResetPassword,
     });
   }
 };
@@ -275,5 +207,5 @@ module.exports = {
   verifyEmail,
   changePassword,
   sendForgotPasswordEmail,
-  resetPassword
+  resetPassword,
 };

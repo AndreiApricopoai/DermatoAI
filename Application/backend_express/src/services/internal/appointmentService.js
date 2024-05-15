@@ -1,10 +1,11 @@
-const Appointment = require("../models/appointmentModel");
+const Appointment = require("../../models/appointmentModel");
 
 const getAppointmentById = async (appointmentId, userId) => {
   try {
-    const appointment = await Appointment.findOne(
-      { _id: appointmentId, userId }
-    ).exec();
+    const appointment = await Appointment.findOne({
+      _id: appointmentId,
+      userId,
+    }).exec();
 
     if (!appointment) {
       return {
@@ -26,7 +27,7 @@ const getAppointmentById = async (appointmentId, userId) => {
     return {
       type: "success",
       status: 200,
-      data: responseData
+      data: responseData,
     };
   } catch (error) {
     console.error("Error retrieving appointment:", error);
@@ -40,7 +41,9 @@ const getAppointmentById = async (appointmentId, userId) => {
 
 const getAllAppointmentsByUserId = async (userId) => {
   try {
-    const appointments = await Appointment.find({ userId }).sort({ dateTime: 1 }).exec();
+    const appointments = await Appointment.find({ userId })
+      .sort({ dateTime: 1 })
+      .exec();
 
     const formattedAppointments = appointments.map((appointment) => ({
       id: appointment._id.toString(),
@@ -97,7 +100,10 @@ const createAppointment = async (userId, payload) => {
 
 const updateAppointment = async (appointmentId, userId, updatePayload) => {
   try {
-    const appointment = await Appointment.findOne({ _id: appointmentId, userId }).exec();
+    const appointment = await Appointment.findOne({
+      _id: appointmentId,
+      userId,
+    }).exec();
 
     if (!appointment) {
       return {
@@ -108,8 +114,7 @@ const updateAppointment = async (appointmentId, userId, updatePayload) => {
     }
 
     Object.keys(updatePayload).forEach((key) => {
-        appointment[key] = updatePayload[key];
-      
+      appointment[key] = updatePayload[key];
     });
 
     await appointment.save();

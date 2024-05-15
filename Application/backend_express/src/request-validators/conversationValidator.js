@@ -1,7 +1,6 @@
 const Joi = require('joi');
 const { handleValidationError } = require('../utils/validatorUtils');
 
-// Conversation validation schema
 const conversationCreateSchema = Joi.object({
   title: Joi.string().min(1).max(100).required()
 }).unknown(false);
@@ -26,7 +25,6 @@ const updateConversationValidator = (req, res, next) => {
   next();
 };
 
-// Message validation schema
 const messageSchema = Joi.object({
   messageContent: Joi.string().min(1).max(1000).required(),
 }).unknown(false);
@@ -39,7 +37,6 @@ const addMessageValidator = (req, res, next) => {
   next();
 };
 
-
 const paginationSchema = Joi.object({
   page: Joi.number().integer().min(1),
   limit: Joi.number().integer().min(1)
@@ -51,7 +48,6 @@ const paginationValidator = (req, res, next) => {
   const { error } = paginationSchema.validate(payload, { abortEarly: false });
 
   if (handleValidationError(error, res)) return;
-  // Set default values if not provided
   req.pagination = {
     page: payload.page || 1,
     limit: payload.limit || 0

@@ -1,23 +1,17 @@
 const Joi = require("joi");
 const { handleValidationError } = require("../utils/validatorUtils");
 
-function getCurrentDate() {
-  const date = new Date();
-  return date;
-}
-
-// Create appointment validation schema
-const appointmentCreateSchema = Joi.object({
-  title: Joi.string().min(1).max(100).required(),
-  description: Joi.string().min(1).max(500).optional(),
-  appointmentDate: Joi.date().min(getCurrentDate()).required(),
-  institutionName: Joi.string().min(1).max(200).optional(),
-  address: Joi.string().min(1).max(300).optional(),
+const createAppointmentSchema = Joi.object({
+  title: Joi.string().trim().min(1).max(100).required(),
+  description: Joi.string().trim().max(500).optional(),
+  appointmentDate: Joi.date().min(new Date()).required(),
+  institutionName: Joi.string().trim().max(100).optional(),
+  address: Joi.string().trim().max(200).optional(),
 }).unknown(false);
 
 const createAppointmentValidator = (req, res, next) => {
   const payload = req.body;
-  const { error } = appointmentCreateSchema.validate(payload, {
+  const { error } = createAppointmentSchema.validate(payload, {
     abortEarly: false,
   });
 
@@ -25,20 +19,19 @@ const createAppointmentValidator = (req, res, next) => {
   next();
 };
 
-// Update appointment validation schema
-const appointmentUpdateSchema = Joi.object({
-  title: Joi.string().min(1).max(100).optional(),
-  description: Joi.string().min(1).max(500).optional(),
-  appointmentDate: Joi.date().min(getCurrentDate()).optional(),
-  institutionName: Joi.string().min(1).max(200).optional(),
-  address: Joi.string().min(1).max(300).optional(),
+const updateAppointmentSchema = Joi.object({
+  title: Joi.string().trim().min(1).max(100).optional(),
+  description: Joi.string().trim().max(500).optional(),
+  appointmentDate: Joi.date().min(new Date()).optional(),
+  institutionName: Joi.string().trim().max(100).optional(),
+  address: Joi.string().trim().max(200).optional(),
 })
   .or("title", "description", "appointmentDate", "institutionName", "address")
   .unknown(false);
 
 const updateAppointmentValidator = (req, res, next) => {
   const payload = req.body;
-  const { error } = appointmentUpdateSchema.validate(payload, {
+  const { error } = updateAppointmentSchema.validate(payload, {
     abortEarly: false,
   });
 

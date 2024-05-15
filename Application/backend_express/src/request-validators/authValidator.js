@@ -1,7 +1,6 @@
 const Joi = require('joi');
 const { regexPatterns } = require('../utils/constants');
 const { handleValidationError } = require('../utils/validatorUtils');
-const { verify } = require('jsonwebtoken');
 
 // Register validation schema using DermatoAI account
 const registerSchema = Joi.object({
@@ -68,8 +67,7 @@ const emailSchema = Joi.object({
 }).unknown(false);
 
 const emailValidator = (req, res, next) => {
-  const { email } = req.body;
-  const payload = { email };
+  const payload = req.body;
   const { error } = emailSchema.validate(payload, { abortEarly: false });
 
   if (handleValidationError(error, res)) return;
@@ -84,23 +82,22 @@ const changePasswordSchema = Joi.object({
 }).unknown(false);
 
 const changePasswordValidator = (req, res, next) => {
-  const { oldPassword, password, confirmPassword } = req.body;
-  const payload = { oldPassword, password, confirmPassword };
+  const payload = req.body;
   const { error } = changePasswordSchema.validate(payload, { abortEarly: false });
 
   if (handleValidationError(error, res)) return;
   next();
 };
 
-//  Reset password validation schema
+// Reset password validation schema
 const resetPasswordSchema = Joi.object({
+  forgotPasswordToken: Joi.string().required(),
   password: Joi.string().min(3).required(),
   confirmPassword: Joi.string().min(3).required().valid(Joi.ref('password'))
 }).unknown(false);
 
 const resetPasswordValidator = (req, res, next) => {
-  const { password, confirmPassword } = req.body;
-  const payload = { oldPassword, password, confirmPassword };
+  const payload = req.body;
   const { error } = resetPasswordSchema.validate(payload, { abortEarly: false });
 
   if (handleValidationError(error, res)) return;

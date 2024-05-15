@@ -1,9 +1,8 @@
-const Feedback = require("../models/feedbackModel");
-const User = require("../models/userModel");
+const Feedback = require("../../models/feedbackModel");
+const User = require("../../models/userModel");
 
 const createFeedback = async (userId, payload) => {
   try {
-
     const user = await User.findOne({ _id: userId }).exec();
 
     if (!user) {

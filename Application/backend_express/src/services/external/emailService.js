@@ -2,7 +2,6 @@ require('dotenv').config();
 const nodemailer = require('nodemailer');
 const nodemailerSendgrid = require('nodemailer-sendgrid');
 
-
 const transport = nodemailer.createTransport(
 nodemailerSendgrid({
      apiKey: process.env.SENDGRID_API_KEY
@@ -25,12 +24,3 @@ const sendEmail = async (receiverEmail, subject, html) => {
 }
 
 module.exports = { sendEmail };
-
-
-
-// transport.sendMail({
-//   from: 'xyz@gmail.com',
-//   to: 'Receiver Name <receiver@example.com> ,        someother@example.com',
-//  subject: 'hello world',
-//  html: '<h1>Hello world!</h1>'
-// });

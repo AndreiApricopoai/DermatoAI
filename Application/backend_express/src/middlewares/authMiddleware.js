@@ -1,8 +1,8 @@
+require('dotenv').config();
 const { isValidJwt, extractPayloadJwt } = require('../utils/authUtils');
 const ApiResponse = require('../responses/apiResponse');
-require('dotenv').config();
 
-// Helper function to check if token is valid and extract payload
+// Helper function to validate a token, this is used in all the middleware functions below
 const checkToken = (req, res, token, secretKey, tokenType) => {
   if (!token) {
     ApiResponse.error(res, {

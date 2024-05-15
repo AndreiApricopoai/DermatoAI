@@ -1,6 +1,7 @@
 require("dotenv").config();
+const { getGoogleMapsPhotoUrl } = require("../utils/constants");
 const axios = require("axios");
-const googleMapsService = require("../services/googleMapsService");
+const googleMapsService = require("../external/googleMapsService");
 
 const findNearbyLocations = async (params) => {
   try {
@@ -25,6 +26,7 @@ const findNearbyLocations = async (params) => {
       status: 200,
       data: clinics,
     };
+
   } catch (error) {
     console.error("Error retrieving nearby locations:", error);
     return {
@@ -37,8 +39,7 @@ const findNearbyLocations = async (params) => {
 
 const getImageFromMapsUrl = async (photoReference) => {
   try {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-    const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${apiKey}`;
+    const photoUrl = getGoogleMapsPhotoUrl(photoReference);
 
     const response = await axios.get(photoUrl, {
       responseType: "arraybuffer",
@@ -67,6 +68,7 @@ const getImageFromMapsUrl = async (photoReference) => {
       status: 200,
       data: `data:image/jpeg;base64,${imageBase64}`,
     };
+
   } catch (error) {
     console.error("Failed to fetch image:", error);
     return {

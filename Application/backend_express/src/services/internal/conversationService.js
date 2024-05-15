@@ -1,13 +1,13 @@
-const Conversation = require("../models/conversationModel");
-const Message = require("../models/messageModel");
+const Conversation = require("../../models/conversationModel");
+const Message = require("../../models/messageModel");
 const mongoose = require("mongoose");
 
 const getConversationById = async (conversationId, userId) => {
   try {
-    const conversation = await Conversation.findOne(
-      { _id: conversationId, userId },
-      "_id title"
-    ).exec();
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      userId,
+    }).exec();
 
     if (!conversation) {
       return {
@@ -17,13 +17,15 @@ const getConversationById = async (conversationId, userId) => {
       };
     }
 
+    responseData = {
+      id: conversation._id.toString(),
+      title: conversation.title,
+    };
+
     return {
       type: "success",
       status: 200,
-      data: {
-        id: conversation._id.toString(),
-        title: conversation.title,
-      },
+      data: responseData,
     };
   } catch (error) {
     console.error("Error retrieving conversation:", error);
@@ -68,13 +70,15 @@ const createConversation = async (userId, payload) => {
     const newConversation = new Conversation({ userId, title });
     await newConversation.save();
 
+    const responseData = {
+      id: newConversation._id.toString(),
+      title: newConversation.title,
+    };
+
     return {
       type: "success",
       status: 201,
-      data: {
-        id: newConversation._id.toString(),
-        title: newConversation.title,
-      },
+      data: responseData,
     };
   } catch (error) {
     console.error("Error creating conversation:", error);
@@ -88,10 +92,10 @@ const createConversation = async (userId, payload) => {
 
 const updateConversation = async (conversationId, userId, updatePayload) => {
   try {
-    const conversation = await Conversation.findOne(
-      { _id: conversationId, userId },
-      "_id title"
-    ).exec();
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      userId,
+    }).exec();
 
     if (!conversation) {
       return {
@@ -102,20 +106,22 @@ const updateConversation = async (conversationId, userId, updatePayload) => {
     }
 
     Object.keys(updatePayload).forEach((key) => {
-        conversation[key] = updatePayload[key];
-      
+      conversation[key] = updatePayload[key];
     });
 
     await conversation.save();
 
+    const updatedConversationData = {
+      id: conversation._id.toString(),
+      title: conversation.title,
+    };
+
     return {
       type: "success",
       status: 200,
-      data: {
-        id: conversation._id.toString(),
-        title: conversation.title,
-      },
+      data: updatedConversationData
     };
+    
   } catch (error) {
     console.error("Error updating conversation:", error);
     return {

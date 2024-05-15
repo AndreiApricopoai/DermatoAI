@@ -7,7 +7,7 @@ const locationSchema = Joi.object({
   radius: Joi.number().min(1).max(50000).required() 
 }).unknown(false);
 
-const locationValidator = (req, res, next) => {
+const coordinatesValidator = (req, res, next) => {
   const { latitude, longitude, radius } = req.query;
   const payload = { latitude, longitude, radius };
   const { error } = locationSchema.validate(payload, { abortEarly: false });
@@ -21,8 +21,7 @@ const photoReferenceSchema = Joi.object({
 }).unknown(false);
 
 const photoReferenceValidator = (req, res, next) => {
-  const { photoReference } = req.params;
-  const payload = { photoReference };
+  const payload = req.params;
   const { error } = photoReferenceSchema.validate(payload, { abortEarly: false });
 
   if (handleValidationError(error, res)) return;
@@ -30,6 +29,6 @@ const photoReferenceValidator = (req, res, next) => {
 };
 
 module.exports = {
-  locationValidator,
+  coordinatesValidator,
   photoReferenceValidator
 };
