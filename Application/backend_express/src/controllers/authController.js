@@ -47,18 +47,18 @@ const register = async (req, res) => {
 const googleCallback = async (req, res) => {
   try {
     if (!req.user) {
-      return ApiResponse.error(res, {
+      ApiResponse.error(res, {
         statusCode: StatusCodes.Unauthorized,
         error: GoogleMessages.AuthFailed,
       });
     }
+    else {
+      const { _id, firstName, lastName } = req.user;
+      const payload = { _id, firstName, lastName };
 
-    const { _id, firstName, lastName } = req.user;
-    const payload = { _id, firstName, lastName };
-
-    const result = await authService.handleGoogleCallback(payload);
-    ApiResponse.handleResponse(res, result);
-
+      const result = await authService.handleGoogleCallback(payload);
+      ApiResponse.handleResponse(res, result);
+    }
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {

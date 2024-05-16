@@ -1,6 +1,8 @@
+const { ErrorMessages, StatusCodes } = require('./apiConstants');
+
 class ApiResponse {
 
-  static success(res, { statusCode = 200, data = {} } = {}) {
+  static success(res, { statusCode = StatusCodes.Ok, data = {} } = {}) {
     res.status(statusCode).json({
       isSuccess: true,
       apiResponseCode: 1,
@@ -8,7 +10,7 @@ class ApiResponse {
     });
   }
 
-  static error(res, { statusCode = 500, error } = {}) {
+  static error(res, { statusCode = StatusCodes.InternalServerError, error } = {}) {
     res.status(statusCode).json({
       isSuccess: false,
       message: 'Server error',
@@ -17,7 +19,7 @@ class ApiResponse {
     });
   }
 
-  static validationError(res, { statusCode = 400, errors } = {}) {
+  static validationError(res, { statusCode = StatusCodes.BadRequest, errors } = {}) {
     res.status(statusCode).json({
       isSuccess: false,
       message: 'Validation errors',
@@ -38,7 +40,7 @@ class ApiResponse {
         this.validationError(res, { statusCode: response.status, errors: response.errors });
         break;
       default:
-        this.error(res, { statusCode: 500, error: { message: 'Response not handled by the server' } });
+        this.error(res, { statusCode: StatusCodes.InternalServerError, error: { message: ErrorMessages.ResponseNotHandled } });
     }
   }
 }

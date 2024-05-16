@@ -35,9 +35,7 @@ const predictionWorkerUpdateSchema = Joi.object({
   diagnosisCode: Joi.number().integer().min(0).max(9),
   diagnosisType: Joi.string().valid(...diagnosisTypeOptions),
   confidenceLevel: Joi.number().min(0).max(100),
-  status: Joi.string()
-    .valid(...statusOptions)
-    .required(),
+  status: Joi.string().valid(...statusOptions).required(),
 }).unknown(false);
 
 const updateWorkerPredictionValidator = (req, res, next) => {

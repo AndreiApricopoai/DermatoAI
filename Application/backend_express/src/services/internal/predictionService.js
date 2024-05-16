@@ -1,19 +1,29 @@
 require('dotenv').config();
 const Prediction = require('../../models/predictionModel');
+const User = require("../../models/userModel");
 const azure = require('../external/azureStorageService');
 const { createJwtToken, getTokenHash } = require('../../utils/authUtils');
+const { 
+  ErrorMessages,
+  StatusCodes,
+  ResponseTypes,
+  UserMessages,
+  TokenMessages,
+  PredictionMessages
+} = require("../../responses/apiConstants");
 
-const getPredictionById = async (userId, predictionId) => {
+const getPredictionById = async (predictionId, userId) => {
   try {
-    const prediction = await Prediction.findOne(
-      { _id: predictionId, userId }
-    ).exec();
+    const prediction = await Prediction.findOne({
+      _id: predictionId,
+      userId
+      }).exec();
 
     if (!prediction) {
       return {
-        type: "error",
-        status: 404,
-        error: "Prediction not found.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: ErrorMessages.NotFound
       };
     }
 
@@ -32,16 +42,16 @@ const getPredictionById = async (userId, predictionId) => {
     };
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: responseData
     };
   } catch (error) {
     console.error("Error retrieving prediction:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to retrieve prediction.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };
@@ -65,38 +75,46 @@ const getAllPredictionsByUserId = async (userId) => {
     }));
 
     return {
-      type: "success",
-      status: 200,
-      data: formattedPredictions,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
+      data: formattedPredictions
     };
   } catch (error) {
     console.error("Error retrieving all predictions", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to retrieve all predictions.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };
 
 const createPrediction = async (userId, imageBuffer) => {
-
   let imageUrl;
   let prediction;
 
   try {
+    const existsUser = await User.findOne({ _id: userId }).exec();
+    if (!existsUser) {
+      return {
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: UserMessages.NotFound
+      };
+    }
+
     const imageName = `prediction-${Date.now()}.jpg`;
     imageUrl = await azure.uploadImageToBlob(imageBuffer, imageName);
 
     const tokenPayload = { userId };
     const workerToken = createJwtToken(process.env.WORKER_TOKEN_SECRET, '7d', tokenPayload);
     const workerTokenHash = getTokenHash(workerToken);
-
+    
     if (!workerToken || !workerTokenHash) {
       return {
-        type: 'error',
-        status: 500,
-        error: 'An error occurred while creating the worker token.'
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: TokenMessages.TokenCreationError
       };
     }
 
@@ -108,7 +126,7 @@ const createPrediction = async (userId, imageBuffer) => {
     await prediction.save();
 
     const queueMessage = {
-      predictionId: prediction._id.toString(),
+      id: prediction._id.toString(),
       userId: userId.toString(),
       workerToken,
       imageUrl
@@ -116,12 +134,12 @@ const createPrediction = async (userId, imageBuffer) => {
     await azure.addToQueue(queueMessage);
 
     return {
-      type: 'success',
-      status: 201,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Created,
       data: {
-        message: 'Prediction created successfully and added to queue for processing.',
+        message: PredictionMessages.Created,
         prediction: {
-          predictionId: prediction._id,
+          predictionId: prediction._id.toString(),
           userId,
           title,
           status,
@@ -132,7 +150,6 @@ const createPrediction = async (userId, imageBuffer) => {
   }
   catch (error) {
     console.error('Error in createPrediction service:', error);
-
     try {
       if (imageUrl) {
         const blobName = imageUrl.split('/').pop();
@@ -146,15 +163,15 @@ const createPrediction = async (userId, imageBuffer) => {
     } catch (rollbackError) {
       console.error('Error during rollback:', rollbackError);
       return {
-        type: 'error',
-        status: 500,
-        error: 'An unexpected error occurred during prediction creation and operation rollback failed. Please try again later.'
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: PredictionMessages.RollbackFailed
       };
     }
     return {
-      type: 'error',
-      status: 500,
-      error: 'An unexpected error occurred during prediction creation and operation rollback succeeded. Please try again later.'
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: PredictionMessages.RollbackSucceeded
     };
   }
 };
@@ -165,16 +182,15 @@ const updatePredictionUser = async (predictionId, userId, updatePayload) => {
 
     if (!prediction) {
       return {
-        type: "error",
-        status: 404,
-        error: "Prediction not found.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: ErrorMessages.NotFound
       };
     }
 
     Object.keys(updatePayload).forEach((key) => {
       prediction[key] = updatePayload[key];
     });
-
     await prediction.save();
 
     const updatedPredictionData = {
@@ -192,16 +208,16 @@ const updatePredictionUser = async (predictionId, userId, updatePayload) => {
     };
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: updatedPredictionData,
     };
   } catch (error) {
     console.error("Error updating prediction:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to update the prediction.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };
@@ -212,18 +228,18 @@ const updatePredictionWorker = async (predictionId, userId, workerUpdatePayload)
 
     if (!prediction) {
       return {
-        type: "error",
-        status: 404,
-        error: "Prediction not found.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: ErrorMessages.NotFound
       };
     }
 
     const workerTokenHash = getTokenHash(workerUpdatePayload.workerToken);
     if (workerTokenHash === null || workerTokenHash !== prediction.workerTokenHash) {
       return {
-        type: "error",
-        status: 401,
-        error: "Unauthorized worker token.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.Unauthorized,
+        error: TokenMessages.UnauthorizedToken
       };
     }
 
@@ -232,7 +248,6 @@ const updatePredictionWorker = async (predictionId, userId, workerUpdatePayload)
     Object.keys(workerUpdatePayload).forEach((key) => {
       prediction[key] = workerUpdatePayload[key];
     });
-
     await prediction.save();
 
     const updatedWorkerPredictiontData = {
@@ -250,29 +265,30 @@ const updatePredictionWorker = async (predictionId, userId, workerUpdatePayload)
     };
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: updatedWorkerPredictiontData,
     };
   } catch (error) {
     console.error("Error updating worker prediction:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to update the worker prediction.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };
 
 const deletePrediction = async (predictionId, userId) => {
   let prediction;
+
   try {
     prediction = await Prediction.findOne({ _id: predictionId, userId }).exec();
     if (!prediction) {
       return {
-        type: "error",
-        status: 404,
-        error: "Prediction not found for deletion.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: ErrorMessages.NotFound
       };
     }
 
@@ -282,24 +298,22 @@ const deletePrediction = async (predictionId, userId) => {
     try {
       await prediction.remove();
       return {
-        type: "success",
-        status: 204,
+        type: ResponseTypes.Success,
+        status: StatusCodes.NoContent
       };
     } catch (error) {
-      console.error("Error during prediction document deletion, attempting retry:", error);
       await prediction.remove(); 
       return {
-        type: "success",
-        status: 204,
+        type: ResponseTypes.Success,
+        status: StatusCodes.NoContent
       };
     }
-
   } catch (error) {
     console.error("Error deleting prediction or failure after retry:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to delete the prediction after retry. Manual intervention required.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };

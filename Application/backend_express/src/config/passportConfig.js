@@ -35,7 +35,7 @@ const verifyCallback = async (
       user = await User.create({
         firstName: profile.name.givenName,
         lastName: profile.name.familyName,
-        email: email,
+        email: email.toLowerCase(),
         googleId: googleId,
         profilePhoto: profilePhoto,
         verified: true,

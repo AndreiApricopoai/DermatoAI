@@ -8,8 +8,7 @@ const locationSchema = Joi.object({
 }).unknown(false);
 
 const coordinatesValidator = (req, res, next) => {
-  const { latitude, longitude, radius } = req.query;
-  const payload = { latitude, longitude, radius };
+  const payload = req.query;
   const { error } = locationSchema.validate(payload, { abortEarly: false });
 
   if (handleValidationError(error, res)) return;

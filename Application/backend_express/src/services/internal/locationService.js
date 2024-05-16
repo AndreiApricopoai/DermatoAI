@@ -1,7 +1,12 @@
 require("dotenv").config();
-const { getGoogleMapsPhotoUrl } = require("../utils/constants");
+const { getGoogleMapsPhotoUrl } = require("../../utils/constants");
 const axios = require("axios");
 const googleMapsService = require("../external/googleMapsService");
+const { 
+  ErrorMessages,
+  StatusCodes,
+  ResponseTypes
+} = require("../../responses/apiConstants");
 
 const findNearbyLocations = async (params) => {
   try {
@@ -15,24 +20,24 @@ const findNearbyLocations = async (params) => {
 
     if (!clinics) {
       return {
-        type: "error",
-        status: 500,
-        error: "Failed to retrieve locations.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: ErrorMessages.FetchError
       };
     }
 
     return {
-      type: "success",
-      status: 200,
-      data: clinics,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
+      data: clinics
     };
 
   } catch (error) {
     console.error("Error retrieving nearby locations:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to retrieve locations.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };
@@ -40,42 +45,39 @@ const findNearbyLocations = async (params) => {
 const getImageFromMapsUrl = async (photoReference) => {
   try {
     const photoUrl = getGoogleMapsPhotoUrl(photoReference);
-
     const response = await axios.get(photoUrl, {
       responseType: "arraybuffer",
     });
 
     if (!response.data) {
       return {
-        type: "error",
-        status: 500,
-        error: "Could not fetch image.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: ErrorMessages.FetchError
       };
     }
 
     const imageBase64 = Buffer.from(response.data, "binary").toString("base64");
-
     if (!imageBase64) {
       return {
-        type: "error",
-        status: 500,
-        error: "Could not fetch image.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: ErrorMessages.FetchError
       };
     }
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: `data:image/jpeg;base64,${imageBase64}`,
     };
 
   } catch (error) {
     console.error("Failed to fetch image:", error);
     return {
-      type: "error",
-      status: 500,
-      error:
-        "An unexpected error occurred while fetching the image. Please try again later.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };

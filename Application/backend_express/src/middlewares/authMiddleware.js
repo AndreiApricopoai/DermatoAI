@@ -1,12 +1,13 @@
 require('dotenv').config();
-const { isValidJwt, extractPayloadJwt } = require('../utils/authUtils');
 const ApiResponse = require('../responses/apiResponse');
+const { isValidJwt, extractPayloadJwt } = require('../utils/authUtils');
+const { StatusCodes, TokenMessages } = require("../responses/apiConstants");
 
 // Helper function to validate a token, this is used in all the middleware functions below
 const checkToken = (req, res, token, secretKey, tokenType) => {
   if (!token) {
     ApiResponse.error(res, {
-      statusCode: 401,
+      statusCode: StatusCodes.Unauthorized,
       error: `${tokenType} is missing or invalid.`
     });
     return false
@@ -14,7 +15,7 @@ const checkToken = (req, res, token, secretKey, tokenType) => {
 
   if (!isValidJwt(token, secretKey)) {
     ApiResponse.error(res, {
-      statusCode: 403,
+      statusCode: StatusCodes.Forbidden,
       error: `Invalid ${tokenType}.`
     });
     return false;
@@ -23,7 +24,7 @@ const checkToken = (req, res, token, secretKey, tokenType) => {
   const payload = extractPayloadJwt(token);
   if (!payload) {
     ApiResponse.error(res, {
-      statusCode: 403,
+      statusCode: StatusCodes.Forbidden,
       error: `Invalid ${tokenType} payload information.`
     });
     return false;
@@ -39,11 +40,10 @@ const checkAccessToken = (req, res, next) => {
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return ApiResponse.error(res, {
-      statusCode: 401,
-      error: 'Access token is missing or invalid.'
+      statusCode: StatusCodes.Unauthorized,
+      error: TokenMessages.MissingAccessToken
     });
   }
-
   const token = authHeader.split(' ')[1];
   const checkResult = checkToken(req, res, token, process.env.ACCESS_TOKEN_SECRET, 'access token');
   if (checkResult) next();

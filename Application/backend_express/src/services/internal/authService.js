@@ -2,13 +2,21 @@ require("dotenv").config();
 const User = require("../../models/userModel");
 const RefreshToken = require("../../models/refreshTokenModel");
 const emailService = require("../external/emailService");
-const { VERIFICATION_URL, getVerificationEmailHtml, getResetPasswordEmailHtml } = require("../../utils/constants");
+const { getVerificationUrl, getVerificationEmailHtml, getResetPasswordEmailHtml } = require("../../utils/constants");
 const {
   createJwtToken,
   extractPayloadJwt,
   getTokenHash,
   isValidJwt,
 } = require("../../utils/authUtils");
+const { 
+  StatusCodes,
+  ResponseTypes,
+  UserMessages,
+  TokenMessages,
+  GoogleMessages,
+  AuthMessages
+} = require("../../responses/apiConstants");
 
 // Login function for DermatoAI account
 const login = async (payload) => {
@@ -19,33 +27,33 @@ const login = async (payload) => {
 
     if (!user) {
       return {
-        type: "error",
-        status: 400,
-        error: "User with this email does not exist.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.BadRequest,
+        error: UserMessages.UserEmailNotExists
       };
     }
 
     if (user.googleId) {
       return {
-        type: "error",
-        status: 400,
-        error: "User with this email exists. Please login with Google.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.BadRequest,
+        error: GoogleMessages.UserExistsLogin
       };
     }
 
     const passwordValid = await user.validatePassword(password);
     if (!passwordValid) {
       return {
-        type: "error",
-        status: 400,
-        error: "Invalid password.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.BadRequest,
+        error: UserMessages.InvalidPassword
       };
     }
 
     const tokenPayload = {
       userId: user._id,
       firstName: user.firstName,
-      lastName: user.lastName,
+      lastName: user.lastName
     };
 
     const token = createJwtToken(
@@ -61,9 +69,9 @@ const login = async (payload) => {
 
     if (!token || !refreshToken) {
       return {
-        type: "error",
-        status: 500,
-        error: "An error occurred while creating the tokens.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: TokenMessages.TokenCreationError
       };
     }
 
@@ -74,28 +82,27 @@ const login = async (payload) => {
 
     if (!saveRefreshToken) {
       return {
-        type: "error",
-        status: 500,
-        error: "An error occurred while saving the refresh token.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: TokenMessages.FailedSavingToken
       };
     }
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: {
-        message: "Login successful.",
+        message: AuthMessages.LoginSuccess,
         token,
-        refreshToken,
+        refreshToken
       },
     };
   } catch (error) {
     console.error("Login service error:", error);
     return {
-      type: "error",
-      status: 500,
-      error:
-        "An unexpected error occurred during login. Please try again later.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorLogin
     };
   }
 };
@@ -110,9 +117,9 @@ const register = async (payload) => {
 
     if (userExists) {
       return {
-        type: "error",
-        status: 400,
-        error: "User with this email already exists.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.BadRequest,
+        error: UserMessages.Exists
       };
     }
 
@@ -120,13 +127,13 @@ const register = async (payload) => {
       firstName,
       lastName,
       email: email.toLowerCase(),
-      passwordHash: password,
+      passwordHash: password
     });
 
     const tokenPayload = {
       userId: user._id,
       firstName: user.firstName,
-      lastName: user.lastName,
+      lastName: user.lastName
     };
 
     const token = createJwtToken(
@@ -142,9 +149,9 @@ const register = async (payload) => {
 
     if (!token || !refreshToken) {
       return {
-        type: "error",
-        status: 500,
-        error: "An error occurred while creating the tokens.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: TokenMessages.TokenCreationError
       };
     }
 
@@ -155,34 +162,32 @@ const register = async (payload) => {
 
     if (!saveRefreshToken) {
       return {
-        type: "error",
-        status: 500,
-        error: "An error occurred while saving the refresh token.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: TokenMessages.FailedSavingToken
       };
     }
-
     await user.save();
 
     const sendVerificationResult = await sendVerificationEmail(user.email);
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Created,
       data: {
-        message: "Registration successful.",
+        message: AuthMessages.RegisterSuccess,
         sentVerification:
           sendVerificationResult.type === "success" ? true : false,
         token,
-        refreshToken,
+        refreshToken
       },
     };
   } catch (error) {
     console.error("Register service error:", error);
     return {
-      type: "error",
-      status: 500,
-      error:
-        "An unexpected error occurred during registration. Please try again later.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorRegister
     };
   }
 };
@@ -194,7 +199,7 @@ const handleGoogleCallback = async (payload) => {
     const tokenPayload = {
       userId: _id,
       firstName: firstName,
-      lastName: lastName,
+      lastName: lastName
     };
 
     const token = createJwtToken(
@@ -210,9 +215,9 @@ const handleGoogleCallback = async (payload) => {
 
     if (!token || !refreshToken) {
       return {
-        type: "error",
-        status: 500,
-        error: "An error occurred while creating the tokens.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: TokenMessages.TokenCreationError
       };
     }
 
@@ -220,28 +225,27 @@ const handleGoogleCallback = async (payload) => {
 
     if (!saveRefreshToken) {
       return {
-        type: "error",
-        status: 500,
-        error: "An error occurred while saving the refresh token.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: TokenMessages.FailedSavingToken
       };
     }
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: {
-        message: "Google authentication successful.",
+        message: GoogleMessages.Success,
         token,
-        refreshToken,
+        refreshToken
       },
     };
   } catch (error) {
     console.error("Google authentication service error.", error);
     return {
-      type: "error",
-      status: 500,
-      error:
-        "An error occurred while trying to authenticate using Google. Please try again later.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: GoogleMessages.Error
     };
   }
 };
@@ -252,30 +256,28 @@ const logout = async (userId, refreshToken) => {
     const refreshTokenHash = getTokenHash(refreshToken);
     const result = await RefreshToken.findOneAndDelete({
       user: userId,
-      tokenHash: refreshTokenHash,
+      tokenHash: refreshTokenHash
     }).exec();
 
     if (!refreshTokenHash || !result) {
       return {
-        type: "error",
-        status: 404,
-        error: "No token found. Perhaps the user is already logged out.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: TokenMessages.NoTokenFound
       };
     }
 
     return {
-      type: "success",
-      status: 200,
-      data: { message: "Logged out successfully." },
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
+      data: { message: AuthMessages.LogoutSuccess },
     };
-
   } catch (error) {
     console.error("Error during logout:", error);
     return {
-      type: "error",
-      status: 500,
-      error:
-        "An unexpected error occurred during logout. Please try again later.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorLogout
     };
   }
 };
@@ -286,40 +288,39 @@ const getAccessToken = async (userId, refreshToken) => {
     const refreshTokenHash = getTokenHash(refreshToken);
     const existsRefreshToken = await RefreshToken.findOne({
       user: userId,
-      tokenHash: refreshTokenHash,
+      tokenHash: refreshTokenHash
     }).exec();
 
     if (!refreshTokenHash || !existsRefreshToken) {
       return {
-        type: "error",
-        status: 404,
-        error: "Refresh token not found.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: TokenMessages.NoTokenFound
       };
     }
 
     if (existsRefreshToken.expires < new Date()) {
       await RefreshToken.findByIdAndDelete(existsRefreshToken._id).exec();
       return {
-        type: "error",
-        status: 401,
-        error: "Refresh token has expired.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.Unauthorized,
+        error: TokenMessages.TokenExpired
       };
     }
 
     const extracted = extractPayloadJwt(refreshToken);
-
     if (!extracted) {
       return {
-        type: "error",
-        status: 401,
-        error: "Token payload could not be extracted.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.Unauthorized,
+        error: TokenMessages.TokenPayloadInvalid
       };
     }
 
     const newAccessTokenPayload = {
       userId: extracted.userId,
       firstName: extracted.firstName,
-      lastName: extracted.lastName,
+      lastName: extracted.lastName
     };
 
     const newAccessToken = createJwtToken(
@@ -330,35 +331,35 @@ const getAccessToken = async (userId, refreshToken) => {
 
     if (!newAccessToken) {
       return {
-        type: "error",
-        status: 500,
-        error: "An error occurred while creating a new acces token.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: TokenMessages.TokenCreationError
       };
     }
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: {
-        message: "New access token generated successfully.",
-        token: newAccessToken,
-      },
+        message: TokenMessages.TokenRefreshed,
+        token: newAccessToken
+      }
     };
 
   } catch (error) {
     console.error("Error during new access token generation:", error);
     return {
-      type: "error",
-      status: 500,
-      error:
-        "An unexpected error occurred during access token retrieval. Please try again later.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: TokenMessages.UnexpectedError
     };
   }
 };
 
+// Send a verification email to the user
 const sendVerificationEmail = async (email) => {
   try {
-    const user = await User.findOne({ email }).exec();
+    const user = await User.findOne({ email: email.toLowerCase() }).exec();
 
     if (!user) {
       return {
@@ -378,7 +379,7 @@ const sendVerificationEmail = async (email) => {
 
     const tokenPayload = {
       userId: user._id,
-      email: user.email,
+      email: user.email.toLowerCase(),
     };
 
     const verificationToken = createJwtToken(
@@ -395,7 +396,7 @@ const sendVerificationEmail = async (email) => {
       };
     }
 
-    const verificationUrl = VERIFICATION_URL + verificationToken;
+    const verificationUrl = getVerificationUrl(verificationToken);
     const html = getVerificationEmailHtml(verificationUrl);
 
     const sendResult = await emailService.sendEmail(
@@ -430,6 +431,7 @@ const sendVerificationEmail = async (email) => {
   }
 };
 
+// Verify the user's email address
 const verifyEmail = async (verificationToken) => {
   try {
     const secretKey = process.env.VERIFICATION_TOKEN_SECRET;
@@ -469,7 +471,7 @@ const verifyEmail = async (verificationToken) => {
       };
     }
 
-    if (user.email !== email) {
+    if (user.email !== email.toLowerCase()) {
       return {
         type: "error",
         status: 400,
@@ -498,7 +500,7 @@ const verifyEmail = async (verificationToken) => {
   }
 };
 
-
+// Change the user's password
 const changePassword = async (userId, payload) => {
   try {
     const { oldPassword, password } = payload;
@@ -550,9 +552,10 @@ const changePassword = async (userId, payload) => {
   }
 };
 
+// Send a forgot password email to the user
 const sendForgotPasswordEmail = async (email) => {
   try {
-    const user = await User.findOne({ email }).exec();
+    const user = await User.findOne({ email: email.toLowerCase() }).exec();
     if (!user) {
       return {
         type: "error",
@@ -572,7 +575,7 @@ const sendForgotPasswordEmail = async (email) => {
 
     const tokenPayload = {
       userId: user._id,
-      email: user.email,
+      email: user.email.toLowerCase(),
     };
 
     const forgotPasswordToken = createJwtToken(
@@ -624,6 +627,7 @@ const sendForgotPasswordEmail = async (email) => {
   }
 };
 
+// Reset the user's password
 const resetPassword = async (userId, payload) => {
   try {
     const { forgotPasswordToken, password } = payload;
@@ -697,7 +701,7 @@ const resetPassword = async (userId, payload) => {
 // PRIVATE helper function to create a refresh token in the database
 const saveRefreshTokenToCollection = async (refreshToken, userId) => {
   const expirationDate = new Date();
-  expirationDate.setDate(expirationDate.getDate() + 7); // 7 days in the future
+  expirationDate.setDate(expirationDate.getDate() + 7);
 
   const hash = getTokenHash(refreshToken);
   if (!hash) {

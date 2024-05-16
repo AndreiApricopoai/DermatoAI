@@ -1,36 +1,37 @@
 const Feedback = require("../../models/feedbackModel");
 const User = require("../../models/userModel");
+const { 
+  ErrorMessages,
+  StatusCodes,
+  ResponseTypes,
+  UserMessages 
+} = require("../../responses/apiConstants");
 
 const createFeedback = async (userId, payload) => {
   try {
-    const user = await User.findOne({ _id: userId }).exec();
-
-    if (!user) {
+    const existsUser = await User.findOne({ _id: userId }).exec();
+    if (!existsUser) {
       return {
-        type: "error",
-        status: 404,
-        error: "User not found.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: UserMessages.NotFound
       };
     }
 
     const { category, content } = payload;
-
     const newFeedback = new Feedback({ userId, category, content });
     await newFeedback.save();
 
     return {
-      type: "success",
-      status: 201,
-      data: {
-        message: "Feedback sent successfully.",
-      },
+      type: ResponseTypes.Success,
+      status: StatusCodes.Created
     };
   } catch (error) {
     console.error("Error creating feedback:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to sent the feedback.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };

@@ -4,7 +4,7 @@ const {
   checkAccessToken,
   checkWorkerToken,
 } = require("../middlewares/authMiddleware");
-const { handleMulterUpload } = require("../middlewares/predictionMiddleware");
+const { handleMulterUpload } = require("../middlewares/imageUploadMiddleware");
 const { validateParamId } = require("../middlewares/mongooseMiddleware");
 const {
   updateUserPredictionValidator,

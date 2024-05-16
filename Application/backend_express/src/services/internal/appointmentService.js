@@ -1,17 +1,24 @@
 const Appointment = require("../../models/appointmentModel");
+const User = require("../../models/userModel");
+const { 
+  ErrorMessages,
+  StatusCodes,
+  ResponseTypes,
+  UserMessages
+} = require("../../responses/apiConstants");
 
 const getAppointmentById = async (appointmentId, userId) => {
   try {
     const appointment = await Appointment.findOne({
       _id: appointmentId,
-      userId,
+      userId
     }).exec();
 
     if (!appointment) {
       return {
-        type: "error",
-        status: 404,
-        error: "Appointment not found.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: ErrorMessages.NotFound
       };
     }
 
@@ -21,20 +28,20 @@ const getAppointmentById = async (appointmentId, userId) => {
       description: appointment.description,
       appointmentDate: appointment.appointmentDate,
       institutionName: appointment.institutionName,
-      address: appointment.address,
+      address: appointment.address
     };
 
     return {
-      type: "success",
-      status: 200,
-      data: responseData,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
+      data: responseData
     };
   } catch (error) {
     console.error("Error retrieving appointment:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to retrieve appointment.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };
@@ -51,26 +58,35 @@ const getAllAppointmentsByUserId = async (userId) => {
       description: appointment.description,
       appointmentDate: appointment.appointmentDate,
       institutionName: appointment.institutionName,
-      address: appointment.address,
+      address: appointment.address
     }));
 
     return {
-      type: "success",
-      status: 200,
-      data: formattedAppointments,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
+      data: formattedAppointments
     };
   } catch (error) {
     console.error("Error retrieving all appointments:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to retrieve all appointments.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };
 
 const createAppointment = async (userId, payload) => {
   try {
+    const existsUser = await User.findOne({ _id: userId }).exec();
+    if (!existsUser) {
+      return {
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: UserMessages.NotFound
+      };
+    }
+
     const newAppointment = new Appointment({ userId, ...payload });
     await newAppointment.save();
 
@@ -80,20 +96,20 @@ const createAppointment = async (userId, payload) => {
       description: newAppointment.description,
       appointmentDate: newAppointment.appointmentDate,
       institutionName: newAppointment.institutionName,
-      address: newAppointment.address,
+      address: newAppointment.address
     };
 
     return {
-      type: "success",
-      status: 201,
-      data: responseData,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Created,
+      data: responseData
     };
   } catch (error) {
     console.error("Error creating appointment:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to create a new appointment.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };
@@ -107,16 +123,15 @@ const updateAppointment = async (appointmentId, userId, updatePayload) => {
 
     if (!appointment) {
       return {
-        type: "error",
-        status: 404,
-        error: "Appointment not found.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: ErrorMessages.NotFound
       };
     }
 
     Object.keys(updatePayload).forEach((key) => {
       appointment[key] = updatePayload[key];
     });
-
     await appointment.save();
 
     const updatedAppointmentData = {
@@ -125,20 +140,20 @@ const updateAppointment = async (appointmentId, userId, updatePayload) => {
       description: appointment.description,
       appointmentDate: appointment.appointmentDate,
       institutionName: appointment.institutionName,
-      address: appointment.address,
+      address: appointment.address
     };
 
     return {
-      type: "success",
-      status: 200,
-      data: updatedAppointmentData,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
+      data: updatedAppointmentData
     };
   } catch (error) {
     console.error("Error updating appointment:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to update the appointment.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };
@@ -147,27 +162,27 @@ const deleteAppointment = async (appointmentId, userId) => {
   try {
     const result = await Appointment.deleteOne({
       _id: appointmentId,
-      userId,
+      userId
     }).exec();
 
     if (result.deletedCount === 0) {
       return {
-        type: "error",
-        status: 404,
-        error: "Appointment not found for deletion.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: ErrorMessages.NotFound
       };
     }
 
     return {
-      type: "success",
-      status: 204,
+      type: ResponseTypes.Success,
+      status: StatusCodes.NoContent
     };
   } catch (error) {
     console.error("Error deleting appointment:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to delete the appointment.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };

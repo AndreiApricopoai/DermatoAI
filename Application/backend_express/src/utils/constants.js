@@ -18,7 +18,10 @@ const getAzureBlobUrl = (blobName) => {
   return blobUrl;
 }
 
-const VERIFICATION_URL = "http://localhost:3000/api/auth/verify-email?token=";
+const getVerificationUrl = (token) => {
+  const verificationUrl = `http://localhost:3000/api/auth/verify-email?token=${token}`;
+  return verificationUrl;
+}
 
 const getVerificationEmailHtml = (verificationUrl) => {
   return `<h1>Verify Your Email</h1>
@@ -77,14 +80,14 @@ const DIAGNOSIS_TYPE = {
 module.exports = {
   regexPatterns,
   dermatologicalChat,
-  VERIFICATION_URL,
+  GOOGLE_DERMATOLOGICAL_PLACE,
+  CLASS_INDICES_NAMES,
+  PREDICTION_STATUS,
+  DIAGNOSIS_TYPE,
+  getVerificationUrl,
   getVerificationEmailHtml,
   getResetPasswordEmailHtml,
   getGoogleMapsPhotoUrl,
   getGoogleMapsPlaceUrl,
-  getAzureBlobUrl,
-  GOOGLE_DERMATOLOGICAL_PLACE,
-  CLASS_INDICES_NAMES,
-  PREDICTION_STATUS,
-  DIAGNOSIS_TYPE
+  getAzureBlobUrl
 };

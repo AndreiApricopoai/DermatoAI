@@ -1,31 +1,39 @@
-const sharp = require('sharp');
-const ApiResponse = require('../responses/apiResponse');
+const ApiResponse = require("../responses/apiResponse");
+const sharp = require("sharp");
+const {
+  ImageUploadMessages,
+  StatusCode,
+} = require("../responses/apiConstants");
 
 const validateImage = async (req, res, next) => {
   try {
     if (!req.file || !req.file.buffer) {
       return ApiResponse.error(res, {
-        statusCode: 400,
-        error: 'No image uploaded.'
+        statusCode: StatusCode.BadRequest,
+        error: ImageUploadMessages.NoImageUploaded,
       });
     }
 
     const image = sharp(req.file.buffer);
     const metadata = await image.metadata();
 
-    if (metadata.width < 600 || metadata.height < 450 || Math.abs(metadata.width / metadata.height - 4 / 3) > 0.01) {
+    if (
+      metadata.width < 600 ||
+      metadata.height < 450 ||
+      Math.abs(metadata.width / metadata.height - 4 / 3) > 0.01
+    ) {
       return ApiResponse.error(res, {
-        statusCode: 400,
-        error: 'Image must be at least 600x450 pixels, approximately a 4:3 aspect ratio.'
+        statusCode: StatusCode.BadRequest,
+        error: ImageUploadMessages.InvalidImage,
       });
     }
 
     next();
   } catch (error) {
-    console.error('Image validation error:', error);
+    console.error("Image validation error:", error);
     return ApiResponse.error(res, {
-      statusCode: 500,
-      error: 'Failed to validate the image. Please try again.'
+      statusCode: StatusCode.InternalServerError,
+      error: ImageUploadMessages.ValidationFailed,
     });
   }
 };

@@ -4,9 +4,9 @@ const { handleValidationError } = require('../utils/validatorUtils');
 
 // Register validation schema using DermatoAI account
 const registerSchema = Joi.object({
-  firstName: Joi.string().min(2).max(50).required().regex(regexPatterns.nameRegex),
-  lastName: Joi.string().min(2).max(50).required().regex(regexPatterns.nameRegex),
-  email: Joi.string().email().required().regex(regexPatterns.emailRegex),
+  firstName: Joi.string().trim().min(2).max(50).required().regex(regexPatterns.nameRegex),
+  lastName: Joi.string().trim().min(2).max(50).required().regex(regexPatterns.nameRegex),
+  email: Joi.string().trim().email().required().regex(regexPatterns.emailRegex),
   password: Joi.string().min(3).required(),
   confirmPassword: Joi.string().min(3).required().valid(Joi.ref('password'))
 }).unknown(false);
@@ -21,7 +21,7 @@ const registerValidator = (req, res, next) => {
 
 // Login validation schema using DermatoAI account
 const loginSchema = Joi.object({
-  email: Joi.string().email().required().regex(regexPatterns.emailRegex),
+  email: Joi.string().trim().email().required().regex(regexPatterns.emailRegex),
   password: Joi.string().min(3).required(),
 }).unknown(false);
 
@@ -38,7 +38,7 @@ const googleAuthSchema = Joi.object({
   _id: Joi.string().required(),
   firstName: Joi.string().min(2).max(50).required().regex(regexPatterns.nameRegex),
   lastName: Joi.string().min(2).max(50).required().regex(regexPatterns.nameRegex),
-  email: Joi.string().email().required().regex(regexPatterns.emailRegex),
+  email: Joi.string().trim().email().required().regex(regexPatterns.emailRegex),
   googleId: Joi.string().required(),
   profilePhoto: Joi.string().optional(),
   verified: Joi.boolean().required()
@@ -63,7 +63,7 @@ const googleAuthValidator = (req, res, next) => {
 
 // Email validation schema for email verification
 const emailSchema = Joi.object({
-  email: Joi.string().email().required().regex(regexPatterns.emailRegex),
+  email: Joi.string().trim().email().required().regex(regexPatterns.emailRegex),
 }).unknown(false);
 
 const emailValidator = (req, res, next) => {

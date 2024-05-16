@@ -1,8 +1,8 @@
-require('dotenv').config();
-const OpenAI = require('openai');
+require("dotenv").config();
+const OpenAI = require("openai");
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 const getOpenAIResponse = async (model, context, maxTokens, userInput) => {
@@ -11,13 +11,13 @@ const getOpenAIResponse = async (model, context, maxTokens, userInput) => {
       model: model,
       messages: [
         {
-          "role": "system",
-          "content": context
+          role: "system",
+          content: context,
         },
         {
-          "role": "user",
-          "content": userInput
-        }
+          role: "user",
+          content: userInput,
+        },
       ],
       temperature: 1,
       max_tokens: maxTokens,
@@ -30,6 +30,6 @@ const getOpenAIResponse = async (model, context, maxTokens, userInput) => {
     console.error("Failed to get response from OpenAI:", error);
     return null;
   }
-}
+};
 
 module.exports = { getOpenAIResponse };

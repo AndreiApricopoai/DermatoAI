@@ -1,4 +1,9 @@
 const User = require("../../models/userModel");
+const { 
+  StatusCodes,
+  ResponseTypes,
+  UserMessages 
+} = require("../../responses/apiConstants");
 
 const getProfileInformation = async (userId) => {
   try {
@@ -6,9 +11,9 @@ const getProfileInformation = async (userId) => {
 
     if (!user) {
       return {
-        type: "error",
-        status: 404,
-        error: "User not found.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: UserMessages.NotFound
       };
     }
 
@@ -17,20 +22,20 @@ const getProfileInformation = async (userId) => {
       lastName: user.lastName,
       email: user.email,
       profilePhoto: user.profilePhoto,
-      verified: user.verified,
+      verified: user.verified
     };
 
     return {
-      type: "success",
-      status: 200,
-      data: responseData,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
+      data: responseData
     };
   } catch (error) {
     console.error("Error retrieving user:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to retrieve user.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: UserMessages.FailedRetrieve
     };
   }
 };
@@ -41,9 +46,9 @@ const getVerifiedStatus = async (userId) => {
 
     if (!user) {
       return {
-        type: "error",
-        status: 404,
-        error: "User not found.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: UserMessages.NotFound
       };
     }
 
@@ -52,17 +57,16 @@ const getVerifiedStatus = async (userId) => {
     };
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: responseData,
     };
-    
   } catch (error) {
     console.error("Error retrieving user:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to retrieve user.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: UserMessages.FailedRetrieve
     };
   }
 };

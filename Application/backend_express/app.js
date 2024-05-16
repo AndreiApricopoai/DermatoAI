@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const ApiResponse = require('./src/responses/apiResponse');
+const { WelcomeMessage } = require('./src/responses/apiConstants');
 const passportConfig = require('./src/config/passportConfig');
 const userRoutes = require('./src/routes/userRoutes');
 const authRoutes = require('./src/routes/authRoutes');
@@ -18,7 +19,7 @@ app.use(express.static('./src/public'));
 app.use(passportConfig.initialize());
 
 //routes
-app.get('/', (req, res) => { ApiResponse.success(res, { data: { message: "Welcome to DermatoAI API" } }) });
+app.get('/', (req, res) => { ApiResponse.success(res, { data: { message: WelcomeMessage } }) });
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', userRoutes);
 app.use('/api/predictions', predictionRoutes);

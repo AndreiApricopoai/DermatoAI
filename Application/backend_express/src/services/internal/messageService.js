@@ -3,6 +3,11 @@ const Conversation = require("../../models/conversationModel");
 const mongoose = require("mongoose");
 const { getOpenAIResponse } = require("../external/openaiService");
 const { dermatologicalChat } = require("../../utils/constants");
+const { 
+  ErrorMessages,
+  StatusCodes,
+  ResponseTypes 
+} = require("../../responses/apiConstants");
 
 const getAllMessagesByConversationId = async (conversationId, userId, page, limit) => {
   try {
@@ -13,9 +18,9 @@ const getAllMessagesByConversationId = async (conversationId, userId, page, limi
 
     if (!conversationExists) {
       return {
-        type: "error",
-        status: 404,
-        error: "Conversation not found.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: ErrorMessages.NotFound
       };
     }
 
@@ -26,25 +31,25 @@ const getAllMessagesByConversationId = async (conversationId, userId, page, limi
       const skip = (page - 1) * limit;
       query.skip(skip).limit(limit);
     }
-
     const messages = await query.exec();
 
     const formattedMessages = messages.map(message => ({
+      id: message._id.toString(),
       sender: message.sender,
-      content: message.messageContent,
+      content: message.messageContent
     }));
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: formattedMessages,
     };
   } catch (error) {
     console.error("Error retrieving messages:", error);
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to retrieve the messages.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };
@@ -67,9 +72,9 @@ const addMessageToConversation = async (
       await session.abortTransaction();
       session.endSession();
       return {
-        type: "error",
-        status: 404,
-        error: "Conversation not found.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: ErrorMessages.NotFound
       };
     }
 
@@ -91,9 +96,9 @@ const addMessageToConversation = async (
       await session.abortTransaction();
       session.endSession();
       return {
-        type: "error",
-        status: 500,
-        error: "Failed to receive a valid response from the assistant.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: ErrorMessages.FetchError
       };
     }
 
@@ -108,16 +113,16 @@ const addMessageToConversation = async (
     session.endSession();
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: {
         userMessage: {
           id: userMessage._id,
-          content: userMessage.messageContent,
+          content: userMessage.messageContent
         },
         assistantMessage: {
           id: assistantMessage._id,
-          content: assistantMessage.messageContent,
+          content: assistantMessage.messageContent
         },
       },
     };
@@ -127,9 +132,9 @@ const addMessageToConversation = async (
     console.error("Error adding message to conversation:", error);
 
     return {
-      type: "error",
-      status: 500,
-      error: "Failed to add messages to the conversation.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedError
     };
   }
 };

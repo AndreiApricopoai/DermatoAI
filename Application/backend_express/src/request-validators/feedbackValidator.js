@@ -3,7 +3,7 @@ const { handleValidationError } = require("../utils/validatorUtils");
 
 const createFeedbackSchema = Joi.object({
   category: Joi.string().valid('app', 'bugs', 'usability','predictions', 'AIchat', 'other').required(),
-  content: Joi.string().min(10).max(1000).required(),
+  content: Joi.string().trim().min(10).max(1000).required(),
 }).unknown(false);
 
 const createFeedbackValidator = (req, res, next) => {

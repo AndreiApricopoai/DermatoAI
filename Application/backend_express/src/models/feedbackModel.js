@@ -1,28 +1,28 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
 
-const feedbackSchema = new Schema(
+const feedbackSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "User ID is required"]
+      required: [true, "User ID is required"],
     },
     category: {
       type: String,
       required: [true, "Feedback category is required"],
-      enum: ["app", "bugs", "usability", "predictions", "AIchat", "other"]
+      enum: ["app", "bugs", "usability", "predictions", "AIchat", "other"],
     },
     content: {
       type: String,
       required: [true, "Feedback content is required"],
-      minlength: [10, "Feedback content is too short"],
-      maxlength: [1000, "Feedback content is too long"]
+      minlength: [10, "Feedback needs to be at least 10 characters long"],
+      maxlength: [1000, "Feedback can be no more than 1000 characters long"],
     },
   },
   {
     collection: "feedbacks",
-    timestamps: true,  }
+    timestamps: true,
+  }
 );
 
 const Feedback = mongoose.model("Feedback", feedbackSchema);
