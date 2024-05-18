@@ -25,7 +25,7 @@ const getConversationById = async (conversationId, userId) => {
     }
 
     responseData = {
-      id: conversation._id.toString(),
+      id: conversation._id,
       title: conversation.title
     };
 
@@ -52,7 +52,7 @@ const getAllConversationsByUserId = async (userId) => {
       .exec();
 
     const formattedConversations = conversations.map((convo) => ({
-      id: convo._id.toString(),
+      id: convo._id,
       title: convo.title
     }));
 
@@ -127,7 +127,7 @@ const updateConversation = async (conversationId, userId, updatePayload) => {
     await conversation.save();
 
     const updatedConversationData = {
-      id: conversation._id.toString(),
+      id: conversation._id,
       title: conversation.title
     };
 

@@ -270,7 +270,7 @@ const logout = async (userId, refreshToken) => {
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
-      data: { message: AuthMessages.LogoutSuccess },
+      data: { message: AuthMessages.LogoutSuccess }
     };
   } catch (error) {
     console.error("Error during logout:", error);
@@ -309,13 +309,6 @@ const getAccessToken = async (userId, refreshToken) => {
     }
 
     const extracted = extractPayloadJwt(refreshToken);
-    if (!extracted) {
-      return {
-        type: ResponseTypes.Error,
-        status: StatusCodes.Unauthorized,
-        error: TokenMessages.TokenPayloadInvalid
-      };
-    }
 
     const newAccessTokenPayload = {
       userId: extracted.userId,
@@ -363,23 +356,23 @@ const sendVerificationEmail = async (email) => {
 
     if (!user) {
       return {
-        type: "error",
-        status: 404,
-        error: "User not found for this email address.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: UserMessages.UserEmailNotExists
       };
     }
 
     if (user.verified) {
       return {
-        type: "error",
-        status: 400,
-        error: "User is already verified.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.BadRequest,
+        error: UserMessages.UserAlreadyVerified
       };
     }
 
     const tokenPayload = {
       userId: user._id,
-      email: user.email.toLowerCase(),
+      email: user.email.toLowerCase()
     };
 
     const verificationToken = createJwtToken(
@@ -390,9 +383,9 @@ const sendVerificationEmail = async (email) => {
 
     if (!verificationToken) {
       return {
-        type: "error",
-        status: 500,
-        error: "An error occurred while creating the verification token.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: TokenMessages.TokenCreationError
       };
     }
 
@@ -407,26 +400,25 @@ const sendVerificationEmail = async (email) => {
 
     if (!sendResult) {
       return {
-        type: "error",
-        status: 500,
-        error: "Failed to send verification email.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: AuthMessages.EmailSendError
       };
     }
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: {
-        message: "Verification email sent successfully.",
-      },
+        message: AuthMessages.EmailVerificationSent
+      }
     };
   } catch (error) {
     console.error("Failed to send verification email:", error);
     return {
-      type: "error",
-      status: 500,
-      error:
-        "An unexpected error occurred during email verification. Please try again later.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorVerifyEmail
     };
   }
 };
@@ -434,48 +426,31 @@ const sendVerificationEmail = async (email) => {
 // Verify the user's email address
 const verifyEmail = async (verificationToken) => {
   try {
-    const secretKey = process.env.VERIFICATION_TOKEN_SECRET;
-
-    if (!isValidJwt(verificationToken, secretKey)) {
-      return {
-        type: "error",
-        status: 400,
-        error: "Invalid verification token or expired.",
-      };
-    }
-
     const tokenPayload = extractPayloadJwt(verificationToken);
-    if (!tokenPayload) {
-      return {
-        type: "error",
-        status: 400,
-        error: "Invalid token payload.",
-      };
-    }
+    const { userId, email } = tokenPayload;
 
-    const { userId, email } = payload;
     const user = await User.findOne({ _id: userId }).exec();
     if (!user) {
       return {
-        type: "error",
-        status: 404,
-        error: "User not found for this email address.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: UserMessages.UserEmailNotExists
       };
     }
 
     if (user.verified) {
       return {
-        type: "error",
-        status: 400,
-        error: "User is already verified.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.BadRequest,
+        error: UserMessages.UserAlreadyVerified
       };
     }
 
     if (user.email !== email.toLowerCase()) {
       return {
-        type: "error",
-        status: 400,
-        error: "Invalid email address.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.BadRequest,
+        error: UserMessages.InvalidEmail
       };
     }
 
@@ -483,19 +458,18 @@ const verifyEmail = async (verificationToken) => {
     await user.save();
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: {
-        message: "Email verified successfully.",
-      },
+        message: AuthMessages.EmailVerified
+      }
     };
   } catch (error) {
     console.error("Error verifying email:", error);
     return {
-      type: "error",
-      status: 500,
-      error:
-        "An unexpected error occurred during email verification. Please try again later.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorVerifyEmail
     };
   }
 };
@@ -504,30 +478,30 @@ const verifyEmail = async (verificationToken) => {
 const changePassword = async (userId, payload) => {
   try {
     const { oldPassword, password } = payload;
+
     const user = await User.findOne({ _id: userId }).exec();
     if (!user) {
       return {
-        type: "error",
-        status: 404,
-        error: "User not found.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: UserMessages.NotFound
       };
     }
 
     if (user.googleId) {
       return {
-        type: "error",
-        status: 400,
-        error:
-          "User with this email exists. Please change password from Google.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.BadRequest,
+        error: GoogleMessages.ChangePasswordFromGoogle
       };
     }
 
     const oldPasswordValid = await user.validatePassword(oldPassword);
     if (!oldPasswordValid) {
       return {
-        type: "error",
-        status: 400,
-        error: "Invalid old password.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.BadRequest,
+        error: AuthMessages.InvalidOldPassword
       };
     }
 
@@ -535,19 +509,18 @@ const changePassword = async (userId, payload) => {
     await user.save();
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: {
-        message: "Password changed successfully.",
-      },
+        message: AuthMessages.PasswordChanged
+      }
     };
   } catch (error) {
     console.error("Error changing password:", error);
     return {
-      type: "error",
-      status: 500,
-      error:
-        "An unexpected error occurred during password change. Please try again later.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorPasswordChange
     };
   }
 };
@@ -558,24 +531,23 @@ const sendForgotPasswordEmail = async (email) => {
     const user = await User.findOne({ email: email.toLowerCase() }).exec();
     if (!user) {
       return {
-        type: "error",
-        status: 404,
-        error: "User not found for this email address.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: UserMessages.UserEmailNotExists
       };
     }
 
     if (user.googleId) {
       return {
-        type: "error",
-        status: 400,
-        error:
-          "User with this email exists. Please reset password from Google.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.BadRequest,
+        error: GoogleMessages.ResetPasswordFromGoogle
       };
     }
 
     const tokenPayload = {
       userId: user._id,
-      email: user.email.toLowerCase(),
+      email: user.email.toLowerCase()
     };
 
     const forgotPasswordToken = createJwtToken(
@@ -586,12 +558,11 @@ const sendForgotPasswordEmail = async (email) => {
 
     if (!forgotPasswordToken) {
       return {
-        type: "error",
-        status: 500,
-        error: "An error occurred while creating the forgot password token.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: TokenMessages.TokenCreationError
       };
     }
-
     const html = getResetPasswordEmailHtml(forgotPasswordToken);
 
     const sendResult = await emailService.sendEmail(
@@ -602,27 +573,26 @@ const sendForgotPasswordEmail = async (email) => {
 
     if (!sendResult) {
       return {
-        type: "error",
-        status: 500,
-        error: "Failed to send forgot password email.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: AuthMessages.ForgotPasswordEmailFailed
       };
     }
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: {
-        message: "Forgot password email sent successfully.",
+        message: AuthMessages.ForgotPasswordEmailSent
       }
     };
 
   } catch (error) {
     console.error("Failed to send forgot password email:", error);
     return {
-      type: "error",
-      status: 500,
-      error:
-        "An unexpected error occurred during forgot password email. Please try again later.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorForgotPassword
     };
   }
 };
@@ -635,45 +605,26 @@ const resetPassword = async (userId, payload) => {
     
     if (!user) {
       return {
-        type: "error",
-        status: 404,
-        error: "User not found.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.NotFound,
+        error: UserMessages.NotFound
       };
     }
 
     if (user.googleId) {
       return {
-        type: "error",
-        status: 400,
-        error:
-          "User with this email exists. Please reset password from Google.",
-      };
-    }
-
-    const secretKey = process.env.FORGOT_PASSWORD_TOKEN_SECRET;
-
-    if (!isValidJwt(forgotPasswordToken, secretKey)) {
-      return {
-        type: "error",
-        status: 400,
-        error: "Invalid forgot password token or expired.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.BadRequest,
+        error: GoogleMessages.ResetPasswordFromGoogle
       };
     }
 
     const tokenPayload = extractPayloadJwt(forgotPasswordToken);
-    if (!tokenPayload) {
-      return {
-        type: "error",
-        status: 400,
-        error: "Invalid token payload.",
-      };
-    }
-
     if (tokenPayload.userId !== userId) {
       return {
-        type: "error",
-        status: 400,
-        error: "Invalid user ID.",
+        type: ResponseTypes.Error,
+        status: StatusCodes.BadRequest,
+        error: TokenMessages.TokenPayloadInvalid
       };
     }
 
@@ -681,19 +632,18 @@ const resetPassword = async (userId, payload) => {
     await user.save();
 
     return {
-      type: "success",
-      status: 200,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: {
-        message: "Password reset successfully.",
+        message: AuthMessages.PasswordResetSuccess
       },
     };
   } catch (error) {
     console.error("Error resetting password:", error);
     return {
-      type: "error",
-      status: 500,
-      error:
-        "An unexpected error occurred during password reset. Please try again later.",
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: AuthMessages.UnexpectedErrorResetPassword
     };
   }
 };
@@ -704,11 +654,8 @@ const saveRefreshTokenToCollection = async (refreshToken, userId) => {
   expirationDate.setDate(expirationDate.getDate() + 7);
 
   const hash = getTokenHash(refreshToken);
-  if (!hash) {
-    console.error("Error creating token hash.");
-    return false;
-  }
-
+  if (!hash) return false;
+  
   await new RefreshToken({
     user: userId,
     tokenHash: hash,

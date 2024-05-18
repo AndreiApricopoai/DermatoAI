@@ -23,7 +23,7 @@ const getAppointmentById = async (appointmentId, userId) => {
     }
 
     const responseData = {
-      id: appointment._id.toString(),
+      id: appointment._id,
       title: appointment.title,
       description: appointment.description,
       appointmentDate: appointment.appointmentDate,
@@ -53,7 +53,7 @@ const getAllAppointmentsByUserId = async (userId) => {
       .exec();
 
     const formattedAppointments = appointments.map((appointment) => ({
-      id: appointment._id.toString(),
+      id: appointment._id,
       title: appointment.title,
       description: appointment.description,
       appointmentDate: appointment.appointmentDate,
@@ -91,7 +91,7 @@ const createAppointment = async (userId, payload) => {
     await newAppointment.save();
 
     const responseData = {
-      id: newAppointment._id.toString(),
+      id: newAppointment._id,
       title: newAppointment.title,
       description: newAppointment.description,
       appointmentDate: newAppointment.appointmentDate,
@@ -135,7 +135,7 @@ const updateAppointment = async (appointmentId, userId, updatePayload) => {
     await appointment.save();
 
     const updatedAppointmentData = {
-      id: appointment._id.toString(),
+      id: appointment._id,
       title: appointment.title,
       description: appointment.description,
       appointmentDate: appointment.appointmentDate,

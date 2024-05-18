@@ -28,7 +28,7 @@ const getPredictionById = async (predictionId, userId) => {
     }
 
     const responseData = {
-      id: prediction._id.toString(),
+      id: prediction._id,
       userId: prediction.userId,
       title: prediction.title,
       description: prediction.description,
@@ -61,7 +61,7 @@ const getAllPredictionsByUserId = async (userId) => {
     const predictions = await Prediction.find({ userId }).sort({ dateTime: 1 }).exec();
 
     const formattedPredictions = predictions.map((prediction) => ({
-      id: prediction._id.toString(),
+      id: prediction._id,
       userId: prediction.userId,
       title: prediction.title,
       description: prediction.description,
@@ -139,7 +139,7 @@ const createPrediction = async (userId, imageBuffer) => {
       data: {
         message: PredictionMessages.Created,
         prediction: {
-          predictionId: prediction._id.toString(),
+          predictionId: prediction._id,
           userId,
           title,
           status,
@@ -194,7 +194,7 @@ const updatePredictionUser = async (predictionId, userId, updatePayload) => {
     await prediction.save();
 
     const updatedPredictionData = {
-      id: prediction._id.toString(),
+      id: prediction._id,
       userId: prediction.userId,
       title: prediction.title,
       description: prediction.description,
@@ -251,7 +251,7 @@ const updatePredictionWorker = async (predictionId, userId, workerUpdatePayload)
     await prediction.save();
 
     const updatedWorkerPredictiontData = {
-      id: prediction._id.toString(),
+      id: prediction._id,
       userId: prediction.userId,
       title: prediction.title,
       description: prediction.description,

@@ -20,6 +20,8 @@ const UserMessages = {
   InvalidPassword: "Invalid password.",
   UserEmailNotExists: "User with this email does not exist.",
   Exists: "User already exists.",
+  InvalidEmail: "Invalid email.",
+  UserAlreadyVerified: "User is already verified.",
   FailedRetrieve: "Failed to retrieve user information.",
   Created: "User created successfully.",
   Updated: "User updated successfully.",
@@ -31,6 +33,8 @@ const GoogleMessages = {
   NoEmail: "No email found from Google profile.",
   UserNotFound: "User not found.",
   UserExists: "User already exists.",
+  ChangePasswordFromGoogle: "User with this email exists. Please change your password from Google.",
+  ResetPasswordFromGoogle: "User with this email exists. Please reset your password from Google.",
   UserExistsLogin:
     "Google user with this email exists. Please login with Google.",
   AuthFailed: "Google authentication failed. Please try again.",
@@ -42,6 +46,14 @@ const AuthMessages = {
   LoginSuccess: "Login successful.",
   RegisterSuccess: "Registration successful.",
   LogoutSuccess: "Logout successful.",
+  InvalidOldPassword: "Invalid old password.",
+  PasswordChanged: "Password changed successfully.",
+  EmailVerificationSent: "Email verification sent successfully.",
+  EmailVerified: "Email verified successfully.",
+  EmailSendError: "Failed to send email verification.",
+  ForgotPasswordEmailFailed: "Failed to send forgot password email.",
+  ForgotPasswordEmailSent: "Forgot password email sent successfully.",
+  PasswordResetSuccess: "Password reset successful.",
   UnexpectedErrorLogin:
     "An unexpected error occurred during login. Please try again later.",
   UnexpectedErrorRegister:

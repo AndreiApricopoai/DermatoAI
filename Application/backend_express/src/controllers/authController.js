@@ -4,7 +4,7 @@ const authService = require("../services/internal/authService");
 const {
   StatusCodes,
   AuthMessages,
-  GoogleMessages,
+  GoogleMessages
 } = require("../responses/apiConstants");
 
 // DermatoAI account login

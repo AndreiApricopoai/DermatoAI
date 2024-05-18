@@ -34,7 +34,7 @@ const getAllMessagesByConversationId = async (conversationId, userId, page, limi
     const messages = await query.exec();
 
     const formattedMessages = messages.map(message => ({
-      id: message._id.toString(),
+      id: message._id,
       sender: message.sender,
       content: message.messageContent
     }));
