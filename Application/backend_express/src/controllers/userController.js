@@ -8,7 +8,6 @@ const getProfile = async (req, res) => {
 
     const result = await userService.getProfileInformation(userId);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -24,7 +23,6 @@ const getVerifiedStatus = async (req, res) => {
 
     const result = await userService.getVerifiedStatus(userId);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {

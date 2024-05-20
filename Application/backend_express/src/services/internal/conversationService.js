@@ -2,44 +2,44 @@ const Conversation = require("../../models/conversationModel");
 const Message = require("../../models/messageModel");
 const User = require("../../models/userModel");
 const mongoose = require("mongoose");
-const { 
+const {
   ErrorMessages,
   StatusCodes,
   ResponseTypes,
-  UserMessages 
+  UserMessages,
 } = require("../../responses/apiConstants");
 
 const getConversationById = async (conversationId, userId) => {
   try {
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      userId
+      userId,
     }).exec();
 
     if (!conversation) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: ErrorMessages.NotFound
+        error: ErrorMessages.NotFound,
       };
     }
 
     responseData = {
       id: conversation._id,
-      title: conversation.title
+      title: conversation.title,
     };
 
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
-      data: responseData
+      data: responseData,
     };
   } catch (error) {
     console.error("Error retrieving conversation:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
@@ -53,20 +53,20 @@ const getAllConversationsByUserId = async (userId) => {
 
     const formattedConversations = conversations.map((convo) => ({
       id: convo._id,
-      title: convo.title
+      title: convo.title,
     }));
 
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
-      data: formattedConversations
+      data: formattedConversations,
     };
   } catch (error) {
     console.error("Error retrieving all conversations:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
@@ -78,7 +78,7 @@ const createConversation = async (userId, payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: UserMessages.NotFound
+        error: UserMessages.NotFound,
       };
     }
 
@@ -88,20 +88,20 @@ const createConversation = async (userId, payload) => {
 
     const responseData = {
       id: newConversation._id.toString(),
-      title: newConversation.title
+      title: newConversation.title,
     };
 
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Created,
-      data: responseData
+      data: responseData,
     };
   } catch (error) {
     console.error("Error creating conversation:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
@@ -110,14 +110,14 @@ const updateConversation = async (conversationId, userId, updatePayload) => {
   try {
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      userId
+      userId,
     }).exec();
 
     if (!conversation) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: ErrorMessages.NotFound
+        error: ErrorMessages.NotFound,
       };
     }
 
@@ -128,20 +128,20 @@ const updateConversation = async (conversationId, userId, updatePayload) => {
 
     const updatedConversationData = {
       id: conversation._id,
-      title: conversation.title
+      title: conversation.title,
     };
 
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
-      data: updatedConversationData
+      data: updatedConversationData,
     };
   } catch (error) {
     console.error("Error updating conversation:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
@@ -153,7 +153,7 @@ const deleteConversation = async (conversationId, userId) => {
   try {
     const result = await Conversation.deleteOne({
       _id: conversationId,
-      userId
+      userId,
     }).session(session);
 
     if (result.deletedCount === 0) {
@@ -162,7 +162,7 @@ const deleteConversation = async (conversationId, userId) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: ErrorMessages.NotFound
+        error: ErrorMessages.NotFound,
       };
     }
 
@@ -172,7 +172,7 @@ const deleteConversation = async (conversationId, userId) => {
 
     return {
       type: ResponseTypes.Success,
-      status: StatusCodes.NoContent
+      status: StatusCodes.NoContent,
     };
   } catch (error) {
     console.error("Error deleting conversation and messages:", error);
@@ -182,7 +182,7 @@ const deleteConversation = async (conversationId, userId) => {
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };

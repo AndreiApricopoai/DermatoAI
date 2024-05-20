@@ -3,7 +3,7 @@ import time
 import configparser
 from azure.storage.queue import QueueClient
 from multiprocessing import Process, Queue
-from prediction_utils import *
+from prediction_utils import Worker
 
 
 def main(number_of_workers):
@@ -75,7 +75,7 @@ def main(number_of_workers):
 
         sys.exit(1)
 
-# Receive messages from the azure queue service and put the message content inside the shared process queue
+    # Receive messages from the azure queue service and put the message content inside the shared process queue
     try:
         while True:
             messages = queue_client.receive_messages(messages_per_page=5)

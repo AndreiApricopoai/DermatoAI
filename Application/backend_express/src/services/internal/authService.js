@@ -2,20 +2,24 @@ require("dotenv").config();
 const User = require("../../models/userModel");
 const RefreshToken = require("../../models/refreshTokenModel");
 const emailService = require("../external/emailService");
-const { getVerificationUrl, getVerificationEmailHtml, getResetPasswordEmailHtml } = require("../../utils/constants");
+const {
+  getVerificationUrl,
+  getVerificationEmailHtml,
+  getResetPasswordEmailHtml,
+} = require("../../utils/constants");
 const {
   createJwtToken,
   extractPayloadJwt,
   getTokenHash,
   isValidJwt,
 } = require("../../utils/authUtils");
-const { 
+const {
   StatusCodes,
   ResponseTypes,
   UserMessages,
   TokenMessages,
   GoogleMessages,
-  AuthMessages
+  AuthMessages,
 } = require("../../responses/apiConstants");
 
 // Login function for DermatoAI account
@@ -29,7 +33,7 @@ const login = async (payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.BadRequest,
-        error: UserMessages.UserEmailNotExists
+        error: UserMessages.UserEmailNotExists,
       };
     }
 
@@ -37,7 +41,7 @@ const login = async (payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.BadRequest,
-        error: GoogleMessages.UserExistsLogin
+        error: GoogleMessages.UserExistsLogin,
       };
     }
 
@@ -46,14 +50,14 @@ const login = async (payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.BadRequest,
-        error: UserMessages.InvalidPassword
+        error: UserMessages.InvalidPassword,
       };
     }
 
     const tokenPayload = {
       userId: user._id,
       firstName: user.firstName,
-      lastName: user.lastName
+      lastName: user.lastName,
     };
 
     const token = createJwtToken(
@@ -71,7 +75,7 @@ const login = async (payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: TokenMessages.TokenCreationError
+        error: TokenMessages.TokenCreationError,
       };
     }
 
@@ -84,7 +88,7 @@ const login = async (payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: TokenMessages.FailedSavingToken
+        error: TokenMessages.FailedSavingToken,
       };
     }
 
@@ -94,7 +98,7 @@ const login = async (payload) => {
       data: {
         message: AuthMessages.LoginSuccess,
         token,
-        refreshToken
+        refreshToken,
       },
     };
   } catch (error) {
@@ -102,7 +106,7 @@ const login = async (payload) => {
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: AuthMessages.UnexpectedErrorLogin
+      error: AuthMessages.UnexpectedErrorLogin,
     };
   }
 };
@@ -119,7 +123,7 @@ const register = async (payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.BadRequest,
-        error: UserMessages.Exists
+        error: UserMessages.Exists,
       };
     }
 
@@ -127,13 +131,13 @@ const register = async (payload) => {
       firstName,
       lastName,
       email: email.toLowerCase(),
-      passwordHash: password
+      passwordHash: password,
     });
 
     const tokenPayload = {
       userId: user._id,
       firstName: user.firstName,
-      lastName: user.lastName
+      lastName: user.lastName,
     };
 
     const token = createJwtToken(
@@ -151,7 +155,7 @@ const register = async (payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: TokenMessages.TokenCreationError
+        error: TokenMessages.TokenCreationError,
       };
     }
 
@@ -164,7 +168,7 @@ const register = async (payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: TokenMessages.FailedSavingToken
+        error: TokenMessages.FailedSavingToken,
       };
     }
     await user.save();
@@ -179,7 +183,7 @@ const register = async (payload) => {
         sentVerification:
           sendVerificationResult.type === "success" ? true : false,
         token,
-        refreshToken
+        refreshToken,
       },
     };
   } catch (error) {
@@ -187,7 +191,7 @@ const register = async (payload) => {
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: AuthMessages.UnexpectedErrorRegister
+      error: AuthMessages.UnexpectedErrorRegister,
     };
   }
 };
@@ -199,7 +203,7 @@ const handleGoogleCallback = async (payload) => {
     const tokenPayload = {
       userId: _id,
       firstName: firstName,
-      lastName: lastName
+      lastName: lastName,
     };
 
     const token = createJwtToken(
@@ -217,17 +221,20 @@ const handleGoogleCallback = async (payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: TokenMessages.TokenCreationError
+        error: TokenMessages.TokenCreationError,
       };
     }
 
-    const saveRefreshToken = await saveRefreshTokenToCollection(refreshToken, _id);
+    const saveRefreshToken = await saveRefreshTokenToCollection(
+      refreshToken,
+      _id
+    );
 
     if (!saveRefreshToken) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: TokenMessages.FailedSavingToken
+        error: TokenMessages.FailedSavingToken,
       };
     }
 
@@ -237,7 +244,7 @@ const handleGoogleCallback = async (payload) => {
       data: {
         message: GoogleMessages.Success,
         token,
-        refreshToken
+        refreshToken,
       },
     };
   } catch (error) {
@@ -245,7 +252,7 @@ const handleGoogleCallback = async (payload) => {
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: GoogleMessages.Error
+      error: GoogleMessages.Error,
     };
   }
 };
@@ -256,28 +263,28 @@ const logout = async (userId, refreshToken) => {
     const refreshTokenHash = getTokenHash(refreshToken);
     const result = await RefreshToken.findOneAndDelete({
       user: userId,
-      tokenHash: refreshTokenHash
+      tokenHash: refreshTokenHash,
     }).exec();
 
     if (!refreshTokenHash || !result) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: TokenMessages.NoTokenFound
+        error: TokenMessages.NoTokenFound,
       };
     }
 
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
-      data: { message: AuthMessages.LogoutSuccess }
+      data: { message: AuthMessages.LogoutSuccess },
     };
   } catch (error) {
     console.error("Error during logout:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: AuthMessages.UnexpectedErrorLogout
+      error: AuthMessages.UnexpectedErrorLogout,
     };
   }
 };
@@ -288,14 +295,14 @@ const getAccessToken = async (userId, refreshToken) => {
     const refreshTokenHash = getTokenHash(refreshToken);
     const existsRefreshToken = await RefreshToken.findOne({
       user: userId,
-      tokenHash: refreshTokenHash
+      tokenHash: refreshTokenHash,
     }).exec();
 
     if (!refreshTokenHash || !existsRefreshToken) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: TokenMessages.NoTokenFound
+        error: TokenMessages.NoTokenFound,
       };
     }
 
@@ -304,7 +311,7 @@ const getAccessToken = async (userId, refreshToken) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.Unauthorized,
-        error: TokenMessages.TokenExpired
+        error: TokenMessages.TokenExpired,
       };
     }
 
@@ -313,7 +320,7 @@ const getAccessToken = async (userId, refreshToken) => {
     const newAccessTokenPayload = {
       userId: extracted.userId,
       firstName: extracted.firstName,
-      lastName: extracted.lastName
+      lastName: extracted.lastName,
     };
 
     const newAccessToken = createJwtToken(
@@ -326,7 +333,7 @@ const getAccessToken = async (userId, refreshToken) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: TokenMessages.TokenCreationError
+        error: TokenMessages.TokenCreationError,
       };
     }
 
@@ -335,16 +342,15 @@ const getAccessToken = async (userId, refreshToken) => {
       status: StatusCodes.Ok,
       data: {
         message: TokenMessages.TokenRefreshed,
-        token: newAccessToken
-      }
+        token: newAccessToken,
+      },
     };
-
   } catch (error) {
     console.error("Error during new access token generation:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: TokenMessages.UnexpectedError
+      error: TokenMessages.UnexpectedError,
     };
   }
 };
@@ -358,7 +364,7 @@ const sendVerificationEmail = async (email) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: UserMessages.UserEmailNotExists
+        error: UserMessages.UserEmailNotExists,
       };
     }
 
@@ -366,18 +372,18 @@ const sendVerificationEmail = async (email) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.BadRequest,
-        error: UserMessages.UserAlreadyVerified
+        error: UserMessages.UserAlreadyVerified,
       };
     }
 
     const tokenPayload = {
       userId: user._id,
-      email: user.email.toLowerCase()
+      email: user.email.toLowerCase(),
     };
 
     const verificationToken = createJwtToken(
       process.env.VERIFICATION_TOKEN_SECRET,
-      "24h",
+      "1h",
       tokenPayload
     );
 
@@ -385,7 +391,7 @@ const sendVerificationEmail = async (email) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: TokenMessages.TokenCreationError
+        error: TokenMessages.TokenCreationError,
       };
     }
 
@@ -402,7 +408,7 @@ const sendVerificationEmail = async (email) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: AuthMessages.EmailSendError
+        error: AuthMessages.EmailSendError,
       };
     }
 
@@ -410,15 +416,15 @@ const sendVerificationEmail = async (email) => {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
       data: {
-        message: AuthMessages.EmailVerificationSent
-      }
+        message: AuthMessages.EmailVerificationSent,
+      },
     };
   } catch (error) {
     console.error("Failed to send verification email:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: AuthMessages.UnexpectedErrorVerifyEmail
+      error: AuthMessages.UnexpectedErrorVerifyEmail,
     };
   }
 };
@@ -434,7 +440,7 @@ const verifyEmail = async (verificationToken) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: UserMessages.UserEmailNotExists
+        error: UserMessages.UserEmailNotExists,
       };
     }
 
@@ -442,7 +448,7 @@ const verifyEmail = async (verificationToken) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.BadRequest,
-        error: UserMessages.UserAlreadyVerified
+        error: UserMessages.UserAlreadyVerified,
       };
     }
 
@@ -450,7 +456,7 @@ const verifyEmail = async (verificationToken) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.BadRequest,
-        error: UserMessages.InvalidEmail
+        error: UserMessages.InvalidEmail,
       };
     }
 
@@ -461,15 +467,15 @@ const verifyEmail = async (verificationToken) => {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
       data: {
-        message: AuthMessages.EmailVerified
-      }
+        message: AuthMessages.EmailVerified,
+      },
     };
   } catch (error) {
     console.error("Error verifying email:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: AuthMessages.UnexpectedErrorVerifyEmail
+      error: AuthMessages.UnexpectedErrorVerifyEmail,
     };
   }
 };
@@ -484,7 +490,7 @@ const changePassword = async (userId, payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: UserMessages.NotFound
+        error: UserMessages.NotFound,
       };
     }
 
@@ -492,7 +498,7 @@ const changePassword = async (userId, payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.BadRequest,
-        error: GoogleMessages.ChangePasswordFromGoogle
+        error: GoogleMessages.ChangePasswordFromGoogle,
       };
     }
 
@@ -501,7 +507,7 @@ const changePassword = async (userId, payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.BadRequest,
-        error: AuthMessages.InvalidOldPassword
+        error: AuthMessages.InvalidOldPassword,
       };
     }
 
@@ -512,15 +518,15 @@ const changePassword = async (userId, payload) => {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
       data: {
-        message: AuthMessages.PasswordChanged
-      }
+        message: AuthMessages.PasswordChanged,
+      },
     };
   } catch (error) {
     console.error("Error changing password:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: AuthMessages.UnexpectedErrorPasswordChange
+      error: AuthMessages.UnexpectedErrorPasswordChange,
     };
   }
 };
@@ -533,7 +539,7 @@ const sendForgotPasswordEmail = async (email) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: UserMessages.UserEmailNotExists
+        error: UserMessages.UserEmailNotExists,
       };
     }
 
@@ -541,18 +547,18 @@ const sendForgotPasswordEmail = async (email) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.BadRequest,
-        error: GoogleMessages.ResetPasswordFromGoogle
+        error: GoogleMessages.ResetPasswordFromGoogle,
       };
     }
 
     const tokenPayload = {
       userId: user._id,
-      email: user.email.toLowerCase()
+      email: user.email.toLowerCase(),
     };
 
     const forgotPasswordToken = createJwtToken(
       process.env.FORGOT_PASSWORD_TOKEN_SECRET,
-      "24h",
+      "15m",
       tokenPayload
     );
 
@@ -560,7 +566,7 @@ const sendForgotPasswordEmail = async (email) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: TokenMessages.TokenCreationError
+        error: TokenMessages.TokenCreationError,
       };
     }
     const html = getResetPasswordEmailHtml(forgotPasswordToken);
@@ -575,7 +581,7 @@ const sendForgotPasswordEmail = async (email) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: AuthMessages.ForgotPasswordEmailFailed
+        error: AuthMessages.ForgotPasswordEmailFailed,
       };
     }
 
@@ -583,16 +589,15 @@ const sendForgotPasswordEmail = async (email) => {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
       data: {
-        message: AuthMessages.ForgotPasswordEmailSent
-      }
+        message: AuthMessages.ForgotPasswordEmailSent,
+      },
     };
-
   } catch (error) {
     console.error("Failed to send forgot password email:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: AuthMessages.UnexpectedErrorForgotPassword
+      error: AuthMessages.UnexpectedErrorForgotPassword,
     };
   }
 };
@@ -602,12 +607,12 @@ const resetPassword = async (userId, payload) => {
   try {
     const { forgotPasswordToken, password } = payload;
     const user = await User.findOne({ _id: userId }).exec();
-    
+
     if (!user) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: UserMessages.NotFound
+        error: UserMessages.NotFound,
       };
     }
 
@@ -615,7 +620,7 @@ const resetPassword = async (userId, payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.BadRequest,
-        error: GoogleMessages.ResetPasswordFromGoogle
+        error: GoogleMessages.ResetPasswordFromGoogle,
       };
     }
 
@@ -624,7 +629,7 @@ const resetPassword = async (userId, payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.BadRequest,
-        error: TokenMessages.TokenPayloadInvalid
+        error: TokenMessages.TokenPayloadInvalid,
       };
     }
 
@@ -635,7 +640,7 @@ const resetPassword = async (userId, payload) => {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
       data: {
-        message: AuthMessages.PasswordResetSuccess
+        message: AuthMessages.PasswordResetSuccess,
       },
     };
   } catch (error) {
@@ -643,7 +648,7 @@ const resetPassword = async (userId, payload) => {
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: AuthMessages.UnexpectedErrorResetPassword
+      error: AuthMessages.UnexpectedErrorResetPassword,
     };
   }
 };
@@ -655,7 +660,7 @@ const saveRefreshTokenToCollection = async (refreshToken, userId) => {
 
   const hash = getTokenHash(refreshToken);
   if (!hash) return false;
-  
+
   await new RefreshToken({
     user: userId,
     tokenHash: hash,

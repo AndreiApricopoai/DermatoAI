@@ -1,8 +1,8 @@
 const User = require("../../models/userModel");
-const { 
+const {
   StatusCodes,
   ResponseTypes,
-  UserMessages 
+  UserMessages,
 } = require("../../responses/apiConstants");
 
 const getProfileInformation = async (userId) => {
@@ -13,7 +13,7 @@ const getProfileInformation = async (userId) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: UserMessages.NotFound
+        error: UserMessages.NotFound,
       };
     }
 
@@ -22,20 +22,20 @@ const getProfileInformation = async (userId) => {
       lastName: user.lastName,
       email: user.email,
       profilePhoto: user.profilePhoto,
-      verified: user.verified
+      verified: user.verified,
     };
 
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
-      data: responseData
+      data: responseData,
     };
   } catch (error) {
     console.error("Error retrieving user:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: UserMessages.FailedRetrieve
+      error: UserMessages.FailedRetrieve,
     };
   }
 };
@@ -48,7 +48,7 @@ const getVerifiedStatus = async (userId) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: UserMessages.NotFound
+        error: UserMessages.NotFound,
       };
     }
 
@@ -66,7 +66,7 @@ const getVerifiedStatus = async (userId) => {
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: UserMessages.FailedRetrieve
+      error: UserMessages.FailedRetrieve,
     };
   }
 };

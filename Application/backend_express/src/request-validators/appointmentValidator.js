@@ -6,13 +6,13 @@ const createAppointmentSchema = Joi.object({
   description: Joi.string().trim().max(500).optional(),
   appointmentDate: Joi.date().min(new Date()).required(),
   institutionName: Joi.string().trim().max(100).optional(),
-  address: Joi.string().trim().max(200).optional(),
+  address: Joi.string().trim().max(200).optional()
 }).unknown(false);
 
 const createAppointmentValidator = (req, res, next) => {
   const payload = req.body;
   const { error } = createAppointmentSchema.validate(payload, {
-    abortEarly: false,
+    abortEarly: false
   });
 
   if (handleValidationError(error, res)) return;
@@ -24,7 +24,7 @@ const updateAppointmentSchema = Joi.object({
   description: Joi.string().trim().max(500).optional(),
   appointmentDate: Joi.date().min(new Date()).optional(),
   institutionName: Joi.string().trim().max(100).optional(),
-  address: Joi.string().trim().max(200).optional(),
+  address: Joi.string().trim().max(200).optional()
 })
   .or("title", "description", "appointmentDate", "institutionName", "address")
   .unknown(false);
@@ -32,7 +32,7 @@ const updateAppointmentSchema = Joi.object({
 const updateAppointmentValidator = (req, res, next) => {
   const payload = req.body;
   const { error } = updateAppointmentSchema.validate(payload, {
-    abortEarly: false,
+    abortEarly: false
   });
 
   if (handleValidationError(error, res)) return;
@@ -41,5 +41,5 @@ const updateAppointmentValidator = (req, res, next) => {
 
 module.exports = {
   createAppointmentValidator,
-  updateAppointmentValidator,
+  updateAppointmentValidator
 };

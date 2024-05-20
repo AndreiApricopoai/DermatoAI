@@ -12,7 +12,6 @@ const getPrediction = async (req, res) => {
       userId
     );
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -28,7 +27,6 @@ const getAllPredictions = async (req, res) => {
 
     const result = await predictionService.getAllPredictionsByUserId(userId);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -48,7 +46,6 @@ const createPrediction = async (req, res) => {
       imageBuffer
     );
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -70,7 +67,6 @@ const updatePredictionUser = async (req, res) => {
       updatePayload
     );
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -92,7 +88,6 @@ const updatePredictionWorker = async (req, res) => {
       workerUpdatePayload
     );
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -112,7 +107,6 @@ const deletePrediction = async (req, res) => {
       userId
     );
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {

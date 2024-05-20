@@ -4,11 +4,9 @@ const crypto = require("crypto");
 const createJwtToken = (secretKey, expirationDate, payload) => {
   try {
     if (!payload || !secretKey) return null;
-
     const token = jwt.sign(payload, secretKey, { expiresIn: expirationDate });
     return token;
   } catch (error) {
-    console.error("Error creating JWT:", error);
     return null;
   }
 };
@@ -16,11 +14,9 @@ const createJwtToken = (secretKey, expirationDate, payload) => {
 const isValidJwt = (token, secretKey) => {
   try {
     if (!token || !secretKey) return false;
-
     jwt.verify(token, secretKey);
     return true;
   } catch (error) {
-    console.error("Error verifying JWT:", error);
     return false;
   }
 };
@@ -35,10 +31,8 @@ const extractPayloadJwt = (jwtToken) => {
     if (!decoded) {
       return null;
     }
-
     return decoded;
   } catch (error) {
-    console.error("Error extracting JWT payload:", error);
     return null;
   }
 };

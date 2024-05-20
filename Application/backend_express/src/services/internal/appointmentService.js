@@ -1,24 +1,24 @@
 const Appointment = require("../../models/appointmentModel");
 const User = require("../../models/userModel");
-const { 
+const {
   ErrorMessages,
   StatusCodes,
   ResponseTypes,
-  UserMessages
+  UserMessages,
 } = require("../../responses/apiConstants");
 
 const getAppointmentById = async (appointmentId, userId) => {
   try {
     const appointment = await Appointment.findOne({
       _id: appointmentId,
-      userId
+      userId,
     }).exec();
 
     if (!appointment) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: ErrorMessages.NotFound
+        error: ErrorMessages.NotFound,
       };
     }
 
@@ -28,20 +28,20 @@ const getAppointmentById = async (appointmentId, userId) => {
       description: appointment.description,
       appointmentDate: appointment.appointmentDate,
       institutionName: appointment.institutionName,
-      address: appointment.address
+      address: appointment.address,
     };
 
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
-      data: responseData
+      data: responseData,
     };
   } catch (error) {
     console.error("Error retrieving appointment:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
@@ -58,20 +58,20 @@ const getAllAppointmentsByUserId = async (userId) => {
       description: appointment.description,
       appointmentDate: appointment.appointmentDate,
       institutionName: appointment.institutionName,
-      address: appointment.address
+      address: appointment.address,
     }));
 
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
-      data: formattedAppointments
+      data: formattedAppointments,
     };
   } catch (error) {
     console.error("Error retrieving all appointments:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
@@ -83,7 +83,7 @@ const createAppointment = async (userId, payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: UserMessages.NotFound
+        error: UserMessages.NotFound,
       };
     }
 
@@ -96,20 +96,20 @@ const createAppointment = async (userId, payload) => {
       description: newAppointment.description,
       appointmentDate: newAppointment.appointmentDate,
       institutionName: newAppointment.institutionName,
-      address: newAppointment.address
+      address: newAppointment.address,
     };
 
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Created,
-      data: responseData
+      data: responseData,
     };
   } catch (error) {
     console.error("Error creating appointment:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
@@ -125,7 +125,7 @@ const updateAppointment = async (appointmentId, userId, updatePayload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: ErrorMessages.NotFound
+        error: ErrorMessages.NotFound,
       };
     }
 
@@ -140,20 +140,20 @@ const updateAppointment = async (appointmentId, userId, updatePayload) => {
       description: appointment.description,
       appointmentDate: appointment.appointmentDate,
       institutionName: appointment.institutionName,
-      address: appointment.address
+      address: appointment.address,
     };
 
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
-      data: updatedAppointmentData
+      data: updatedAppointmentData,
     };
   } catch (error) {
     console.error("Error updating appointment:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
@@ -162,27 +162,27 @@ const deleteAppointment = async (appointmentId, userId) => {
   try {
     const result = await Appointment.deleteOne({
       _id: appointmentId,
-      userId
+      userId,
     }).exec();
 
     if (result.deletedCount === 0) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: ErrorMessages.NotFound
+        error: ErrorMessages.NotFound,
       };
     }
 
     return {
       type: ResponseTypes.Success,
-      status: StatusCodes.NoContent
+      status: StatusCodes.NoContent,
     };
   } catch (error) {
     console.error("Error deleting appointment:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };

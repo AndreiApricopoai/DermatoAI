@@ -1,10 +1,10 @@
 const Feedback = require("../../models/feedbackModel");
 const User = require("../../models/userModel");
-const { 
+const {
   ErrorMessages,
   StatusCodes,
   ResponseTypes,
-  UserMessages 
+  UserMessages,
 } = require("../../responses/apiConstants");
 
 const createFeedback = async (userId, payload) => {
@@ -14,7 +14,7 @@ const createFeedback = async (userId, payload) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: UserMessages.NotFound
+        error: UserMessages.NotFound,
       };
     }
 
@@ -24,18 +24,18 @@ const createFeedback = async (userId, payload) => {
 
     return {
       type: ResponseTypes.Success,
-      status: StatusCodes.Created
+      status: StatusCodes.Created,
     };
   } catch (error) {
     console.error("Error creating feedback:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
 
 module.exports = {
-  createFeedback
+  createFeedback,
 };

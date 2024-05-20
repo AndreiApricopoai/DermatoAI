@@ -12,7 +12,6 @@ const getConversation = async (req, res) => {
       userId
     );
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -29,7 +28,6 @@ const getAllConversations = async (req, res) => {
     const result =
       await conversationService.getAllConversationsByUserId(userId);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -50,7 +48,6 @@ const createConversation = async (req, res) => {
       payload
     );
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -72,7 +69,6 @@ const updateConversation = async (req, res) => {
       updatePayload
     );
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -92,7 +88,6 @@ const deleteConversation = async (req, res) => {
       userId
     );
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {

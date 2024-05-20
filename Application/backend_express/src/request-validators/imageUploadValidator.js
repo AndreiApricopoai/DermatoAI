@@ -2,15 +2,15 @@ const ApiResponse = require("../responses/apiResponse");
 const sharp = require("sharp");
 const {
   ImageUploadMessages,
-  StatusCode,
+  StatusCodes,
 } = require("../responses/apiConstants");
 
 const validateImage = async (req, res, next) => {
   try {
     if (!req.file || !req.file.buffer) {
       return ApiResponse.error(res, {
-        statusCode: StatusCode.BadRequest,
-        error: ImageUploadMessages.NoImageUploaded,
+        statusCode: StatusCodes.BadRequest,
+        error: ImageUploadMessages.NoImageUploaded
       });
     }
 
@@ -23,8 +23,8 @@ const validateImage = async (req, res, next) => {
       Math.abs(metadata.width / metadata.height - 4 / 3) > 0.01
     ) {
       return ApiResponse.error(res, {
-        statusCode: StatusCode.BadRequest,
-        error: ImageUploadMessages.InvalidImage,
+        statusCode: StatusCodes.BadRequest,
+        error: ImageUploadMessages.InvalidImage
       });
     }
 
@@ -32,8 +32,8 @@ const validateImage = async (req, res, next) => {
   } catch (error) {
     console.error("Image validation error:", error);
     return ApiResponse.error(res, {
-      statusCode: StatusCode.InternalServerError,
-      error: ImageUploadMessages.ValidationFailed,
+      statusCode: StatusCodes.InternalServerError,
+      error: ImageUploadMessages.ValidationFailed
     });
   }
 };

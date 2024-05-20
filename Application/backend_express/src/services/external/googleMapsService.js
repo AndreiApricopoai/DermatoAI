@@ -2,7 +2,7 @@ require("dotenv").config();
 const {
   getGoogleMapsPlaceUrl,
   GOOGLE_DERMATOLOGICAL_PLACE,
-} = require("../utils/constants");
+} = require("../../utils/constants");
 const { Client } = require("@googlemaps/google-maps-services-js");
 const client = new Client({});
 

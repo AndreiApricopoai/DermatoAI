@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const { MongooseMessages, StatusCode } = require("../responses/apiConstants");
+const ApiResponse = require("../responses/apiResponse");
+const { MongooseMessages, StatusCodes } = require("../responses/apiConstants");
 
 const validateParamId = (req, res, next) => {
   for (const key in req.params) {
@@ -7,7 +8,7 @@ const validateParamId = (req, res, next) => {
       const value = req.params[key];
       if (!mongoose.Types.ObjectId.isValid(value)) {
         return ApiResponse.error(res, {
-          statusCode: StatusCode.BAD_REQUEST,
+          statusCode: StatusCodes.BadRequest,
           error: MongooseMessages.CastError,
         });
       }

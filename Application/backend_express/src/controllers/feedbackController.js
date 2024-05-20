@@ -10,7 +10,6 @@ const createFeedback = async (req, res) => {
 
     const result = await feedbackService.createFeedback(userId, payload);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {

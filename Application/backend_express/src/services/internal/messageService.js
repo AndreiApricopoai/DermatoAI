@@ -3,13 +3,18 @@ const Conversation = require("../../models/conversationModel");
 const mongoose = require("mongoose");
 const { getOpenAIResponse } = require("../external/openaiService");
 const { dermatologicalChat } = require("../../utils/constants");
-const { 
+const {
   ErrorMessages,
   StatusCodes,
-  ResponseTypes 
+  ResponseTypes,
 } = require("../../responses/apiConstants");
 
-const getAllMessagesByConversationId = async (conversationId, userId, page, limit) => {
+const getAllMessagesByConversationId = async (
+  conversationId,
+  userId,
+  page,
+  limit
+) => {
   try {
     const conversationExists = await Conversation.findOne({
       _id: conversationId,
@@ -20,7 +25,7 @@ const getAllMessagesByConversationId = async (conversationId, userId, page, limi
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: ErrorMessages.NotFound
+        error: ErrorMessages.NotFound,
       };
     }
 
@@ -33,10 +38,10 @@ const getAllMessagesByConversationId = async (conversationId, userId, page, limi
     }
     const messages = await query.exec();
 
-    const formattedMessages = messages.map(message => ({
+    const formattedMessages = messages.map((message) => ({
       id: message._id,
       sender: message.sender,
-      content: message.messageContent
+      content: message.messageContent,
     }));
 
     return {
@@ -49,7 +54,7 @@ const getAllMessagesByConversationId = async (conversationId, userId, page, limi
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
@@ -74,7 +79,7 @@ const addMessageToConversation = async (
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: ErrorMessages.NotFound
+        error: ErrorMessages.NotFound,
       };
     }
 
@@ -98,7 +103,7 @@ const addMessageToConversation = async (
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: ErrorMessages.FetchError
+        error: ErrorMessages.FetchError,
       };
     }
 
@@ -118,11 +123,11 @@ const addMessageToConversation = async (
       data: {
         userMessage: {
           id: userMessage._id,
-          content: userMessage.messageContent
+          content: userMessage.messageContent,
         },
         assistantMessage: {
           id: assistantMessage._id,
-          content: assistantMessage.messageContent
+          content: assistantMessage.messageContent,
         },
       },
     };
@@ -134,7 +139,7 @@ const addMessageToConversation = async (
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };

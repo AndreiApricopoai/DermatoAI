@@ -1,29 +1,30 @@
-require('dotenv').config();
-const Prediction = require('../../models/predictionModel');
+require("dotenv").config();
+const Prediction = require("../../models/predictionModel");
 const User = require("../../models/userModel");
-const azure = require('../external/azureStorageService');
-const { createJwtToken, getTokenHash } = require('../../utils/authUtils');
-const { 
+const azure = require("../external/azureStorageService");
+const { createJwtToken, getTokenHash } = require("../../utils/authUtils");
+const { getAzureBlobSasUrl } = require("../../utils/constants");
+const {
   ErrorMessages,
   StatusCodes,
   ResponseTypes,
   UserMessages,
   TokenMessages,
-  PredictionMessages
+  PredictionMessages,
 } = require("../../responses/apiConstants");
 
 const getPredictionById = async (predictionId, userId) => {
   try {
     const prediction = await Prediction.findOne({
       _id: predictionId,
-      userId
-      }).exec();
+      userId,
+    }).exec();
 
     if (!prediction) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: ErrorMessages.NotFound
+        error: ErrorMessages.NotFound,
       };
     }
 
@@ -32,7 +33,7 @@ const getPredictionById = async (predictionId, userId) => {
       userId: prediction.userId,
       title: prediction.title,
       description: prediction.description,
-      imageUrl: prediction.imageUrl,
+      imageUrl: getAzureBlobSasUrl(prediction.imageUrl),
       isHealthy: prediction.isHealthy,
       diagnosisName: prediction.diagnosisName,
       diagnosisCode: prediction.diagnosisCode,
@@ -44,28 +45,30 @@ const getPredictionById = async (predictionId, userId) => {
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
-      data: responseData
+      data: responseData,
     };
   } catch (error) {
     console.error("Error retrieving prediction:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
 
 const getAllPredictionsByUserId = async (userId) => {
   try {
-    const predictions = await Prediction.find({ userId }).sort({ dateTime: 1 }).exec();
+    const predictions = await Prediction.find({ userId })
+      .sort({ dateTime: 1 })
+      .exec();
 
     const formattedPredictions = predictions.map((prediction) => ({
       id: prediction._id,
       userId: prediction.userId,
       title: prediction.title,
       description: prediction.description,
-      imageUrl: prediction.imageUrl,
+      imageUrl: getAzureBlobSasUrl(prediction.imageUrl),
       isHealthy: prediction.isHealthy,
       diagnosisName: prediction.diagnosisName,
       diagnosisCode: prediction.diagnosisCode,
@@ -77,14 +80,14 @@ const getAllPredictionsByUserId = async (userId) => {
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
-      data: formattedPredictions
+      data: formattedPredictions,
     };
   } catch (error) {
     console.error("Error retrieving all predictions", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
@@ -99,7 +102,7 @@ const createPrediction = async (userId, imageBuffer) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: UserMessages.NotFound
+        error: UserMessages.NotFound,
       };
     }
 
@@ -107,29 +110,33 @@ const createPrediction = async (userId, imageBuffer) => {
     imageUrl = await azure.uploadImageToBlob(imageBuffer, imageName);
 
     const tokenPayload = { userId };
-    const workerToken = createJwtToken(process.env.WORKER_TOKEN_SECRET, '7d', tokenPayload);
+    const workerToken = createJwtToken(
+      process.env.WORKER_TOKEN_SECRET,
+      "7d",
+      tokenPayload
+    );
     const workerTokenHash = getTokenHash(workerToken);
-    
+
     if (!workerToken || !workerTokenHash) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: TokenMessages.TokenCreationError
+        error: TokenMessages.TokenCreationError,
       };
     }
 
     prediction = new Prediction({
       userId,
       workerTokenHash,
-      imageUrl
+      imageUrl,
     });
     await prediction.save();
 
     const queueMessage = {
-      id: prediction._id.toString(),
+      predictionId: prediction._id.toString(),
       userId: userId.toString(),
       workerToken,
-      imageUrl
+      imageUrl,
     };
     await azure.addToQueue(queueMessage);
 
@@ -140,51 +147,52 @@ const createPrediction = async (userId, imageBuffer) => {
         message: PredictionMessages.Created,
         prediction: {
           predictionId: prediction._id,
-          userId,
-          title,
-          status,
-          imageUrl
-        }
-      }
+          userId: prediction.userId,
+          title: prediction.title,
+          status: prediction.status,
+          imageUrl: getAzureBlobSasUrl(prediction.imageUrl),
+        },
+      },
     };
-  }
-  catch (error) {
-    console.error('Error in createPrediction service:', error);
+  } catch (error) {
+    console.error("Error in createPrediction service:", error);
     try {
       if (imageUrl) {
-        const blobName = imageUrl.split('/').pop();
+        const blobName = imageUrl.split("/").pop();
         await azure.deleteImageFromBlob(blobName);
       }
       if (prediction && prediction._id) {
         await Prediction.findByIdAndDelete(prediction._id);
       }
-      console.error('Rollback successful after initial failure.');
-
+      console.error("Rollback successful after initial failure.");
     } catch (rollbackError) {
-      console.error('Error during rollback:', rollbackError);
+      console.error("Error during rollback:", rollbackError);
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: PredictionMessages.RollbackFailed
+        error: PredictionMessages.RollbackFailed,
       };
     }
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: PredictionMessages.RollbackSucceeded
+      error: PredictionMessages.RollbackSucceeded,
     };
   }
 };
 
 const updatePredictionUser = async (predictionId, userId, updatePayload) => {
   try {
-    const prediction = await Prediction.findOne({ _id: predictionId, userId }).exec();
+    const prediction = await Prediction.findOne({
+      _id: predictionId,
+      userId,
+    }).exec();
 
     if (!prediction) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: ErrorMessages.NotFound
+        error: ErrorMessages.NotFound,
       };
     }
 
@@ -198,7 +206,7 @@ const updatePredictionUser = async (predictionId, userId, updatePayload) => {
       userId: prediction.userId,
       title: prediction.title,
       description: prediction.description,
-      imageUrl: prediction.imageUrl,
+      imageUrl: getAzureBlobSasUrl(prediction.imageUrl),
       isHealthy: prediction.isHealthy,
       diagnosisName: prediction.diagnosisName,
       diagnosisCode: prediction.diagnosisCode,
@@ -206,7 +214,6 @@ const updatePredictionUser = async (predictionId, userId, updatePayload) => {
       confidenceLevel: prediction.confidenceLevel,
       status: prediction.status,
     };
-
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
@@ -217,32 +224,40 @@ const updatePredictionUser = async (predictionId, userId, updatePayload) => {
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
 
-const updatePredictionWorker = async (predictionId, userId, workerUpdatePayload) => {
+const updatePredictionWorker = async (
+  predictionId,
+  userId,
+  workerUpdatePayload
+) => {
   try {
-    const prediction = await Prediction.findOne({ _id: predictionId, userId }).exec();
+    const prediction = await Prediction.findOne({
+      _id: predictionId,
+      userId,
+    }).exec();
 
     if (!prediction) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: ErrorMessages.NotFound
+        error: ErrorMessages.NotFound,
       };
     }
-
     const workerTokenHash = getTokenHash(workerUpdatePayload.workerToken);
-    if (workerTokenHash === null || workerTokenHash !== prediction.workerTokenHash) {
+    if (
+      workerTokenHash === null ||
+      workerTokenHash !== prediction.workerTokenHash
+    ) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.Unauthorized,
-        error: TokenMessages.UnauthorizedToken
+        error: TokenMessages.UnauthorizedToken,
       };
     }
-
     workerUpdatePayload.workerToken = workerTokenHash;
 
     Object.keys(workerUpdatePayload).forEach((key) => {
@@ -255,13 +270,13 @@ const updatePredictionWorker = async (predictionId, userId, workerUpdatePayload)
       userId: prediction.userId,
       title: prediction.title,
       description: prediction.description,
-      imageUrl: prediction.imageUrl,
+      imageUrl: getAzureBlobSasUrl(prediction.imageUrl),
       isHealthy: prediction.isHealthy,
       diagnosisName: prediction.diagnosisName,
       diagnosisCode: prediction.diagnosisCode,
       diagnosisType: prediction.diagnosisType,
       confidenceLevel: prediction.confidenceLevel,
-      status: prediction.status
+      status: prediction.status,
     };
 
     return {
@@ -274,7 +289,7 @@ const updatePredictionWorker = async (predictionId, userId, workerUpdatePayload)
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
@@ -288,32 +303,24 @@ const deletePrediction = async (predictionId, userId) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.NotFound,
-        error: ErrorMessages.NotFound
+        error: ErrorMessages.NotFound,
       };
     }
+    await Prediction.deleteOne({ _id: predictionId });
 
-    const blobName = prediction.imageUrl.split('/').pop();
+    const blobName = prediction.imageUrl.split("/").pop();
     await azure.deleteImageFromBlob(blobName);
 
-    try {
-      await prediction.remove();
-      return {
-        type: ResponseTypes.Success,
-        status: StatusCodes.NoContent
-      };
-    } catch (error) {
-      await prediction.remove(); 
-      return {
-        type: ResponseTypes.Success,
-        status: StatusCodes.NoContent
-      };
-    }
+    return {
+      type: ResponseTypes.Success,
+      status: StatusCodes.NoContent,
+    };
   } catch (error) {
-    console.error("Error deleting prediction or failure after retry:", error);
+    console.error("Error deleting prediction: ", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
@@ -324,5 +331,5 @@ module.exports = {
   getAllPredictionsByUserId,
   updatePredictionUser,
   updatePredictionWorker,
-  deletePrediction
+  deletePrediction,
 };

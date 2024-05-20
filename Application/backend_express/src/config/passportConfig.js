@@ -24,7 +24,7 @@ const verifyCallback = async (
     let user = await User.findOne({ email: email });
 
     if (action === "login") {
-      if (!user) {
+      if (!user || !user.googleId) {
         return done(null, false, { message: GoogleMessages.UserNotFound });
       }
     } else if (action === "register") {

@@ -22,7 +22,7 @@ const registerValidator = (req, res, next) => {
 // Login validation schema using DermatoAI account
 const loginSchema = Joi.object({
   email: Joi.string().trim().email().required().regex(regexPatterns.emailRegex),
-  password: Joi.string().min(3).required(),
+  password: Joi.string().min(3).required()
 }).unknown(false);
 
 const loginValidator = (req, res, next) => {
@@ -63,7 +63,7 @@ const googleAuthValidator = (req, res, next) => {
 
 // Email validation schema for email verification
 const emailSchema = Joi.object({
-  email: Joi.string().trim().email().required().regex(regexPatterns.emailRegex),
+  email: Joi.string().trim().email().required().regex(regexPatterns.emailRegex)
 }).unknown(false);
 
 const emailValidator = (req, res, next) => {

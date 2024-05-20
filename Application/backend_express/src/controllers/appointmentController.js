@@ -12,7 +12,6 @@ const getAppointment = async (req, res) => {
       userId
     );
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -28,7 +27,6 @@ const getAllAppointments = async (req, res) => {
 
     const result = await appointmentService.getAllAppointmentsByUserId(userId);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -53,7 +51,6 @@ const createAppointment = async (req, res) => {
 
     const result = await appointmentService.createAppointment(userId, payload);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -75,7 +72,6 @@ const updateAppointment = async (req, res) => {
       updatePayload
     );
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -95,7 +91,6 @@ const deleteAppointment = async (req, res) => {
       userId
     );
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {

@@ -4,7 +4,7 @@ const authService = require("../services/internal/authService");
 const {
   StatusCodes,
   AuthMessages,
-  GoogleMessages
+  GoogleMessages,
 } = require("../responses/apiConstants");
 
 // DermatoAI account login
@@ -15,7 +15,6 @@ const login = async (req, res) => {
 
     const result = await authService.login(payload);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -33,7 +32,6 @@ const register = async (req, res) => {
 
     const result = await authService.register(payload);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -51,8 +49,7 @@ const googleCallback = async (req, res) => {
         statusCode: StatusCodes.Unauthorized,
         error: GoogleMessages.AuthFailed,
       });
-    }
-    else {
+    } else {
       const { _id, firstName, lastName } = req.user;
       const payload = { _id, firstName, lastName };
 
@@ -76,7 +73,6 @@ const logout = async (req, res) => {
 
     const result = await authService.logout(userId, refreshToken);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -94,7 +90,6 @@ const getAccessToken = async (req, res) => {
 
     const result = await authService.getAccessToken(userId, refreshToken);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -111,7 +106,6 @@ const sendVerificationEmail = async (req, res) => {
 
     const result = await authService.sendVerificationEmail(email);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -132,7 +126,6 @@ const verifyEmail = async (req, res) => {
     } else {
       res.redirect("/email-verification-failure.html");
     }
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -151,7 +144,6 @@ const changePassword = async (req, res) => {
 
     const result = await authService.changePassword(userId, payload);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -168,7 +160,6 @@ const sendForgotPasswordEmail = async (req, res) => {
 
     const result = await authService.sendForgotPasswordEmail(email);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -187,7 +178,6 @@ const resetPassword = async (req, res) => {
 
     const result = await authService.resetPassword(userId, payload);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {

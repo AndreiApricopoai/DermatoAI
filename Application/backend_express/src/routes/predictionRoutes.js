@@ -38,7 +38,7 @@ router.patch(
   predictionController.updatePredictionUser
 );
 router.patch(
-  "worker-updates/:id",
+  "/worker-updates/:id",
   checkWorkerToken,
   validateParamId,
   updateWorkerPredictionValidator,

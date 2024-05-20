@@ -15,7 +15,6 @@ const getAllMessagesFromConversation = async (req, res) => {
       limit
     );
     ApiResponse.handleResponse(res, result);
-    
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -37,7 +36,6 @@ const addMessageToConversation = async (req, res) => {
       messageContent
     );
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {

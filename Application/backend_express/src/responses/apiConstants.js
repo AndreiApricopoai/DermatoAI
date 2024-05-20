@@ -1,6 +1,7 @@
 const StatusCodes = {
   Ok: 200,
   Created: 201,
+  Accepted: 202,
   NoContent: 204,
   BadRequest: 400,
   Unauthorized: 401,
@@ -33,8 +34,10 @@ const GoogleMessages = {
   NoEmail: "No email found from Google profile.",
   UserNotFound: "User not found.",
   UserExists: "User already exists.",
-  ChangePasswordFromGoogle: "User with this email exists. Please change your password from Google.",
-  ResetPasswordFromGoogle: "User with this email exists. Please reset your password from Google.",
+  ChangePasswordFromGoogle:
+    "User with this email exists. Please change your password from Google.",
+  ResetPasswordFromGoogle:
+    "User with this email exists. Please reset your password from Google.",
   UserExistsLogin:
     "Google user with this email exists. Please login with Google.",
   AuthFailed: "Google authentication failed. Please try again.",
@@ -131,12 +134,12 @@ const ImageUploadMessages = {
 const MongooseMessages = {
   CastError: "Invalid object ID.",
   ValidationError: "Validation failed.",
-  VersionError: "Version conflict. The resource has been modified.",
-  MissingFields: "Missing required fields.",
+  MissingID: "Missing required ID query parameter.",
   UnexpectedError: "An unexpected error occurred. Please try again later.",
 };
 
 const WelcomeMessage = "Welcome to DermatoAI API";
+const EndpointNotFound = "Endpoint not found.";
 
 module.exports = {
   StatusCodes,
@@ -150,4 +153,5 @@ module.exports = {
   WelcomeMessage,
   ResponseTypes,
   PredictionMessages,
+  EndpointNotFound,
 };

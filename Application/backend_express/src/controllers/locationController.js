@@ -9,7 +9,6 @@ const getAllLocations = async (req, res) => {
 
     const result = await locationService.findNearbyLocations(params);
     ApiResponse.handleResponse(res, result);
-    
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {
@@ -25,7 +24,6 @@ const getLocationImage = async (req, res) => {
 
     const result = await locationService.getImageFromMapsUrl(photoReference);
     ApiResponse.handleResponse(res, result);
-
   } catch (error) {
     console.log(error);
     ApiResponse.error(res, {

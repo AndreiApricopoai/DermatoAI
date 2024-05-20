@@ -2,10 +2,10 @@ require("dotenv").config();
 const { getGoogleMapsPhotoUrl } = require("../../utils/constants");
 const axios = require("axios");
 const googleMapsService = require("../external/googleMapsService");
-const { 
+const {
   ErrorMessages,
   StatusCodes,
-  ResponseTypes
+  ResponseTypes,
 } = require("../../responses/apiConstants");
 
 const findNearbyLocations = async (params) => {
@@ -22,22 +22,20 @@ const findNearbyLocations = async (params) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: ErrorMessages.FetchError
+        error: ErrorMessages.FetchError,
       };
     }
 
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
-      data: clinics
+      data: clinics,
     };
-
   } catch (error) {
-    console.error("Error retrieving nearby locations:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.UnexpectedError,
     };
   }
 };
@@ -49,11 +47,11 @@ const getImageFromMapsUrl = async (photoReference) => {
       responseType: "arraybuffer",
     });
 
-    if (!response.data) {
+    if (!response || !response.data) {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: ErrorMessages.FetchError
+        error: ErrorMessages.FetchError,
       };
     }
 
@@ -62,7 +60,7 @@ const getImageFromMapsUrl = async (photoReference) => {
       return {
         type: ResponseTypes.Error,
         status: StatusCodes.InternalServerError,
-        error: ErrorMessages.FetchError
+        error: ErrorMessages.FetchError,
       };
     }
 
@@ -71,13 +69,11 @@ const getImageFromMapsUrl = async (photoReference) => {
       status: StatusCodes.Ok,
       data: `data:image/jpeg;base64,${imageBase64}`,
     };
-
   } catch (error) {
-    console.error("Failed to fetch image:", error);
     return {
       type: ResponseTypes.Error,
       status: StatusCodes.InternalServerError,
-      error: ErrorMessages.UnexpectedError
+      error: ErrorMessages.FetchError,
     };
   }
 };

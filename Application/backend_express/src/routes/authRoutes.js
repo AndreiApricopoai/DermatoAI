@@ -58,6 +58,7 @@ router.get("/token", checkRefreshToken, authController.getAccessToken);
 // Email verification routes
 router.post(
   "/send-verification-email",
+  checkAccessToken,
   emailValidator,
   authController.sendVerificationEmail
 );
