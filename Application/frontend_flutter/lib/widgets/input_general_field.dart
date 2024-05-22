@@ -78,6 +78,7 @@ class GeneralInputField extends StatelessWidget {
       ),
       onChanged: onChanged,
       validator: validator,
+      controller: controller,
     );
   }
 }

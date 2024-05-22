@@ -91,6 +91,7 @@ class _PasswordInputFieldState extends State<PasswordInputField> {
       ),
       onChanged: widget.onChanged,
       validator: widget.validator,
+      controller: widget.controller,
     );
   }
 }
