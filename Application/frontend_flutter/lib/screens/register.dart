@@ -1,10 +1,13 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend_flutter/api/api_calls/auth_api.dart';
-import 'package:frontend_flutter/api/models/requests/register_request.dart';
+import 'package:frontend_flutter/api/models/requests/auth_requests/register_request.dart';
 import 'package:frontend_flutter/app/snackbar_manager.dart';
 import 'package:frontend_flutter/extensions/exception_extensions.dart';
 import 'package:frontend_flutter/utils/app_main_theme.dart';
+import 'package:frontend_flutter/utils/constants.dart';
 import 'package:frontend_flutter/validators/input_validators.dart';
 import 'package:frontend_flutter/widgets/button_outline_icon.dart';
 import 'package:frontend_flutter/widgets/button_rounded.dart';
@@ -15,6 +18,10 @@ import 'package:frontend_flutter/widgets/input_password.dart';
 import 'package:frontend_flutter/widgets/loading_overlay.dart';
 import 'package:frontend_flutter/widgets/text_title.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uni_links/uni_links.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:frontend_flutter/extensions/exception_extensions.dart';
+
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -25,6 +32,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  StreamSubscription? _sub;
   bool _isLoading = false;
 
   final _firstNameController = TextEditingController();
@@ -33,6 +41,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  final String termsUrl = '${ApiConstants.baseUrlStatic}terms';
+  final String policyUrl = '${ApiConstants.baseUrlStatic}policy';
+
   @override
   void dispose() {
     _firstNameController.dispose();
@@ -40,7 +51,67 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _sub?.cancel();
     super.dispose();
+  }
+
+
+    @override
+  void initState() {
+    super.initState();
+    _initUniLinks();
+  }
+
+  Future<void> _launchURL(BuildContext context, String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        SnackbarManager.showErrorSnackBar(context, 'Could not launch $url');
+      }
+    } on Exception catch (e) {
+      SnackbarManager.showErrorSnackBar(context, e.getMessage);
+      }
+  }
+
+    Future<void> _initUniLinks() async {
+    _sub = uriLinkStream.listen((Uri? uri) {
+      if (uri != null && uri.scheme == 'yourapp' && uri.host == 'callback') {
+        _handleCallback(uri);
+      }
+    }, onError: (err) {
+      // Handle error
+    });
+  }
+
+    Future<void> _registerWithGoogle() async {
+    const url = '${ApiConstants.baseUrlGoogle}auth/google/register';
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  void _handleCallback(Uri uri) {
+    final responseStr = uri.queryParameters['response'];
+    if (responseStr != null) {
+      final response = json.decode(responseStr);
+      if (response['isSuccess'] == true) {
+        // Handle successful login
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        // Handle login failure
+        SnackbarManager.showErrorSnackBar(context, 'Google register failed: ${response['errorMessage']}');
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Google register failed: Unknown error')));
+    }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -127,7 +198,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ..onTap = _isLoading
                             ? () {}
                             : () {
-                                // Define what you want to do when the terms and conditions is tapped
+                                _launchURL(context, termsUrl);
                               },
                     ),
                     const TextSpan(
@@ -141,7 +212,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ..onTap = _isLoading
                             ? () {}
                             : () {
-                                // Define what you want to do when the privacy policy is tapped
+                                _launchURL(context, policyUrl);
                               },
                     ),
                   ],
@@ -183,7 +254,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: _isLoading
                       ? () {}
                       : () {
-                          // Handle Google Sign Up
+                          _registerWithGoogle();
                         }),
               const SizedBox(height: 20),
               Row(

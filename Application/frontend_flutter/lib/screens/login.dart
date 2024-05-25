@@ -9,7 +9,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend_flutter/api/api_calls/auth_api.dart';
-import 'package:frontend_flutter/api/models/requests/login_request.dart';
+import 'package:frontend_flutter/api/models/requests/auth_requests/login_request.dart';
 import 'package:frontend_flutter/app/snackbar_manager.dart';
 import 'package:frontend_flutter/utils/app_main_theme.dart';
 import 'package:frontend_flutter/widgets/button_outline_icon.dart';
@@ -171,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(width: 20),
                       CustomTextButton(
-                        onPressed: _isLoading ? () {} : () {},
+                        onPressed: _isLoading ? () {} : () {Navigator.pushNamed(context, '/forgot_password');},
                         text: 'Forgot Password?',
                         fontSize: 13,
                         color: AppMainTheme.blueLevelFour,

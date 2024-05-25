@@ -58,7 +58,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL:
-        "https://e831-2a02-2f00-c308-7500-a119-c74d-66f1-9486.ngrok-free.app/api/auth/google/login/callback",
+        "https://fe14-109-98-72-124.ngrok-free.app/api/auth/google/login/callback",
     },
     (accessToken, refreshToken, profile, done) => {
       verifyCallback(accessToken, refreshToken, profile, done, "login");
@@ -73,7 +73,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL:
-        "https://e831-2a02-2f00-c308-7500-a119-c74d-66f1-9486.ngrok-free.app/api/auth/google/register/callback",
+        "https://fe14-109-98-72-124.ngrok-free.app/api/auth/google/register/callback",
     },
     (accessToken, refreshToken, profile, done) => {
       verifyCallback(accessToken, refreshToken, profile, done, "register");

@@ -101,21 +101,6 @@ const emailValidator = (req, res, next) => {
   next();
 };
 
-// Get a new access token based on the refresh token 
-const getAccesTokenSchema = Joi.object({
-  refreshToken: Joi.string().required(),
-}).unknown(false);
-
-const getAccesTokenValidator = (req, res, next) => {
-  const payload = req.body;
-  const { error } = getAccesTokenSchema.validate(payload, {
-    abortEarly: false,
-  });
-
-  if (handleValidationError(error, res)) return;
-  next();
-};
-
 // Change password validation schema
 const changePasswordSchema = Joi.object({
   oldPassword: Joi.string().min(3).required(),
@@ -154,7 +139,6 @@ module.exports = {
   registerValidator,
   loginValidator,
   googleAuthValidator,
-  getAccesTokenValidator,
   emailValidator,
   changePasswordValidator,
   resetPasswordValidator,

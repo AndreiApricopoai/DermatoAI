@@ -1,3 +1,4 @@
+import 'package:frontend_flutter/app/session_manager.dart';
 import 'package:frontend_flutter/utils/constants.dart';
 
 class BaseApi {
@@ -12,5 +13,16 @@ class BaseApi {
 
   static Map<String, String> getHeaders() {
     return _headers;
+  }
+
+    static Map<String, String> getHeadersWithAuthorization() {
+    String? accessToken = SessionManager.getAccessToken();
+    if (accessToken == null) {
+      throw Exception('You must be logged in to perform this action.');
+    }
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $accessToken',
+    };
   }
 }

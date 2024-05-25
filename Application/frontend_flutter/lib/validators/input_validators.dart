@@ -46,4 +46,11 @@ class InputValidators {
     }
     return null;
   }
+
+  static String? verificationTokenValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter the verification token';
+    }
+    return null;
+  }
 }

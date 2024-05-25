@@ -14,6 +14,7 @@ const conversationRoutes = require("./src/routes/conversationRoutes");
 const locationRoutes = require("./src/routes/locationRoutes");
 const appointmentRoutes = require("./src/routes/appointmentRoutes");
 const feedbackRoutes = require("./src/routes/feedbackRoutes");
+const staticRoutes = require("./src/routes/staticRoutes");
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use("/api/conversations", conversationRoutes);
 app.use("/api/locations", locationRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/feedbacks", feedbackRoutes);
+app.use("/static", staticRoutes);
 
 // this middleware will be executed if no route is matched
 app.use((req, res) => {

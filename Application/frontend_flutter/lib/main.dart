@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend_flutter/screens/forgot_password.dart';
 import 'package:frontend_flutter/screens/home.dart';
 import 'package:frontend_flutter/screens/login.dart';
 import 'package:frontend_flutter/screens/register.dart';
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/home': (context) =>  HomeScreen(),
         '/register': (context) => RegisterScreen(),
+        '/forgot_password': (context) => ForgotPasswordScreen(),
       },
     );
   }
