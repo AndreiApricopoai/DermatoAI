@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 const regexPatterns = {
-  nameRegex: /^[a-zA-Z',.\- ]+$/,
+  nameRegex: /^[a-zA-Z]+([ \-][a-zA-Z]+)*$/,
   emailRegex: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
 };
 
@@ -24,7 +24,7 @@ const getAzureBlobSasUrl = (blobUrl) => {
 };
 
 const getVerificationUrl = (token) => {
-  const verificationUrl = `http://localhost:3000/api/auth/verify-email?token=${token}`;
+  const verificationUrl = `http://192.168.100.7:3000/api/auth/verify-email?token=${token}`;
   return verificationUrl;
 };
 

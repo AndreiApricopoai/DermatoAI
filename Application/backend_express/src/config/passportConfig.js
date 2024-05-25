@@ -11,10 +11,13 @@ const verifyCallback = async (
   done,
   action
 ) => {
+
+  const badResponse = {
+    isSuccess: false,
+  };
+
   if (!profile.emails || profile.emails.length === 0) {
-    return done(null, false, {
-      message: GoogleMessages.NoEmail,
-    });
+    return done(null, badResponse);
   }
   const email = profile.emails[0].value;
   const googleId = profile.id;
@@ -25,11 +28,11 @@ const verifyCallback = async (
 
     if (action === "login") {
       if (!user || !user.googleId) {
-        return done(null, false, { message: GoogleMessages.UserNotFound });
+        return done(null, badResponse);
       }
     } else if (action === "register") {
       if (user) {
-        return done(null, false, { message: GoogleMessages.UserExists });
+        return done(null, badResponse);
       }
 
       user = await User.create({
@@ -44,9 +47,7 @@ const verifyCallback = async (
     return done(null, user);
   } catch (error) {
     console.error("Error in verifyCallback:", error);
-    return done(null, false, {
-      message: GoogleMessages.Error,
-    });
+    return done(null, badResponse);
   }
 };
 
@@ -56,7 +57,8 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/api/auth/google/login/callback",
+      callbackURL:
+        "https://e831-2a02-2f00-c308-7500-a119-c74d-66f1-9486.ngrok-free.app/api/auth/google/login/callback",
     },
     (accessToken, refreshToken, profile, done) => {
       verifyCallback(accessToken, refreshToken, profile, done, "login");
@@ -70,7 +72,8 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/api/auth/google/register/callback",
+      callbackURL:
+        "https://e831-2a02-2f00-c308-7500-a119-c74d-66f1-9486.ngrok-free.app/api/auth/google/register/callback",
     },
     (accessToken, refreshToken, profile, done) => {
       verifyCallback(accessToken, refreshToken, profile, done, "register");

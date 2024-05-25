@@ -26,6 +26,9 @@ app.use(passportConfig.initialize());
 app.get("/", (req, res) => {
   ApiResponse.success(res, { data: { message: WelcomeMessage } });
 });
+app.get("/ping", (req, res) => {
+  res.status(200).send();
+}); 
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", userRoutes);
 app.use("/api/predictions", predictionRoutes);

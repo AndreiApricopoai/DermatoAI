@@ -44,24 +44,59 @@ const register = async (req, res) => {
 // Google OAuth callback called by the register and login routes
 const googleCallback = async (req, res) => {
   try {
-    if (!req.user) {
-      ApiResponse.error(res, {
-        statusCode: StatusCodes.Unauthorized,
-        error: GoogleMessages.AuthFailed,
-      });
+    console.log("Google callback request:", req.user);
+    if (req.user.isSuccess !== undefined) {
+      const response = {
+        isSuccess: false,
+        message: "Authentication failed",
+        apiResponseCode: 2,
+      };
+      const redirectUrl = `yourapp://callback?response=${encodeURIComponent(JSON.stringify(response))}`;
+      res.send(`
+        <html>
+          <body>
+            <script type="text/javascript">
+              window.location.href = "${redirectUrl}";
+              window.close();
+              </script>
+          </body>
+        </html>
+      `);
     } else {
       const { _id, firstName, lastName } = req.user;
       const payload = { _id, firstName, lastName };
 
       const result = await authService.handleGoogleCallback(payload);
-      ApiResponse.handleResponse(res, result);
+      const redirectUrl = `yourapp://callback?response=${encodeURIComponent(JSON.stringify(result))}`;
+      res.send(`
+        <html>
+          <body>
+            <script type="text/javascript">
+              window.location.href = "${redirectUrl}";
+              window.close();
+              </script>
+          </body>
+        </html>
+      `);
     }
   } catch (error) {
-    console.log(error);
-    ApiResponse.error(res, {
-      statusCode: StatusCodes.InternalServerError,
-      error: GoogleMessages.Error,
-    });
+    console.error("Google authentication error.", error);
+    const response = {
+      isSuccess: false,
+      message: "Internal server error",
+      apiResponseCode: 2,
+    };
+    const redirectUrl = `yourapp://callback?response=${encodeURIComponent(JSON.stringify(response))}`;
+    res.send(`
+      <html>
+        <body>
+          <script type="text/javascript">
+            window.location.href = "${redirectUrl}";
+            window.close();
+          </script>
+        </body>
+      </html>
+    `);
   }
 };
 

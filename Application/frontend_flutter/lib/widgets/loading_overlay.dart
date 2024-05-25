@@ -17,7 +17,7 @@ class LoadingOverlay extends StatelessWidget {
           child: ModalBarrier(dismissible: false, color: Colors.black),
         ),
         Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(strokeWidth: 7.0,),
         ),
       ],
     );

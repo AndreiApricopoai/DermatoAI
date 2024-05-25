@@ -10,14 +10,16 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(vsync: this, duration: const Duration(seconds: 1, milliseconds: 30));
+    _animationController = AnimationController(
+        vsync: this, duration: const Duration(seconds: 1, milliseconds: 30));
     _animation = Tween(begin: 0.0, end: 1.0).animate(_animationController);
 
     Timer(const Duration(seconds: 2, microseconds: 30), () {
@@ -25,6 +27,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     });
 
     _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -39,7 +47,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Image.asset('assets/icons/app_logo_white.png', width: 180 , height: 180,), // Make sure to use the correct path to your logo
+                Image.asset(
+                  'assets/icons/app_logo_white.png',
+                  width: 180,
+                  height: 180,
+                ), // Make sure to use the correct path to your logo
                 const SizedBox(height: 50), // Adjust the space as needed
                 SizedBox(
                   width: 250, // Adjust the width as needed
@@ -50,7 +62,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.roboto(
                       fontSize: 30, // Adjust the font size as needed
-                      fontWeight: FontWeight.w300, // Adjust the font weight as needed
+                      fontWeight:
+                          FontWeight.w300, // Adjust the font weight as needed
                       letterSpacing: 1.0, // Adjust the letter spacing as needed
                       color: AppMainTheme.white, // Adjust the color as needed
                     ),
@@ -62,11 +75,5 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 }

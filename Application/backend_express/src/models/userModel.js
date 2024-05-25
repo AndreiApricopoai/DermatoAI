@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema(
     googleId: {
       type: String,
       unique: [true, "Google ID already exists"],
+      sparse: true,
     },
     profilePhoto: {
       type: String,

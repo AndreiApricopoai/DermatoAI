@@ -5,6 +5,7 @@ const {
   loginValidator,
   registerValidator,
   googleAuthValidator,
+  getAccesTokenValidator,
   emailValidator,
   changePasswordValidator,
   resetPasswordValidator,
@@ -53,7 +54,12 @@ router.delete(
 );
 
 // Get a new access token based on the refresh token
-router.get("/token", checkRefreshToken, authController.getAccessToken);
+router.get(
+  "/token",
+  getAccesTokenValidator,
+  checkRefreshToken,
+  authController.getAccessToken
+);
 
 // Email verification routes
 router.post(

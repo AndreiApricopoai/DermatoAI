@@ -1,3 +1,12 @@
+import 'dart:convert';
+import 'package:frontend_flutter/utils/constants.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:frontend_flutter/utils/constants.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:uni_links/uni_links.dart';
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend_flutter/api/api_calls/auth_api.dart';
 import 'package:frontend_flutter/api/models/requests/login_request.dart';
@@ -22,8 +31,10 @@ class LoginScreen extends StatefulWidget {
   _LoginScreenState createState() => _LoginScreenState();
 }
 
+
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  StreamSubscription? _sub;
   bool _rememberMe = false;
   bool _isLoading = false;
 
@@ -31,11 +42,59 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _initUniLinks();
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _sub?.cancel();
     super.dispose();
   }
+
+
+    Future<void> _initUniLinks() async {
+    _sub = uriLinkStream.listen((Uri? uri) {
+      if (uri != null && uri.scheme == 'yourapp' && uri.host == 'callback') {
+        _handleCallback(uri);
+      }
+    }, onError: (err) {
+      // Handle error
+    });
+  }
+
+    Future<void> _loginWithGoogle() async {
+    const url = '${ApiConstants.baseUrlGoogle}auth/google/login';
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  void _handleCallback(Uri uri) {
+    final responseStr = uri.queryParameters['response'];
+    if (responseStr != null) {
+      final response = json.decode(responseStr);
+      if (response['isSuccess'] == true) {
+        // Handle successful login
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        // Handle login failure
+        SnackbarManager.showErrorSnackBar(context, 'Google login failed: ${response['errorMessage']}');
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Google login failed: Unknown error')));
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -159,8 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _isLoading
                         ? () {}
                         : () {
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                                '/home', (Route<dynamic> route) => false);
+                            _loginWithGoogle();
                           },
                   ),
                   const SizedBox(height: 20),
@@ -212,7 +270,8 @@ class _LoginScreenState extends State<LoginScreen> {
         var response = await AuthApi.login(loginRequest, _rememberMe);
         if (context.mounted) {
           if (response.isSuccess) {
-            Navigator.of(context).pushReplacementNamed('/home');
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                '/home', (Route<dynamic> route) => false);
           } else {
             if (response.apiResponseCode == 3) {
               SnackbarManager.showWarningSnackBar(

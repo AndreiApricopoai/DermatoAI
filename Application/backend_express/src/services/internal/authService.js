@@ -219,9 +219,9 @@ const handleGoogleCallback = async (payload) => {
 
     if (!token || !refreshToken) {
       return {
-        type: ResponseTypes.Error,
-        status: StatusCodes.InternalServerError,
-        error: TokenMessages.TokenCreationError,
+        isSuccess: false,
+        message: "Token creation error",
+        apiResponseCode: 2,
       };
     }
 
@@ -232,17 +232,17 @@ const handleGoogleCallback = async (payload) => {
 
     if (!saveRefreshToken) {
       return {
-        type: ResponseTypes.Error,
-        status: StatusCodes.InternalServerError,
-        error: TokenMessages.FailedSavingToken,
+        isSuccess: false,
+        message: "Failed to save refresh token",
+        apiResponseCode: 2,
       };
     }
 
     return {
-      type: ResponseTypes.Success,
-      status: StatusCodes.Ok,
+      isSuccess: true,
+      apiResponseCode: 1,
       data: {
-        message: GoogleMessages.Success,
+        message: "Google authentication successful",
         token,
         refreshToken,
       },
@@ -250,9 +250,9 @@ const handleGoogleCallback = async (payload) => {
   } catch (error) {
     console.error("Google authentication service error.", error);
     return {
-      type: ResponseTypes.Error,
-      status: StatusCodes.InternalServerError,
-      error: GoogleMessages.Error,
+      isSuccess: false,
+      message: "Internal server error",
+      apiResponseCode: 2,
     };
   }
 };

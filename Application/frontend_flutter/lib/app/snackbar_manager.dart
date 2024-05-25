@@ -35,7 +35,7 @@ class SnackbarManager {
     TextStyle? contentTextStyle,
   }) {
     _showSnackBar(context, message,
-        backgroundColor: Colors.green, durationInSeconds: 3, fontSize: 14);
+        backgroundColor: Colors.green, durationInSeconds: 5, fontSize: 14);
   }
 
   static void showWarningSnackBar(

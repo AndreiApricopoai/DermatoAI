@@ -1,5 +1,7 @@
 import 'package:frontend_flutter/api/models/requests/login_request.dart';
+import 'package:frontend_flutter/api/models/requests/register_request.dart';
 import 'package:frontend_flutter/api/models/responses/login_response.dart';
+import 'package:frontend_flutter/api/models/responses/register_response.dart';
 import 'package:frontend_flutter/app/local_storage.dart';
 import 'package:frontend_flutter/app/session_manager.dart';
 import 'package:http/http.dart' as http;
@@ -9,7 +11,8 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 class AuthApi {
-  static Future<LoginResponse> login(LoginRequest loginRequest, bool rememberMe) async {
+  static Future<LoginResponse> login(
+      LoginRequest loginRequest, bool rememberMe) async {
     try {
       final url = BaseApi.getUri('auth/login');
       final body = loginRequest.toJson();
@@ -46,12 +49,39 @@ class AuthApi {
     }
   }
 
-  static Future<http.Response> register(String email, String password) async {
-    var url = BaseApi.getUri('register');
-    return await http.post(url, body: {
-      'email': email,
-      'password': password,
-    });
+  static Future<RegisterResponse> register(
+      RegisterRequest registerRequest) async {
+    try {
+      final url = BaseApi.getUri('auth/register');
+      final body = registerRequest.toJson();
+      final headers = BaseApi.getHeaders();
+
+      var response = await http.post(url, headers: headers, body: body);
+      var jsonResponse = jsonDecode(response.body);
+      RegisterResponse registerResponse =
+          RegisterResponse.fromJson(jsonResponse);
+
+      if (registerResponse.isSuccess) {
+        final refreshToken = registerResponse.refreshToken;
+        final accesToken = registerResponse.token;
+
+        if (refreshToken != null && refreshToken.isNotEmpty) {
+          SessionManager.setRefreshToken(refreshToken);
+        }
+        if (accesToken != null && accesToken.isNotEmpty) {
+          SessionManager.setAccessToken(accesToken);
+        }
+      }
+      return registerResponse;
+    } on SocketException {
+      throw Exception(
+          'Unable to connect to the server. Please check your internet connection');
+    } on FormatException {
+      throw Exception('Could not register you. Please try again later');
+    } on Exception {
+      SessionManager.clearSession();
+      throw Exception('Unexpected error occurred');
+    }
   }
 
   static Future<http.Response> googleLogin(String token) async {
