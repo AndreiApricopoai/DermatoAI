@@ -109,6 +109,21 @@ const getResetPasswordEmailHtml = (forgotPasswordToken) => {
   </html>`;
 };
 
+const getGoogleAuthRedirectUrl = (response) => {
+  const redirectUrl = `yourapp://callback?response=${encodeURIComponent(JSON.stringify(response))}`;
+  return `
+    <!DOCTYPE html>
+    <html lang="en">      
+      <body>
+        <script type="text/javascript">
+          window.location.href = "${redirectUrl}";
+          window.close();
+          </script>
+      </body>
+    </html>
+  `;
+};
+
 const getGoogleMapsPhotoUrl = (photoReference, maxWidth = 400) => {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
   const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photoreference=${photoReference}&key=${apiKey}`;
@@ -161,6 +176,7 @@ module.exports = {
   getVerificationUrl,
   getVerificationEmailHtml,
   getResetPasswordEmailHtml,
+  getGoogleAuthRedirectUrl,
   getGoogleMapsPhotoUrl,
   getGoogleMapsPlaceUrl,
   getAzureBlobUrl,

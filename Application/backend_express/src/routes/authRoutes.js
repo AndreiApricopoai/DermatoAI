@@ -18,11 +18,9 @@ const {
 
 const router = express.Router();
 
-// DermatoAI account routes
 router.post("/login", loginValidator, authController.login);
 router.post("/register", registerValidator, authController.register);
 
-// Google account routes
 router.get(
   "/google/login",
   passport.authenticate("google-login", { scope: ["profile", "email"] })
@@ -44,7 +42,6 @@ router.get(
   authController.googleCallback
 );
 
-// Logout both DermatoAI and Google accounts
 router.delete(
   "/logout",
   checkAccessToken,
@@ -52,14 +49,8 @@ router.delete(
   authController.logout
 );
 
-// Get a new access token based on the refresh token
-router.post(
-  "/token",
-  checkRefreshToken,
-  authController.getAccessToken
-);
+router.post("/token", checkRefreshToken, authController.getAccessToken);
 
-// Email verification routes
 router.post(
   "/send-verification-email",
   checkAccessToken,
@@ -72,7 +63,6 @@ router.get(
   authController.verifyEmail
 );
 
-// Change password routes
 router.post(
   "/change-password",
   checkAccessToken,
@@ -80,7 +70,6 @@ router.post(
   authController.changePassword
 );
 
-// Forgot password routes
 router.post(
   "/send-forgot-password-email",
   emailValidator,

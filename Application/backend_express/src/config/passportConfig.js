@@ -11,7 +11,6 @@ const verifyCallback = async (
   done,
   action
 ) => {
-
   const badResponse = {
     isSuccess: false,
   };
@@ -46,7 +45,6 @@ const verifyCallback = async (
     }
     return done(null, user);
   } catch (error) {
-    console.error("Error in verifyCallback:", error);
     return done(null, badResponse);
   }
 };
@@ -58,7 +56,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL:
-        "https://fe14-109-98-72-124.ngrok-free.app/api/auth/google/login/callback",
+        `${process.env.GOOGLE_BASE_URL}/api/auth/google/login/callback`,
     },
     (accessToken, refreshToken, profile, done) => {
       verifyCallback(accessToken, refreshToken, profile, done, "login");
@@ -73,7 +71,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL:
-        "https://fe14-109-98-72-124.ngrok-free.app/api/auth/google/register/callback",
+      `${process.env.GOOGLE_BASE_URL}/api/auth/google/register/callback`,
     },
     (accessToken, refreshToken, profile, done) => {
       verifyCallback(accessToken, refreshToken, profile, done, "register");

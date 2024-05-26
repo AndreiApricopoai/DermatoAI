@@ -1,13 +1,13 @@
 require("dotenv").config();
 const ApiResponse = require("../responses/apiResponse");
 const authService = require("../services/internal/authService");
+const { getGoogleAuthRedirectUrl } = require("../utils/constants");
 const {
   StatusCodes,
   AuthMessages,
   GoogleMessages,
 } = require("../responses/apiConstants");
 
-// DermatoAI account login
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -24,7 +24,6 @@ const login = async (req, res) => {
   }
 };
 
-// DermatoAI account register
 const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password, confirmPassword } = req.body;
@@ -41,66 +40,38 @@ const register = async (req, res) => {
   }
 };
 
-// Google OAuth callback called by the register and login routes
 const googleCallback = async (req, res) => {
   try {
-    console.log("Google callback request:", req.user);
     if (req.user.isSuccess !== undefined) {
       const response = {
         isSuccess: false,
-        message: "Authentication failed",
+        message: "Server error",
         apiResponseCode: 2,
+        error: GoogleMessages.AuthFailed,
       };
-      const redirectUrl = `yourapp://callback?response=${encodeURIComponent(JSON.stringify(response))}`;
-      res.send(`
-        <html>
-          <body>
-            <script type="text/javascript">
-              window.location.href = "${redirectUrl}";
-              window.close();
-              </script>
-          </body>
-        </html>
-      `);
+      const responsePage = getGoogleAuthRedirectUrl(response);
+      res.send(responsePage);
     } else {
       const { _id, firstName, lastName } = req.user;
       const payload = { _id, firstName, lastName };
 
       const result = await authService.handleGoogleCallback(payload);
-      const redirectUrl = `yourapp://callback?response=${encodeURIComponent(JSON.stringify(result))}`;
-      res.send(`
-        <html>
-          <body>
-            <script type="text/javascript">
-              window.location.href = "${redirectUrl}";
-              window.close();
-              </script>
-          </body>
-        </html>
-      `);
+      const responsePage = getGoogleAuthRedirectUrl(result);
+      res.send(responsePage);
     }
   } catch (error) {
     console.error("Google authentication error.", error);
     const response = {
       isSuccess: false,
-      message: "Internal server error",
+      message: "Server error",
       apiResponseCode: 2,
+      error: GoogleMessages.Error,
     };
-    const redirectUrl = `yourapp://callback?response=${encodeURIComponent(JSON.stringify(response))}`;
-    res.send(`
-      <html>
-        <body>
-          <script type="text/javascript">
-            window.location.href = "${redirectUrl}";
-            window.close();
-          </script>
-        </body>
-      </html>
-    `);
+    const responsePage = getGoogleAuthRedirectUrl(response);
+    res.send(responsePage);
   }
 };
 
-// Logout both DermatoAI and Google accounts
 const logout = async (req, res) => {
   try {
     const userId = req.currentUser.userId;
@@ -117,7 +88,6 @@ const logout = async (req, res) => {
   }
 };
 
-// Get a new access token based on the refresh token
 const getAccessToken = async (req, res) => {
   try {
     const userId = req.currentUser.userId;
@@ -134,7 +104,6 @@ const getAccessToken = async (req, res) => {
   }
 };
 
-// Send verification email
 const sendVerificationEmail = async (req, res) => {
   try {
     const email = req.body.email;
@@ -150,7 +119,6 @@ const sendVerificationEmail = async (req, res) => {
   }
 };
 
-// Verify email sent to the user to the email address
 const verifyEmail = async (req, res) => {
   try {
     const verificationToken = req.query.token;
@@ -170,7 +138,6 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-// Change password
 const changePassword = async (req, res) => {
   try {
     const userId = req.currentUser.userId;
@@ -188,7 +155,6 @@ const changePassword = async (req, res) => {
   }
 };
 
-// Send forgot password email
 const sendForgotPasswordEmail = async (req, res) => {
   try {
     const email = req.body.email;
@@ -204,7 +170,6 @@ const sendForgotPasswordEmail = async (req, res) => {
   }
 };
 
-// Reset password
 const resetPassword = async (req, res) => {
   try {
     const userId = req.currentUser.userId;

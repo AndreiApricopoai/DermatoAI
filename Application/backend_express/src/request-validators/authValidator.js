@@ -76,14 +76,7 @@ const googleAuthValidator = (req, res, next) => {
       verified: user.verified,
     };
     const { error } = googleAuthSchema.validate(payload, { abortEarly: false });
-    if (error) {
-      return res.status(400).json({
-        isSuccess: false,
-        message: "Validation failed",
-        apiResponseCode: 3,
-        errors: error.details,
-      });
-    }
+    if (handleValidationError(error, res)) return;
   }
   next();
 };

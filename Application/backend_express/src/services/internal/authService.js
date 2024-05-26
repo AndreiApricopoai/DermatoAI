@@ -220,8 +220,9 @@ const handleGoogleCallback = async (payload) => {
     if (!token || !refreshToken) {
       return {
         isSuccess: false,
-        message: "Token creation error",
+        message: "Server error",
         apiResponseCode: 2,
+        error: TokenMessages.TokenCreationError,
       };
     }
 
@@ -233,8 +234,9 @@ const handleGoogleCallback = async (payload) => {
     if (!saveRefreshToken) {
       return {
         isSuccess: false,
-        message: "Failed to save refresh token",
+        message: "Server error",
         apiResponseCode: 2,
+        error: TokenMessages.FailedSavingToken,
       };
     }
 
@@ -242,7 +244,7 @@ const handleGoogleCallback = async (payload) => {
       isSuccess: true,
       apiResponseCode: 1,
       data: {
-        message: "Google authentication successful",
+        message: GoogleMessages.Success,
         token,
         refreshToken,
       },
@@ -251,8 +253,9 @@ const handleGoogleCallback = async (payload) => {
     console.error("Google authentication service error.", error);
     return {
       isSuccess: false,
-      message: "Internal server error",
+      message: "Server error",
       apiResponseCode: 2,
+      error: GoogleMessages.Error,
     };
   }
 };
