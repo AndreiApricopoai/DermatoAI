@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_flutter/app/snackbar_manager.dart';
 import 'package:frontend_flutter/utils/app_main_theme.dart';
 import 'package:frontend_flutter/widgets/text_title.dart';
 
@@ -39,6 +40,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    final bool? verificationEmailSent = ModalRoute.of(context)?.settings.arguments as bool?;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (verificationEmailSent == true) {
+        SnackbarManager.showSuccessSnackBar(context, 'Email verification sent successfully. Please check your inbox.');
+      } else if (verificationEmailSent == false){
+        SnackbarManager.showErrorSnackBar(context, 'Failed to send verification email. Please try again later.');
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppMainTheme.blueLevelFive,

@@ -1,27 +1,21 @@
-import 'dart:async';
-import 'dart:convert';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend_flutter/api/api_calls/auth_api.dart';
-import 'package:frontend_flutter/api/models/requests/auth_requests/register_request.dart';
-import 'package:frontend_flutter/app/snackbar_manager.dart';
-import 'package:frontend_flutter/extensions/exception_extensions.dart';
+import 'package:frontend_flutter/api/api_constants.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'package:frontend_flutter/utils/app_main_theme.dart';
-import 'package:frontend_flutter/utils/constants.dart';
-import 'package:frontend_flutter/validators/input_validators.dart';
 import 'package:frontend_flutter/widgets/button_outline_icon.dart';
 import 'package:frontend_flutter/widgets/button_rounded.dart';
 import 'package:frontend_flutter/widgets/button_text.dart';
 import 'package:frontend_flutter/widgets/divider_options.dart';
 import 'package:frontend_flutter/widgets/input_general_field.dart';
 import 'package:frontend_flutter/widgets/input_password.dart';
-import 'package:frontend_flutter/widgets/loading_overlay.dart';
+import 'package:frontend_flutter/validators/input_validators.dart';
 import 'package:frontend_flutter/widgets/text_title.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:uni_links/uni_links.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:frontend_flutter/extensions/exception_extensions.dart';
+import 'package:frontend_flutter/widgets/loading_overlay.dart';
 
+import '../actions/register_actions.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -32,85 +26,45 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  StreamSubscription? _sub;
   bool _isLoading = false;
 
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  late RegisterActions _registerActions;
 
-  final String termsUrl = '${ApiConstants.baseUrlStatic}terms';
-  final String policyUrl = '${ApiConstants.baseUrlStatic}policy';
+  final String termsUrl = '${ApiConstants.baseUrlStaticFiles}terms';
+  final String policyUrl = '${ApiConstants.baseUrlStaticFiles}policy';
+
+  @override
+  void initState() {
+    super.initState();
+    _registerActions = RegisterActions(
+      context: context,
+      firstNameController: _firstNameController,
+      lastNameController: _lastNameController,
+      emailController: _emailController,
+      passwordController: _passwordController,
+      confirmPasswordController: _confirmPasswordController,
+      formKey: _formKey,
+      setLoadingState: _setLoadingState,
+      termsUrl: termsUrl,
+      policyUrl: policyUrl,
+    );
+    _registerActions.initUniLinks();
+  }
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    _sub?.cancel();
+    _registerActions.dispose();
     super.dispose();
   }
 
-
-    @override
-  void initState() {
-    super.initState();
-    _initUniLinks();
-  }
-
-  Future<void> _launchURL(BuildContext context, String url) async {
-    try {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
-        SnackbarManager.showErrorSnackBar(context, 'Could not launch $url');
-      }
-    } on Exception catch (e) {
-      SnackbarManager.showErrorSnackBar(context, e.getMessage);
-      }
-  }
-
-    Future<void> _initUniLinks() async {
-    _sub = uriLinkStream.listen((Uri? uri) {
-      if (uri != null && uri.scheme == 'yourapp' && uri.host == 'callback') {
-        _handleCallback(uri);
-      }
-    }, onError: (err) {
-      // Handle error
-    });
-  }
-
-    Future<void> _registerWithGoogle() async {
-    const url = '${ApiConstants.baseUrlGoogle}auth/google/register';
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
-
-  void _handleCallback(Uri uri) {
-    final responseStr = uri.queryParameters['response'];
-    if (responseStr != null) {
-      final response = json.decode(responseStr);
-      if (response['isSuccess'] == true) {
-        // Handle successful login
-        Navigator.of(context).pushReplacementNamed('/home');
-      } else {
-        // Handle login failure
-        SnackbarManager.showErrorSnackBar(context, 'Google register failed: ${response['errorMessage']}');
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Google register failed: Unknown error')));
-    }
+  void _setLoadingState(bool isLoading) {
     setState(() {
-      _isLoading = false;
+      _isLoading = isLoading;
     });
   }
 
@@ -198,7 +152,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ..onTap = _isLoading
                             ? () {}
                             : () {
-                                _launchURL(context, termsUrl);
+                                _registerActions.launchURL(context, termsUrl);
                               },
                     ),
                     const TextSpan(
@@ -212,7 +166,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ..onTap = _isLoading
                             ? () {}
                             : () {
-                                _launchURL(context, policyUrl);
+                                _registerActions.launchURL(context, policyUrl);
                               },
                     ),
                   ],
@@ -220,7 +174,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 25),
               CustomElevatedButton(
-                onPressed: _isLoading ? () {} : () => _handleRegister(context),
+                onPressed: _isLoading ? () {} : () => _registerActions.handleRegister(),
                 text: 'Create Account',
                 buttonColor: AppMainTheme.blueLevelFour,
                 textColor: AppMainTheme.white,
@@ -254,7 +208,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: _isLoading
                       ? () {}
                       : () {
-                          _registerWithGoogle();
+                          _registerActions.registerWithGoogle();
                         }),
               const SizedBox(height: 20),
               Row(
@@ -287,66 +241,5 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       LoadingOverlay(isLoading: _isLoading),
     ]);
-  }
-
-  void _handleRegister(BuildContext context) async {
-    if (_formKey.currentState?.validate() == true) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      String firstName = _firstNameController.text;
-      String lastName = _lastNameController.text;
-      String email = _emailController.text;
-      String password = _passwordController.text;
-      String confirmPassword = _confirmPasswordController.text;
-
-      var registerRequest = RegisterRequest(
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          password: password,
-          confirmPassword: confirmPassword);
-      try {
-        var response = await AuthApi.register(registerRequest);
-        if (context.mounted) {
-          if (response.isSuccess) {
-            final emailSent = (response.sentVerificationEmail != null &&
-                    response.sentVerificationEmail == true)
-                ? true
-                : false;
-
-            if (emailSent) {
-              SnackbarManager.showSuccessSnackBar(context,
-                  'Account created successfully. Please check your email to verify your account.');
-            } else {
-              SnackbarManager.showWarningSnackBar(context,
-                  'Account created successfully. An error occurred while sending the verification email. Please try again later.');
-            }
-
-            Navigator.of(context).pushNamedAndRemoveUntil(
-                '/home', (Route<dynamic> route) => false);
-          } else {
-            if (response.apiResponseCode == 3) {
-              SnackbarManager.showWarningSnackBar(
-                  context, response.getValidationErrorsFormatted());
-            } else {
-              SnackbarManager.showErrorSnackBar(
-                  context, response.gerErrorMessage());
-            }
-          }
-        }
-      } on Exception catch (e) {
-        if (context.mounted) {
-          SnackbarManager.showErrorSnackBar(context, e.getMessage);
-        }
-      } finally {
-        if (context.mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      }
-    }
   }
 }

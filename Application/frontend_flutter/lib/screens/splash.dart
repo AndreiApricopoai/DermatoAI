@@ -1,7 +1,7 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import '../utils/app_main_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../utils/app_main_theme.dart';
+import '../actions/splash_screen_actions.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,24 +14,28 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
+  late SplashScreenActions _splashScreenActions;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
-        vsync: this, duration: const Duration(seconds: 1, milliseconds: 30));
+      vsync: this,
+      duration: const Duration(seconds: 1, milliseconds: 30),
+    );
     _animation = Tween(begin: 0.0, end: 1.0).animate(_animationController);
 
-    Timer(const Duration(seconds: 2, microseconds: 30), () {
-      Navigator.of(context).pushReplacementNamed('/login');
-    });
+    _splashScreenActions = SplashScreenActions(
+      context: context,
+      animationController: _animationController,
+    );
 
-    _animationController.forward();
+    _splashScreenActions.startSplashScreenTimer();
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _splashScreenActions.dispose();
     super.dispose();
   }
 
@@ -62,8 +66,7 @@ class _SplashScreenState extends State<SplashScreen>
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.roboto(
                       fontSize: 30, // Adjust the font size as needed
-                      fontWeight:
-                          FontWeight.w300, // Adjust the font weight as needed
+                      fontWeight: FontWeight.w300, // Adjust the font weight as needed
                       letterSpacing: 1.0, // Adjust the letter spacing as needed
                       color: AppMainTheme.white, // Adjust the color as needed
                     ),

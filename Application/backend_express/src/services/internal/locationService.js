@@ -64,10 +64,14 @@ const getImageFromMapsUrl = async (photoReference) => {
       };
     }
 
+    const responseImage = {
+      image : `data:image/jpeg;base64,${imageBase64}`
+    };
+
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
-      data: `data:image/jpeg;base64,${imageBase64}`,
+      data: responseImage,
     };
   } catch (error) {
     return {

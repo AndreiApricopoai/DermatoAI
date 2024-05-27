@@ -19,7 +19,6 @@ import 'package:frontend_flutter/app/session_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend_flutter/api/api_calls/base_api.dart';
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'dart:io';
 
 class AuthApi {
@@ -96,29 +95,16 @@ class AuthApi {
     }
   }
 
-// Seaparate logic for google login and register
-  static Future<http.Response> googleLogin(String token) async {
-    var url = BaseApi.getUri('google-login');
-    return await http.post(url, body: {
-      'token': token,
-    });
-  }
-// Seaparate logic for google login and register
-
-  static Future<http.Response> googleRegister(String token) async {
-    var url = BaseApi.getUri('google-login');
-    return await http.post(url, body: {
-      'token': token,
-    });
-  }
-
   static Future<LogoutResponse> logout(LogoutRequest logoutRequest) async {
     try {
-      final url = BaseApi.getUri('auth/logout');
-      final body = jsonEncode(logoutRequest.toJson());
-      final headers = BaseApi.getHeadersWithAuthorization();
+      request() async {
+        final url = BaseApi.getUri('auth/logout');
+        final body = jsonEncode(logoutRequest.toJson());
+        final headers = BaseApi.getHeadersWithAuthorization();
+        return await http.delete(url, headers: headers, body: body);
+      }
 
-      var response = await http.delete(url, headers: headers, body: body);
+      var response = await BaseApi.performRequestWithRetry(request);
       var jsonResponse = jsonDecode(response.body);
       LogoutResponse logoutResponse = LogoutResponse.fromJson(jsonResponse);
 
@@ -176,11 +162,14 @@ class AuthApi {
   static Future<SendVerificationEmailResponse> sendVerificationEmail(
       SendVerificationEmailRequest sendVerificationEmailRequest) async {
     try {
-      final url = BaseApi.getUri('auth/send-verification-email');
-      final body = jsonEncode(sendVerificationEmailRequest.toJson());
-      final headers = BaseApi.getHeadersWithAuthorization();
+      request() async {
+        final url = BaseApi.getUri('auth/send-verification-email');
+        final body = jsonEncode(sendVerificationEmailRequest.toJson());
+        final headers = BaseApi.getHeadersWithAuthorization();
+        return await http.post(url, headers: headers, body: body);
+      }
 
-      var response = await http.post(url, headers: headers, body: body);
+      var response = await BaseApi.performRequestWithRetry(request);
       var jsonResponse = jsonDecode(response.body);
       SendVerificationEmailResponse sendVerificationEmailResponse =
           SendVerificationEmailResponse.fromJson(jsonResponse);
@@ -202,21 +191,25 @@ class AuthApi {
   static Future<ChangePasswordResponse> changePassword(
       ChangePasswordRequest changePasswordRequest) async {
     try {
-      final url = BaseApi.getUri('auth/change-password');
-      final body = jsonEncode(changePasswordRequest.toJson());
-      final headers = BaseApi.getHeadersWithAuthorization();
+      request() async {
+        final url = BaseApi.getUri('auth/change-password');
+        final body = jsonEncode(changePasswordRequest.toJson());
+        final headers = BaseApi.getHeadersWithAuthorization();
+        return await http.post(url, headers: headers, body: body);
+      }
 
-      var response = await http.post(url, headers: headers, body: body);
+      var response = await BaseApi.performRequestWithRetry(request);
       var jsonResponse = jsonDecode(response.body);
       ChangePasswordResponse changePasswordResponse =
           ChangePasswordResponse.fromJson(jsonResponse);
+
       return changePasswordResponse;
     } on SocketException {
       throw Exception(
           'Unable to connect to the server. Please check your internet connection');
     } on FormatException {
       throw Exception(
-          'Could not send verification email. Please try again later');
+          'Could not change password. Please check your current password and try again');
     } on Exception {
       SessionManager.clearSession();
       await LocalStorage.clearRefreshToken();
@@ -241,7 +234,7 @@ class AuthApi {
       throw Exception(
           'Unable to connect to the server. Please check your internet connection');
     } on FormatException {
-      throw Exception('Could not get access token. Please try again later');
+      throw Exception('Could not send forgot password email. Please try again');
     } on Exception {
       SessionManager.clearSession();
       throw Exception('Unexpected error occurred');
@@ -265,7 +258,7 @@ class AuthApi {
       throw Exception(
           'Unable to connect to the server. Please check your internet connection');
     } on FormatException {
-      throw Exception('Could not get access token. Please try again later');
+      throw Exception('Could not reset password. Please try again later');
     } on Exception {
       SessionManager.clearSession();
       throw Exception('Unexpected error occurred');

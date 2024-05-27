@@ -1,69 +1,122 @@
-// import 'package:flutter/material.dart';
-// import 'package:url_launcher/url_launcher.dart';
-// import 'package:frontend_flutter/api/api_calls/auth_api.dart';
-// import 'package:frontend_flutter/app/snackbar_manager.dart';
-// import 'package:frontend_flutter/utils/app_main_theme.dart';
-// import 'package:frontend_flutter/models/login_request.dart';
-// import 'dart:convert';
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:frontend_flutter/api/api_constants.dart';
+import 'package:frontend_flutter/app/session_manager.dart';
+import 'package:frontend_flutter/extensions/exception_extensions.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:uni_links/uni_links.dart';
+import 'package:frontend_flutter/api/api_calls/auth_api.dart';
+import 'package:frontend_flutter/api/models/requests/auth_requests/login_request.dart';
+import 'package:frontend_flutter/app/snackbar_manager.dart';
 
-// class LoginActions {
-//   static Future<void> handleLogin(
-//       BuildContext context,
-//       GlobalKey<FormState> formKey,
-//       TextEditingController emailController,
-//       TextEditingController passwordController,
-//       bool rememberMe) async {
-//     if (formKey.currentState?.validate() == true) {
-//       String email = emailController.text;
-//       String password = passwordController.text;
+class LoginActions {
+  final BuildContext context;
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final GlobalKey<FormState> formKey;
+  final Function(bool) setLoadingState;
+  bool rememberMe;
+  bool isLoading;
+  StreamSubscription? _sub;
 
-//       var loginRequest = LoginRequest(email: email, password: password);
-//       try {
-//         var response = await AuthApi.login(loginRequest, rememberMe);
-//         if (context.mounted) {
-//           if (response.isSuccess) {
-//             Navigator.of(context).pushReplacementNamed('/home');
-//           } else {
-//             if (response.apiResponseCode == 3) {
-//               SnackbarManager.showWarningSnackBar(
-//                   context, response.getValidationErrorsFormatted());
-//             } else {
-//               SnackbarManager.showErrorSnackBar(
-//                   context, response.gerErrorMessage());
-//             }
-//           }
-//         }
-//       } on Exception catch (e) {
-//         if (context.mounted) {
-//           SnackbarManager.showErrorSnackBar(context, e.getMessage());
-//         }
-//       }
-//     }
-//   }
+  LoginActions({
+    required this.context,
+    required this.emailController,
+    required this.passwordController,
+    required this.formKey,
+    required this.setLoadingState,
+    this.rememberMe = false,
+    this.isLoading = false,
+  });
 
-//   static Future<void> loginWithGoogle(BuildContext context) async {
-//     const url = 'https://<your-ngrok-id>.ngrok-free.app/api/auth/google/login';
-//     final uri = Uri.parse(url);
-//     if (await canLaunchUrl(uri)) {
-//       await launchUrl(uri, mode: LaunchMode.externalApplication);
-//     } else {
-//       throw 'Could not launch $url';
-//     }
-//   }
+  void initUniLinks() async {
+    _sub = uriLinkStream.listen((Uri? uri) {
+      if (uri != null && uri.scheme == 'yourapp' && uri.host == 'callback') {
+        _handleGoogleCallback(uri);
+      }
+    }, onError: (err) {
+      if (context.mounted) {
+        SnackbarManager.showErrorSnackBar(context,
+            "An error occurred while trying to handle the google login");
+      }
+    });
+  }
 
-//   static void handleCallback(BuildContext context, Uri uri) {
-//     final responseStr = uri.queryParameters['response'];
-//     if (responseStr != null) {
-//       final response = json.decode(responseStr);
-//       if (response['isSuccess'] == true) {
-//         Navigator.of(context).pushReplacementNamed('/home');
-//       } else {
-//         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-//             content: Text('Google login failed: ${response['message']}')));
-//       }
-//     } else {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(content: Text('Google login failed: Unknown error')));
-//     }
-//   }
-// }
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    _sub?.cancel();
+  }
+
+  Future<void> loginWithGoogle() async {
+    const url = '${ApiConstants.baseUrlGoogleAuth}auth/google/login';
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch google login url';
+    }
+  }
+
+  void _handleGoogleCallback(Uri uri) {
+    final responseStr = uri.queryParameters['response'];
+    if (responseStr != null) {
+      final response = json.decode(responseStr);
+      if (response['isSuccess'] == true) {
+        final refreshToken = response['data']?['refreshToken'];
+        final accesToken = response['data']?['token'];
+
+        if (refreshToken != null && refreshToken.isNotEmpty) {
+          SessionManager.setRefreshToken(refreshToken);
+        }
+        if (accesToken != null && accesToken.isNotEmpty) {
+          SessionManager.setAccessToken(accesToken);
+        }
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
+      } else {
+        SnackbarManager.showErrorSnackBar(context, 'Google login failed');
+      }
+    } else {
+      SnackbarManager.showErrorSnackBar(context, 'Google login failed');
+    }
+    setLoadingState(false);
+  }
+
+  void handleLogin() async {
+    if (formKey.currentState?.validate() == true) {
+      setLoadingState(true);
+
+      String email = emailController.text;
+      String password = passwordController.text;
+
+      var loginRequest = LoginRequest(email: email, password: password);
+      try {
+        var response = await AuthApi.login(loginRequest, rememberMe);
+        if (context.mounted) {
+          if (response.isSuccess) {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                '/home', (Route<dynamic> route) => false);
+          } else {
+            if (response.apiResponseCode == 3) {
+              SnackbarManager.showWarningSnackBar(
+                  context, response.getValidationErrorsFormatted());
+            } else {
+              SnackbarManager.showErrorSnackBar(
+                  context, response.gerErrorMessage());
+            }
+          }
+        }
+      } on Exception catch (e) {
+        if (context.mounted) {
+          SnackbarManager.showErrorSnackBar(context, e.getMessage);
+        }
+      } finally {
+        if (context.mounted) {
+          setLoadingState(false);
+        }
+      }
+    }
+  }
+}

@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:frontend_flutter/api/api_calls/auth_api.dart';
-import 'package:frontend_flutter/api/models/requests/auth_requests/login_request.dart';
-import 'package:frontend_flutter/api/models/requests/auth_requests/reset_password_request.dart';
-import 'package:frontend_flutter/api/models/requests/auth_requests/send_forgot_password_email_request.dart';
-import 'package:frontend_flutter/extensions/exception_extensions.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend_flutter/utils/app_main_theme.dart';
 import 'package:frontend_flutter/widgets/input_general_field.dart';
 import 'package:frontend_flutter/widgets/button_rounded.dart';
 import 'package:frontend_flutter/validators/input_validators.dart';
 import 'package:frontend_flutter/widgets/input_password.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../widgets/text_title.dart';
-import '../widgets/loading_overlay.dart';
-import 'package:frontend_flutter/app/snackbar_manager.dart';
+import 'package:frontend_flutter/widgets/text_title.dart';
+import 'package:frontend_flutter/widgets/loading_overlay.dart';
+import '../actions/forgot_password_actions.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   @override
@@ -28,124 +23,39 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       TextEditingController();
   bool _isLoading = false;
   bool _emailSent = false;
+  late ForgotPasswordActions _forgotPasswordActions;
+
+  @override
+  void initState() {
+    super.initState();
+    _forgotPasswordActions = ForgotPasswordActions(
+      context: context,
+      emailController: _emailController,
+      tokenController: _tokenController,
+      passwordController: _passwordController,
+      confirmPasswordController: _confirmPasswordController,
+      formKey: _formKey,
+      setLoadingState: _setLoadingState,
+      setEmailSentState: _setEmailSentState,
+    );
+  }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _tokenController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
+    _forgotPasswordActions.dispose();
     super.dispose();
   }
 
-  Future<void> _sendForgotPasswordEmail() async {
-    if (_formKey.currentState?.validate() == true) {
-      setState(() {
-        _isLoading = true;
-      });
-      String email = _emailController.text;
-      var sendForgotPasswordEmailRequest =
-          SendForgotPasswordEmailRequest(email: email);
-      try {
-        var response = await AuthApi.sendForgotPasswordEmail(
-            sendForgotPasswordEmailRequest);
-
-        if (context.mounted) {
-          if (response.isSuccess) {
-            setState(() {
-              _isLoading = false;
-              _emailSent = true;
-            });
-          } else {
-            if (response.apiResponseCode == 3) {
-              SnackbarManager.showWarningSnackBar(
-                  context, response.getValidationErrorsFormatted());
-            } else {
-              SnackbarManager.showErrorSnackBar(
-                  context, response.gerErrorMessage());
-            }
-          }
-        }
-      } on Exception catch (e) {
-        if (context.mounted) {
-          SnackbarManager.showErrorSnackBar(context, e.getMessage);
-        }
-      } finally {
-        if (context.mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      }
-    }
+  void _setLoadingState(bool isLoading) {
+    setState(() {
+      _isLoading = isLoading;
+    });
   }
 
-  Future<void> _resetPassword() async {
-    if (_formKey.currentState?.validate() == true) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      String email = _emailController.text;
-      String forgotPasswordToken = _tokenController.text;
-      String password = _passwordController.text;
-      String confirmPassword = _confirmPasswordController.text;
-
-      var resetPasswordRequest = ResetPasswordRequest(
-          password: password,
-          confirmPassword: confirmPassword,
-          forgotPasswordToken: forgotPasswordToken);
-
-      try {
-        var response = await AuthApi.resetPassword(resetPasswordRequest);
-
-        if (context.mounted) {
-          if (response.isSuccess) {
-            var loginRequest = LoginRequest(email: email, password: password);
-            var loginResponse = await AuthApi.login(loginRequest, false);
-
-            if (loginResponse.isSuccess) {
-              Navigator.of(context).pushReplacementNamed('/home');
-            } else {
-              if (loginResponse.apiResponseCode == 3) {
-                SnackbarManager.showWarningSnackBar(
-                    context, loginResponse.getValidationErrorsFormatted());
-              } else {
-                SnackbarManager.showErrorSnackBar(
-                    context, loginResponse.gerErrorMessage());
-              }
-            }
-
-            setState(() {
-              _isLoading = false;
-              _emailSent = true;
-            });
-          } else {
-            if (response.apiResponseCode == 3) {
-              SnackbarManager.showWarningSnackBar(
-                  context, response.getValidationErrorsFormatted());
-            } else {
-              SnackbarManager.showErrorSnackBar(
-                  context, response.gerErrorMessage());
-            }
-          }
-        }
-      } on Exception catch (e) {
-        if (context.mounted) {
-          SnackbarManager.showErrorSnackBar(context, e.getMessage);
-        }
-      } finally {
-        if (context.mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      }
-
-      setState(() {
-        _isLoading = false;
-      });
-    }
+  void _setEmailSentState(bool emailSent) {
+    setState(() {
+      _emailSent = emailSent;
+    });
   }
 
   @override
@@ -225,8 +135,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     onPressed: _isLoading
                         ? () {}
                         : !_emailSent
-                            ? () => _sendForgotPasswordEmail()
-                            : () => _resetPassword(),
+                            ? () => _forgotPasswordActions.sendForgotPasswordEmail()
+                            : () => _forgotPasswordActions.resetPassword(),
                     text: !_emailSent
                         ? 'Send Verification Email'
                         : 'Reset Password',

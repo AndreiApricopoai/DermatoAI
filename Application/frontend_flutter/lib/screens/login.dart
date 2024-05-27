@@ -1,16 +1,5 @@
-import 'dart:convert';
-import 'package:frontend_flutter/utils/constants.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:frontend_flutter/utils/constants.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:uni_links/uni_links.dart';
-import 'dart:async';
-import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:frontend_flutter/api/api_calls/auth_api.dart';
-import 'package:frontend_flutter/api/models/requests/auth_requests/login_request.dart';
-import 'package:frontend_flutter/app/snackbar_manager.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend_flutter/utils/app_main_theme.dart';
 import 'package:frontend_flutter/widgets/button_outline_icon.dart';
 import 'package:frontend_flutter/widgets/button_rounded.dart';
@@ -19,10 +8,9 @@ import 'package:frontend_flutter/widgets/divider_options.dart';
 import 'package:frontend_flutter/widgets/input_general_field.dart';
 import 'package:frontend_flutter/widgets/input_password.dart';
 import 'package:frontend_flutter/validators/input_validators.dart';
-import 'package:frontend_flutter/extensions/exception_extensions.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../widgets/text_title.dart';
-import '../widgets/loading_overlay.dart';
+import 'package:frontend_flutter/widgets/text_title.dart';
+import 'package:frontend_flutter/widgets/loading_overlay.dart';
+import '../actions/login_actions.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -31,70 +19,39 @@ class LoginScreen extends StatefulWidget {
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  StreamSubscription? _sub;
   bool _rememberMe = false;
   bool _isLoading = false;
-
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  late LoginActions _loginActions;
 
   @override
   void initState() {
     super.initState();
-    _initUniLinks();
+    _loginActions = LoginActions(
+      context: context,
+      emailController: _emailController,
+      passwordController: _passwordController,
+      formKey: _formKey,
+      setLoadingState: _setLoadingState,
+      rememberMe: _rememberMe,
+    );
+    _loginActions.initUniLinks();
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _sub?.cancel();
+    _loginActions.dispose();
     super.dispose();
   }
 
-
-    Future<void> _initUniLinks() async {
-    _sub = uriLinkStream.listen((Uri? uri) {
-      if (uri != null && uri.scheme == 'yourapp' && uri.host == 'callback') {
-        _handleCallback(uri);
-      }
-    }, onError: (err) {
-      // Handle error
-    });
-  }
-
-    Future<void> _loginWithGoogle() async {
-    const url = '${ApiConstants.baseUrlGoogle}auth/google/login';
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
-
-  void _handleCallback(Uri uri) {
-    final responseStr = uri.queryParameters['response'];
-    if (responseStr != null) {
-      final response = json.decode(responseStr);
-      if (response['isSuccess'] == true) {
-        // Handle successful login
-        Navigator.of(context).pushReplacementNamed('/home');
-      } else {
-        // Handle login failure
-        SnackbarManager.showErrorSnackBar(context, 'Google login failed: ${response['errorMessage']}');
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Google login failed: Unknown error')));
-    }
+  void _setLoadingState(bool isLoading) {
     setState(() {
-      _isLoading = false;
+      _isLoading = isLoading;
     });
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -157,6 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             onChanged: (newValue) {
                               setState(() {
                                 _rememberMe = newValue!;
+                                _loginActions.rememberMe = newValue;
                               });
                             },
                           ),
@@ -171,7 +129,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(width: 20),
                       CustomTextButton(
-                        onPressed: _isLoading ? () {} : () {Navigator.pushNamed(context, '/forgot_password');},
+                        onPressed: _isLoading
+                            ? () {}
+                            : () {
+                                Navigator.pushNamed(context, '/forgot_password');
+                              },
                         text: 'Forgot Password?',
                         fontSize: 13,
                         color: AppMainTheme.blueLevelFour,
@@ -185,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _isLoading
                         ? () {}
                         : () {
-                            _handleLogin(context);
+                            _loginActions.handleLogin();
                           },
                     text: 'Login',
                     buttonColor: AppMainTheme.blueLevelFour,
@@ -218,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _isLoading
                         ? () {}
                         : () {
-                            _loginWithGoogle();
+                            _loginActions.loginWithGoogle();
                           },
                   ),
                   const SizedBox(height: 20),
@@ -254,45 +216,5 @@ class _LoginScreenState extends State<LoginScreen> {
         LoadingOverlay(isLoading: _isLoading),
       ],
     );
-  }
-
-  void _handleLogin(BuildContext context) async {
-    if (_formKey.currentState?.validate() == true) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      String email = _emailController.text;
-      String password = _passwordController.text;
-
-      var loginRequest = LoginRequest(email: email, password: password);
-      try {
-        var response = await AuthApi.login(loginRequest, _rememberMe);
-        if (context.mounted) {
-          if (response.isSuccess) {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-                '/home', (Route<dynamic> route) => false);
-          } else {
-            if (response.apiResponseCode == 3) {
-              SnackbarManager.showWarningSnackBar(
-                  context, response.getValidationErrorsFormatted());
-            } else {
-              SnackbarManager.showErrorSnackBar(
-                  context, response.gerErrorMessage());
-            }
-          }
-        }
-      } on Exception catch (e) {
-        if (context.mounted) {
-          SnackbarManager.showErrorSnackBar(context, e.getMessage);
-        }
-      } finally {
-        if (context.mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      }
-    }
   }
 }
