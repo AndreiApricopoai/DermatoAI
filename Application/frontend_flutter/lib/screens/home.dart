@@ -1,7 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:frontend_flutter/api/api_calls/prediction_api.dart';
+import 'package:frontend_flutter/app/photo_handler.dart';
 import 'package:frontend_flutter/app/snackbar_manager.dart';
+import 'package:frontend_flutter/screens/appointments_screen_body.dart';
+import 'package:frontend_flutter/screens/chat_screen_body.dart';
+import 'package:frontend_flutter/screens/information_screen_body.dart';
+import 'package:frontend_flutter/screens/locations_screen_body.dart';
+import 'package:frontend_flutter/screens/predictions_screen_body.dart';
+import 'package:frontend_flutter/screens/profile_screen_body.dart';
 import 'package:frontend_flutter/utils/app_main_theme.dart';
 import 'package:frontend_flutter/widgets/text_title.dart';
+import 'package:frontend_flutter/api/models/requests/prediction_requests/create_prediction_request.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -10,14 +20,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  bool _isLoading = false;
+  File? _imageFile;
+
   static List<Widget> _widgetOptions = <Widget>[
-    Text('Home Page Body', style: TextStyle(color: AppMainTheme.blueLevelFive, backgroundColor: Colors.black)),
-    Text('Search Page Body'),
-    Text('Camera Page Body'),
-    Text('Alerts Page Body'),
-    Text('Messages Page Body'),
-    Text('Messages Page Body'),
-    Text('Messages Page Body'),
+    PredictionsScreenBody(),
+    ChatScreenBody(),
+    InformationScreenBody(),
+    LocationsScreenBody(),
+    AppointmentsScreenBody(),
+    ProfileScreenBody(),
   ];
 
   static List<String> _appBarTitles = <String>[
@@ -40,13 +52,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     final bool? verificationEmailSent = ModalRoute.of(context)?.settings.arguments as bool?;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (verificationEmailSent == true) {
         SnackbarManager.showSuccessSnackBar(context, 'Email verification sent successfully. Please check your inbox.');
-      } else if (verificationEmailSent == false){
+      } else if (verificationEmailSent == false) {
         SnackbarManager.showErrorSnackBar(context, 'Failed to send verification email. Please try again later.');
       }
     });
@@ -73,66 +84,66 @@ class _HomeScreenState extends State<HomeScreen> {
               ]
             : null, // Actions only for home screen
       ),
-      body: Center(
-        
-        child: _widgetOptions
-            .elementAt(_selectedIndex), // Display the selected page body
-      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Center(
+              child:  _widgetOptions.elementAt(_selectedIndex),
+            ),
       bottomNavigationBar: BottomAppBar(
         height: 75.0,
-        elevation: 8.0, // Add elevation to give a shadow effect
+        elevation: 8.0,
         color: AppMainTheme.blueLevelFive,
         shape: CircularNotchedRectangle(),
         notchMargin: 4.0,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            SizedBox(width: 5), // Initial space for the notch
+            SizedBox(width: 5),
             buildNavBarItemWithLabel(_imagePaths[0], 0),
-            SizedBox(width: 25), // Space between the first and second buttons
+            SizedBox(width: 25),
             buildNavBarItemWithLabel(_imagePaths[1], 1),
-            SizedBox(width: 25), // Space between the second and third buttons
+            SizedBox(width: 25),
             buildNavBarItemWithLabel(_imagePaths[2], 2),
-            Spacer(), // Space between the third and fourth buttons
+            Spacer(),
             buildNavBarItemWithLabel(_imagePaths[3], 3),
-            SizedBox(width: 25), // Space between the fourth and fifth buttons
+            SizedBox(width: 25),
             buildNavBarItemWithLabel(_imagePaths[4], 4),
-            SizedBox(width: 25), // Space between the fifth and sixth buttons
+            SizedBox(width: 25),
             buildNavBarItemWithLabel(_imagePaths[5], 5),
-            SizedBox(width: 5), // Final space for the notch
+            SizedBox(width: 5),
           ],
         ),
       ),
-floatingActionButton: SizedBox(
-  width: 56,
-  height: 56,
-  child: FloatingActionButton(
-    onPressed: _takePhoto,
-    tooltip: 'Take Photo',
-    backgroundColor: Colors.transparent,
-    elevation: 0,
-    child: Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [Color(0xFF00C9FF), Color(0xFF92FE9D)], // Gradient colors
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+      floatingActionButton: SizedBox(
+        width: 56,
+        height: 56,
+        child: FloatingActionButton(
+          onPressed: () => _showPhotoOptions(context),
+          tooltip: 'Take Photo',
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [Color(0xFF00C9FF), Color(0xFF92FE9D)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Center(
+              child: Image.asset(
+                'assets/icons/clinic.png',
+                width: 30,
+                height: 30,
+                color: Colors.white,
+              ),
+            ),
+          ),
         ),
       ),
-      child: Center(
-        child: Image.asset(
-          'assets/icons/clinic.png',
-          width: 30,
-          height: 30,
-          color: Colors.white,
-        ),
-      ),
-    ),
-  ),
-),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
@@ -185,7 +196,79 @@ floatingActionButton: SizedBox(
     });
   }
 
-  void _takePhoto() {
-    // Implement your camera logic here
+  void _showPhotoOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.photo_library),
+                title: Text('Choose from Gallery'),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  _handlePhotoSelection(PhotoSource.gallery, context);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.photo_camera),
+                title: Text('Take a Photo'),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  _handlePhotoSelection(PhotoSource.camera, context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _handlePhotoSelection(PhotoSource source, BuildContext context) async {
+    final photoHandler = PhotoHandler();
+    setState(() {
+      _isLoading = true;
+    });
+
+    CreatePredictionRequest? createPredictionRequest;
+    if (source == PhotoSource.camera) {
+      createPredictionRequest = await photoHandler.takePhoto(context);
+    } else {
+      createPredictionRequest = await photoHandler.pickImage(context);
+    }
+
+    if (createPredictionRequest != null) {
+      setState(() {
+        _imageFile = createPredictionRequest?.image;
+      });
+      // Print the image path
+      print('Selected image path: ${_imageFile!.path}');
+
+      try {
+        final predictionResponse = await PredictionApi.createPrediction(createPredictionRequest);
+        if(predictionResponse.isSuccess)
+        {
+          print(predictionResponse.imageUrl);
+          print(predictionResponse.dataMessage);print(predictionResponse.dataMessage);print(predictionResponse.dataMessage);print(predictionResponse.dataMessage);print(predictionResponse.dataMessage);
+        }
+        else
+        {
+
+
+        }
+      } on Exception catch (e) {
+        print('Error: $e');
+      }
+      
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 }
+
+enum PhotoSource { gallery, camera }
+

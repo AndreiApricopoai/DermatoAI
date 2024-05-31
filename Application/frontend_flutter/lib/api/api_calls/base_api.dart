@@ -32,6 +32,16 @@ class BaseApi {
     };
   }
 
+    static Map<String, String> getAuthorizationHeaders() {
+    String? accessToken = SessionManager.getAccessToken();
+    if (accessToken == null) {
+      throw Exception('You must be logged in to perform this action.');
+    }
+    return {
+      'Authorization': 'Bearer $accessToken',
+    };
+  }
+
   static Future<http.Response> performRequestWithRetry(
       Future<http.Response> Function() request) async {
     try {

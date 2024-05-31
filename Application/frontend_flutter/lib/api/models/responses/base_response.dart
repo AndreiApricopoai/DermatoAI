@@ -3,7 +3,6 @@ import 'package:frontend_flutter/api/models/responses/validation_error.dart';
 class BaseApiResponse {
   final bool isSuccess;
   final int apiResponseCode;
-  final Map<String, dynamic>? data;
   final String? message;
   final String? error;
   final List<ValidationError>? validationErrors;
@@ -11,7 +10,6 @@ class BaseApiResponse {
   BaseApiResponse({
     required this.isSuccess,
     required this.apiResponseCode,
-    this.data,
     this.message,
     this.error,
     this.validationErrors,
@@ -20,7 +18,6 @@ class BaseApiResponse {
   BaseApiResponse.fromJson(Map<String, dynamic> json)
       : isSuccess = json['isSuccess'],
         apiResponseCode = json['apiResponseCode'],
-        data = json['data'] as Map<String, dynamic>?,
         message = json['message'],
         error = json['error'],
         validationErrors = json['errors'] != null

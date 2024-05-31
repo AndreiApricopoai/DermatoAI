@@ -6,7 +6,7 @@ class GetAllPredictionsResponse extends BaseApiResponse {
 
   GetAllPredictionsResponse.fromJson(super.json)
       : predictions = (json['data'] as List)
-            .map((prediction) => PredictionResponse.fromJsonElement(prediction))
+            .map((prediction) => PredictionResponse.fromJson(prediction))
             .toList(),
         super.fromJson();
 }

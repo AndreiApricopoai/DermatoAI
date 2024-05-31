@@ -20,6 +20,7 @@ class LocationApi {
 
       var response = await BaseApi.performRequestWithRetry(request);
       var jsonResponse = jsonDecode(response.body);
+      print (jsonResponse);
       GetLocationsResponse getLocationsResponse =
           GetLocationsResponse.fromJson(jsonResponse);
       return getLocationsResponse;

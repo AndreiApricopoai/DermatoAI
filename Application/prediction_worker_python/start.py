@@ -88,7 +88,7 @@ def main(number_of_workers):
                     print(f"Failed to delete azure queue message: {message} with exception {e}")
 
             if not messages:
-                time.sleep(10)
+                time.sleep(20)
 
     except KeyboardInterrupt:
         print("CTRL+C pressed, waiting for workers to terminate and exiting worker...")

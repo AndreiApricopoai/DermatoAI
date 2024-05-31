@@ -1,16 +1,20 @@
+import 'package:frontend_flutter/api/models/requests/prediction_requests/create_prediction_request.dart';
 import 'package:frontend_flutter/api/models/requests/prediction_requests/delete_prediction_request.dart';
 import 'package:frontend_flutter/api/models/requests/prediction_requests/get_prediction_request.dart';
 import 'package:frontend_flutter/api/models/requests/prediction_requests/patch_prediction_request.dart';
 import 'package:frontend_flutter/api/models/responses/base_response.dart';
+import 'package:frontend_flutter/api/models/responses/prediction_responses/create_prediction_response.dart';
 import 'package:frontend_flutter/api/models/responses/prediction_responses/get_all_predictions_response.dart';
-import 'package:frontend_flutter/api/models/responses/prediction_responses/prediction_response.dart';
+import 'package:frontend_flutter/api/models/responses/prediction_responses/get_prediction_response.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend_flutter/api/api_calls/base_api.dart';
 import 'dart:convert';
+import 'package:http_parser/http_parser.dart';
+
 import 'dart:io';
 
 class PredictionApi {
-  static Future<PredictionResponse> getPrediction(
+  static Future<GetPredictionResponse> getPrediction(
       GetPredictionRequest getPredictionRequest) async {
     try {
       request() async {
@@ -22,8 +26,8 @@ class PredictionApi {
 
       var response = await BaseApi.performRequestWithRetry(request);
       var jsonResponse = jsonDecode(response.body);
-      PredictionResponse predictionResponse =
-          PredictionResponse.fromJson(jsonResponse);
+      GetPredictionResponse predictionResponse =
+          GetPredictionResponse.fromJson(jsonResponse);
       return predictionResponse;
     } on SocketException {
       throw Exception(
@@ -58,31 +62,41 @@ class PredictionApi {
     }
   }
 
-  static Future<void> createPrediction() async {
-    // try {
-    //   request() async {
-    //     final url = BaseApi.getUri('conversations');
-    //     final body = jsonEncode(createConversationRequest.toJson());
-    //     final headers = BaseApi.getHeadersWithAuthorization();
-    //     return await http.post(url, headers: headers, body: body);
-    //   }
+  static Future<CreatePredictionResponse> createPrediction(
+      CreatePredictionRequest createPredictionRequest) async {
+    try {
+      request() async {
+        final url = BaseApi.getUri('predictions');
+        final headers = BaseApi.getAuthorizationHeaders();
+        final request = http.MultipartRequest('POST', url)
+          ..headers.addAll(headers)
+          ..files.add(http.MultipartFile(
+              'image',
+              createPredictionRequest.image.readAsBytes().asStream(),
+              createPredictionRequest.image.lengthSync(),
+              filename: createPredictionRequest.image.path.split('/').last,
+              contentType: MediaType.parse('image/jpeg')));
 
-    //   var response = await BaseApi.performRequestWithRetry(request);
-    //   var jsonResponse = jsonDecode(response.body);
-    //   ConversationResponse conversationResponse =
-    //       ConversationResponse.fromJson(jsonResponse);
-    //   return conversationResponse;
-    // } on SocketException {
-    //   throw Exception(
-    //       'Unable to connect to the server. Please check your internet connection');
-    // } on FormatException {
-    //   throw Exception('Could not create conversation. Please try again later');
-    // } on Exception {
-    //   throw Exception('Unexpected error occurred');
-    // }
+        final streamedResponse = await request.send();
+        return await http.Response.fromStream(streamedResponse);
+      }
+
+      var response = await BaseApi.performRequestWithRetry(request);
+      var jsonResponse = jsonDecode(response.body);
+      CreatePredictionResponse createPredictionResponse =
+          CreatePredictionResponse.fromJson(jsonResponse);
+      return createPredictionResponse;
+    } on SocketException {
+      throw Exception(
+          'Unable to connect to the server. Please check your internet connection');
+    } on FormatException {
+      throw Exception('Could not create prediction. Please try again later');
+    } on Exception {
+      throw Exception('Unexpected error occurred');
+    }
   }
 
-  static Future<PredictionResponse> patchPrediction(
+  static Future<GetPredictionResponse> patchPrediction(
       PatchPredictionRequest patchPredictionRequest) async {
     try {
       request() async {
@@ -95,8 +109,8 @@ class PredictionApi {
 
       var response = await BaseApi.performRequestWithRetry(request);
       var jsonResponse = jsonDecode(response.body);
-      PredictionResponse predictionResponse =
-          PredictionResponse.fromJson(jsonResponse);
+      GetPredictionResponse predictionResponse =
+          GetPredictionResponse.fromJson(jsonResponse);
       return predictionResponse;
     } on SocketException {
       throw Exception(
