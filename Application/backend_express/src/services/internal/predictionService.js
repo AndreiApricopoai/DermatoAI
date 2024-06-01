@@ -40,7 +40,9 @@ const getPredictionById = async (predictionId, userId) => {
       diagnosisType: prediction.diagnosisType,
       confidenceLevel: prediction.confidenceLevel,
       status: prediction.status,
+      createdAt: prediction.createdAt,
     };
+    console.log("Prediction status request made:");
 
     return {
       type: ResponseTypes.Success,
@@ -60,7 +62,7 @@ const getPredictionById = async (predictionId, userId) => {
 const getAllPredictionsByUserId = async (userId) => {
   try {
     const predictions = await Prediction.find({ userId })
-      .sort({ dateTime: 1 })
+      .sort({ dateTime: -1 })
       .exec();
 
     const formattedPredictions = predictions.map((prediction) => ({
@@ -75,6 +77,7 @@ const getAllPredictionsByUserId = async (userId) => {
       diagnosisType: prediction.diagnosisType,
       confidenceLevel: prediction.confidenceLevel,
       status: prediction.status,
+      createdAt: prediction.createdAt
     }));
 
     return {
@@ -151,6 +154,7 @@ const createPrediction = async (userId, imageBuffer) => {
           title: prediction.title,
           status: prediction.status,
           imageUrl: getAzureBlobSasUrl(prediction.imageUrl),
+          createdAt: prediction.createdAt,
         },
       },
     };
@@ -213,6 +217,7 @@ const updatePredictionUser = async (predictionId, userId, updatePayload) => {
       diagnosisType: prediction.diagnosisType,
       confidenceLevel: prediction.confidenceLevel,
       status: prediction.status,
+      createdAt: prediction.createdAt
     };
     return {
       type: ResponseTypes.Success,
@@ -277,6 +282,7 @@ const updatePredictionWorker = async (
       diagnosisType: prediction.diagnosisType,
       confidenceLevel: prediction.confidenceLevel,
       status: prediction.status,
+      createdAt: prediction.createdAt
     };
 
     return {
@@ -313,7 +319,7 @@ const deletePrediction = async (predictionId, userId) => {
 
     return {
       type: ResponseTypes.Success,
-      status: StatusCodes.NoContent,
+      status: StatusCodes.Ok,
     };
   } catch (error) {
     console.error("Error deleting prediction: ", error);

@@ -68,7 +68,7 @@ class ConversationApi {
     try {
       request() async {
         final url = BaseApi.getUri('conversations');
-        final body = jsonEncode(createConversationRequest.toJson());
+        final body = createConversationRequest.toJson();
         final headers = BaseApi.getHeadersWithAuthorization();
         return await http.post(url, headers: headers, body: body);
       }
@@ -94,7 +94,7 @@ class ConversationApi {
       request() async {
         final urlSuffix = patchConversationRequest.getUrl('conversations');
         final url = BaseApi.getUri(urlSuffix);
-        final body = jsonEncode(patchConversationRequest.toJson());
+        final body = patchConversationRequest.toJson();
         final headers = BaseApi.getHeadersWithAuthorization();
         return await http.patch(url, headers: headers, body: body);
       }
@@ -177,7 +177,7 @@ class ConversationApi {
         final urlSuffix =
             addMessageToConversationRequest.getUrl('conversations');
         final url = BaseApi.getUri(urlSuffix);
-        final body = jsonEncode(addMessageToConversationRequest.toJson());
+        final body = addMessageToConversationRequest.toJson();
         final headers = BaseApi.getHeadersWithAuthorization();
         return await http.post(url, headers: headers, body: body);
       }

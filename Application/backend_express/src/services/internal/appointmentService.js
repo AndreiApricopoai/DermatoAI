@@ -175,7 +175,7 @@ const deleteAppointment = async (appointmentId, userId) => {
 
     return {
       type: ResponseTypes.Success,
-      status: StatusCodes.NoContent,
+      status: StatusCodes.Ok,
     };
   } catch (error) {
     console.error("Error deleting appointment:", error);

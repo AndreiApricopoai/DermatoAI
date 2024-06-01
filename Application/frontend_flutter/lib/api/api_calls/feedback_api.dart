@@ -11,7 +11,7 @@ class FeedbackApi {
     try {
       request() async {
         final url = BaseApi.getUri('feedbacks');
-        final body = jsonEncode(createFeedbackRequest.toJson());
+        final body = createFeedbackRequest.toJson();
         final headers = BaseApi.getHeadersWithAuthorization();
         return await http.post(url, headers: headers, body: body);
       }

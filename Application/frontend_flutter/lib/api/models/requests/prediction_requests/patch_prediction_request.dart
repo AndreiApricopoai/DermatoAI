@@ -16,6 +16,7 @@ class PatchPredictionRequest {
     if (title != null) data['title'] = title;
     if (description != null) data['description'] = description;
     return json.encode(data);
+    
   }
 
   String getUrl(String baseUrl) {

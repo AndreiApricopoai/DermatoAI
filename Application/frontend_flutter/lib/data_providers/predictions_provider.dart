@@ -4,19 +4,21 @@ import 'package:frontend_flutter/api/models/responses/prediction_responses/get_a
 import 'package:frontend_flutter/api/models/responses/prediction_responses/prediction_response.dart';
 
 class PredictionsProvider with ChangeNotifier {
-  List<PredictionResponse> _predictions = [];
+  List<Prediction> _predictions = [];
+  List<String> _deletedPredictionIds = [];
   bool _isLoading = false;
 
-  List<PredictionResponse> get predictions => _predictions;
+  List<Prediction> get predictions => _predictions;
   bool get isLoading => _isLoading;
 
   Future<void> fetchPredictions() async {
     _isLoading = true;
     notifyListeners();
     try {
-      GetAllPredictionsResponse response = await PredictionApi.getAllPredictions();
+      GetAllPredictionsResponse response =
+          await PredictionApi.getAllPredictions();
       _predictions = response.predictions;
-      for (PredictionResponse prediction in _predictions) {
+      for (Prediction prediction in _predictions) {
         print(prediction.title);
       }
     } catch (e) {
@@ -26,5 +28,26 @@ class PredictionsProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void addPrediction(Prediction prediction) {
+    int index = _predictions
+        .indexWhere((p) => p.predictionId == prediction.predictionId);
+    if (index != -1) {
+      if (!_deletedPredictionIds.contains(prediction.predictionId)) {
+        _predictions[index] = prediction;
+      }
+      // If the prediction already exists, update it
+    } else {
+      // Otherwise, add it as a new entry
+      _predictions.insert(0, prediction);
+    }
+    notifyListeners();
+  }
+
+  void deletePrediction(String predictionId) {
+    _deletedPredictionIds.add(predictionId);
+    _predictions.removeWhere((p) => p.predictionId == predictionId);
+    notifyListeners();
   }
 }

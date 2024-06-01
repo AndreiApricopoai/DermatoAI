@@ -64,7 +64,7 @@ class AppointmentApi {
     try {
       request() async {
         final url = BaseApi.getUri('appointments');
-        final body = jsonEncode(createAppointmentRequest.toJson());
+        final body = createAppointmentRequest.toJson();
         final headers = BaseApi.getHeadersWithAuthorization();
         return await http.post(url, headers: headers, body: body);
       }
@@ -90,7 +90,7 @@ class AppointmentApi {
       request() async {
         final urlSuffix = patchAppointmentRequest.getUrl('appointments');
         final url = BaseApi.getUri(urlSuffix);
-        final body = jsonEncode(patchAppointmentRequest.toJson());
+        final body = patchAppointmentRequest.toJson();
         final headers = BaseApi.getHeadersWithAuthorization();
         return await http.patch(url, headers: headers, body: body);
       }

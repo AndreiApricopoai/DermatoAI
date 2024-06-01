@@ -102,7 +102,7 @@ class PredictionApi {
       request() async {
         final urlSuffix = patchPredictionRequest.getUrl('predictions');
         final url = BaseApi.getUri(urlSuffix);
-        final body = jsonEncode(patchPredictionRequest.toJson());
+        final body = patchPredictionRequest.toJson();
         final headers = BaseApi.getHeadersWithAuthorization();
         return await http.patch(url, headers: headers, body: body);
       }

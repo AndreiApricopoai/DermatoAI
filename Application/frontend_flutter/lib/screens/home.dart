@@ -1,8 +1,13 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend_flutter/api/api_calls/prediction_api.dart';
+import 'package:frontend_flutter/api/models/requests/prediction_requests/get_prediction_request.dart';
+import 'package:frontend_flutter/api/models/responses/prediction_responses/get_prediction_response.dart';
+import 'package:frontend_flutter/api/models/responses/prediction_responses/prediction_response.dart';
 import 'package:frontend_flutter/app/photo_handler.dart';
 import 'package:frontend_flutter/app/snackbar_manager.dart';
+import 'package:frontend_flutter/data_providers/predictions_provider.dart';
 import 'package:frontend_flutter/screens/appointments_screen_body.dart';
 import 'package:frontend_flutter/screens/chat_screen_body.dart';
 import 'package:frontend_flutter/screens/information_screen_body.dart';
@@ -12,6 +17,7 @@ import 'package:frontend_flutter/screens/profile_screen_body.dart';
 import 'package:frontend_flutter/utils/app_main_theme.dart';
 import 'package:frontend_flutter/widgets/text_title.dart';
 import 'package:frontend_flutter/api/models/requests/prediction_requests/create_prediction_request.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -21,7 +27,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   bool _isLoading = false;
-  File? _imageFile;
 
   static List<Widget> _widgetOptions = <Widget>[
     PredictionsScreenBody(),
@@ -52,42 +57,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool? verificationEmailSent = ModalRoute.of(context)?.settings.arguments as bool?;
+    final bool? verificationEmailSent =
+        ModalRoute.of(context)?.settings.arguments as bool?;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (verificationEmailSent == true) {
-        SnackbarManager.showSuccessSnackBar(context, 'Email verification sent successfully. Please check your inbox.');
+        SnackbarManager.showSuccessSnackBar(context,
+            'Email verification sent successfully. Please check your inbox.');
       } else if (verificationEmailSent == false) {
-        SnackbarManager.showErrorSnackBar(context, 'Failed to send verification email. Please try again later.');
+        SnackbarManager.showErrorSnackBar(context,
+            'Failed to send verification email. Please try again later.');
       }
     });
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppMainTheme.blueLevelFive,
-        title: TextTitle(
-          text: _appBarTitles[_selectedIndex],
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w400,
-        ),
-        actions: _selectedIndex == 0
-            ? [
-                IconButton(
-                  icon: Icon(Icons.search, color: Colors.white),
-                  onPressed: () {},
-                ),
-                IconButton(
-                  icon: Icon(Icons.filter_list, color: Colors.white),
-                  onPressed: () {},
-                ),
-              ]
-            : null, // Actions only for home screen
-      ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : Center(
-              child:  _widgetOptions.elementAt(_selectedIndex),
+              child: _widgetOptions.elementAt(_selectedIndex),
             ),
       bottomNavigationBar: BottomAppBar(
         height: 75.0,
@@ -168,7 +155,9 @@ class _HomeScreenState extends State<HomeScreen> {
               imagePath,
               width: 22,
               height: 22,
-              color: isSelected ? Colors.orange.shade300 : AppMainTheme.blueLevelOne,
+              color: isSelected
+                  ? Colors.orange.shade300
+                  : AppMainTheme.blueLevelOne,
             ),
             Visibility(
               visible: isSelected,
@@ -226,49 +215,126 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _handlePhotoSelection(PhotoSource source, BuildContext context) async {
-    final photoHandler = PhotoHandler();
-    setState(() {
-      _isLoading = true;
-    });
-
-    CreatePredictionRequest? createPredictionRequest;
-    if (source == PhotoSource.camera) {
-      createPredictionRequest = await photoHandler.takePhoto(context);
-    } else {
-      createPredictionRequest = await photoHandler.pickImage(context);
-    }
-
-    if (createPredictionRequest != null) {
-      setState(() {
-        _imageFile = createPredictionRequest?.image;
-      });
-      // Print the image path
-      print('Selected image path: ${_imageFile!.path}');
-
-      try {
-        final predictionResponse = await PredictionApi.createPrediction(createPredictionRequest);
-        if(predictionResponse.isSuccess)
-        {
-          print(predictionResponse.imageUrl);
-          print(predictionResponse.dataMessage);print(predictionResponse.dataMessage);print(predictionResponse.dataMessage);print(predictionResponse.dataMessage);print(predictionResponse.dataMessage);
-        }
-        else
-        {
-
-
-        }
-      } on Exception catch (e) {
-        print('Error: $e');
-      }
-      
-    }
-
-    setState(() {
-      _isLoading = false;
-    });
+void addPredictionSafely(Prediction prediction) {
+  if (context.mounted) {
+    Provider.of<PredictionsProvider>(context, listen: false).addPrediction(prediction);
+  }
+  if(prediction.predictionId != null) {
+    checkPredictionStatus(prediction.predictionId!, context);
   }
 }
 
+void checkPredictionStatus(String predictionId, BuildContext context) {
+  const Duration checkInterval = Duration(seconds: 10);
+  const Duration timeout = Duration(minutes: 1);
+  Timer? timer;
+
+  timer = Timer.periodic(checkInterval, (Timer t) async {
+    // Check if the timer has exceeded the timeout duration
+    if (t.tick >= (timeout.inSeconds / checkInterval.inSeconds)) {
+      t.cancel();
+    }
+
+    try {
+      // Fetch the current status of the prediction
+      GetPredictionResponse prediction = await getPredictionStatus(predictionId);
+      // If the status is no longer pending, update and cancel the timer
+      if (prediction.status != "pending") {
+        t.cancel();
+        
+        Prediction processedPrediction = prediction.toPrediction();
+        if (context.mounted) {
+          Provider.of<PredictionsProvider>(context, listen: false)
+              .addPrediction(processedPrediction);
+        }
+      }
+      else
+      {
+        print("Prediction is still pending");
+      }
+    } catch (error) {
+      print("Error checking prediction status: $error");
+      t.cancel();  // Optionally handle error differently or keep the timer
+    }
+  });
+}
+
+
+Future<GetPredictionResponse> getPredictionStatus(String predictionId) async {
+  GetPredictionRequest request = GetPredictionRequest(predictionId: predictionId);
+  try {
+    GetPredictionResponse response = await PredictionApi.getPrediction(request);
+    return response;
+  } catch (e) {
+    print('Failed to fetch prediction status: $e');
+    throw Exception('Failed to fetch prediction status');
+  }
+}
+
+
+// Use this callback in your asynchronous method
+void _handlePhotoSelection(PhotoSource source, BuildContext context) async {
+  final photoHandler = PhotoHandler();
+  
+  setState(() {
+    _isLoading = true;
+  });
+
+  CreatePredictionRequest? createPredictionRequest;
+  if (source == PhotoSource.camera) {
+    createPredictionRequest = await photoHandler.takePhoto(context);
+    print("Camera selected");
+  } else {
+    createPredictionRequest = await photoHandler.pickImage(context);
+    print("Gallery selected");
+  }
+
+  print('createPredictionRequest: $createPredictionRequest');
+
+  if(createPredictionRequest == null)
+  {
+    print('No image selected');
+
+  }
+  else{
+    print('Image selected');
+  }
+
+  Prediction? prediction;
+  if (createPredictionRequest != null) {
+    try {
+      final response = await PredictionApi.createPrediction(createPredictionRequest);
+              print("response is : ${response.error}");
+
+      if (response.isSuccess) {
+        // print rsposne is succes and some text
+
+        print("response is : ${response.isSuccess}");
+
+        prediction = response.toPrediction();
+      } else {
+        if (context.mounted) {
+          print("Failed to create prediction  Failed to create predictionFailed to create predictionFailed to create predictionFailed to create prediction");
+          SnackbarManager.showErrorSnackBar(context, 'Failed to create prediction.');
+        }
+      }
+    } catch (e) {
+      print('Error: $e');
+      if (context.mounted) {
+        SnackbarManager.showErrorSnackBar(context, 'An error occurred. Please try again.');
+      }
+    }
+  }
+
+  
+    setState(() {
+      _isLoading = false;
+      if(prediction!=null){
+        addPredictionSafely(prediction);
+      }
+    });
+  
+}
+}
 enum PhotoSource { gallery, camera }
 

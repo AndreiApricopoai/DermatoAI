@@ -172,7 +172,7 @@ const deleteConversation = async (conversationId, userId) => {
 
     return {
       type: ResponseTypes.Success,
-      status: StatusCodes.NoContent,
+      status: StatusCodes.Ok,
     };
   } catch (error) {
     console.error("Error deleting conversation and messages:", error);
