@@ -1,11 +1,10 @@
-import 'package:frontend_flutter/api/models/responses/base_response.dart';
-
-class ConversationResponse extends BaseApiResponse {
+class ConversationResponse {
   final String? conversationId;
   final String? title;
 
-  ConversationResponse.fromJson(super.json)
-      : conversationId = json['data']?['id'],
-        title = json['data']?['title'],
-        super.fromJson();
+  ConversationResponse({this.conversationId, this.title});
+
+  ConversationResponse.fromJson(Map<String, dynamic> json)
+      : conversationId = json['id'],
+        title = json['title'];
 }

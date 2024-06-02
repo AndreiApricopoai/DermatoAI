@@ -6,16 +6,16 @@ import 'package:frontend_flutter/api/models/requests/conversation_requests/get_c
 import 'package:frontend_flutter/api/models/requests/conversation_requests/patch_conversation_request.dart';
 import 'package:frontend_flutter/api/models/responses/base_response.dart';
 import 'package:frontend_flutter/api/models/responses/conversation_responses/add_message_to_conversation_response.dart';
-import 'package:frontend_flutter/api/models/responses/conversation_responses/conversation_response.dart';
 import 'package:frontend_flutter/api/models/responses/conversation_responses/get_all_conversations_response.dart';
 import 'package:frontend_flutter/api/models/responses/conversation_responses/get_all_messages_from_conversation_response.dart';
+import 'package:frontend_flutter/api/models/responses/conversation_responses/get_conversation_response.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend_flutter/api/api_calls/base_api.dart';
 import 'dart:convert';
 import 'dart:io';
 
 class ConversationApi {
-  static Future<ConversationResponse> getConversation(
+  static Future<GetConversationResponse> getConversation(
       GetConversationRequest getConversationRequest) async {
     try {
       request() async {
@@ -27,9 +27,9 @@ class ConversationApi {
 
       var response = await BaseApi.performRequestWithRetry(request);
       var jsonResponse = jsonDecode(response.body);
-      ConversationResponse conversationResponse =
-          ConversationResponse.fromJson(jsonResponse);
-      return conversationResponse;
+      GetConversationResponse getConversationResponse =
+          GetConversationResponse.fromJson(jsonResponse);
+      return getConversationResponse;
     } on SocketException {
       throw Exception(
           'Unable to connect to the server. Please check your internet connection');
@@ -63,7 +63,7 @@ class ConversationApi {
     }
   }
 
-  static Future<ConversationResponse> createConversation(
+  static Future<GetConversationResponse> createConversation(
       CreateConversationRequest createConversationRequest) async {
     try {
       request() async {
@@ -75,9 +75,9 @@ class ConversationApi {
 
       var response = await BaseApi.performRequestWithRetry(request);
       var jsonResponse = jsonDecode(response.body);
-      ConversationResponse conversationResponse =
-          ConversationResponse.fromJson(jsonResponse);
-      return conversationResponse;
+      GetConversationResponse getConversationResponse =
+          GetConversationResponse.fromJson(jsonResponse);
+      return getConversationResponse;
     } on SocketException {
       throw Exception(
           'Unable to connect to the server. Please check your internet connection');
@@ -88,7 +88,7 @@ class ConversationApi {
     }
   }
 
-  static Future<ConversationResponse> patchConversation(
+  static Future<GetConversationResponse> patchConversation(
       PatchConversationRequest patchConversationRequest) async {
     try {
       request() async {
@@ -101,9 +101,9 @@ class ConversationApi {
 
       var response = await BaseApi.performRequestWithRetry(request);
       var jsonResponse = jsonDecode(response.body);
-      ConversationResponse conversationResponse =
-          ConversationResponse.fromJson(jsonResponse);
-      return conversationResponse;
+      GetConversationResponse getConversationResponse =
+          GetConversationResponse.fromJson(jsonResponse);
+      return getConversationResponse;
     } on SocketException {
       throw Exception(
           'Unable to connect to the server. Please check your internet connection');
@@ -155,6 +155,8 @@ class ConversationApi {
       }
 
       var response = await BaseApi.performRequestWithRetry(request);
+            print(response.body);
+
       var jsonResponse = jsonDecode(response.body);
       GetAllConversationMessagesResponse getAllConversationMessagesResponse =
           GetAllConversationMessagesResponse.fromJson(jsonResponse);

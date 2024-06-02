@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend_flutter/data_providers/chat_provider.dart';
 import 'package:frontend_flutter/data_providers/locations_provider.dart';
 import 'package:frontend_flutter/data_providers/predictions_provider.dart';
 import 'package:frontend_flutter/data_providers/profile_provider.dart';
@@ -26,6 +27,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => LocationsProvider()),
         ChangeNotifierProvider(create: (_) => PredictionsProvider()),
+        ChangeNotifierProvider(create: (_) => ChatProvider()),
       ],
       child: MyApp(),
     ),

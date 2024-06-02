@@ -1,13 +1,12 @@
-import 'package:frontend_flutter/api/models/responses/base_response.dart';
-
-class MessageResponse extends BaseApiResponse {
+class MessageResponse {
   final String? messageId;
   final String? sender;
   final String? content;
 
-  MessageResponse.fromJsonElement(super.json)
+  MessageResponse({this.messageId, this.sender, this.content});
+
+  MessageResponse.fromJson(Map<String, dynamic> json)
       : messageId = json['id'],
-        sender = json['userId'],
-        content = json['title'],
-        super.fromJson();
+        sender = json['sender'],
+        content = json['content'];
 }

@@ -10,7 +10,7 @@ class GetAllConversationMessagesRequest {
   });
 
   String getUrl(String baseUrl) {
-    return '$baseUrl/$conversationId';
+    return '$baseUrl/$conversationId/messages';
   }
 
   Map<String, String> toQueryParameters() {

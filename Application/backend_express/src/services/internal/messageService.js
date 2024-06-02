@@ -15,6 +15,8 @@ const getAllMessagesByConversationId = async (
   page,
   limit
 ) => {
+  console.log("getAllMessagesByConversationId")
+
   try {
     const conversationExists = await Conversation.findOne({
       _id: conversationId,
