@@ -1,9 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.yourcompany.yourapp">
+
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:networkSecurityConfig="@xml/network_security_config"
@@ -21,22 +27,16 @@
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
             
-            <!-- Specifies an Android theme to apply to this Activity as soon as
-                 the Android process has started. This theme is visible to the user
-                 while the Flutter UI initializes. After that, this theme continues
-                 to determine the Window background behind the Flutter UI. -->
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
 
-            <!-- Main launcher intent filter -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Intent filter for handling custom URL scheme -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -45,18 +45,22 @@
             </intent-filter>
         </activity>
 
-        <!-- Don't delete the meta-data below.
-             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- Awesome Notifications Receivers -->
+        <receiver android:name="me.carda.awesome_notifications.notifications.receivers.ActionReceiver" android:exported="true"/>
+        <receiver android:name="me.carda.awesome_notifications.notifications.receivers.DismissedReceiver" android:exported="true"/>
+        <receiver android:name="me.carda.awesome_notifications.notifications.receivers.NotificationReceiver" android:exported="true"/>
+        <receiver android:name="me.carda.awesome_notifications.notifications.receivers.RefreshReceiver" android:exported="true"/>
+        <receiver android:name="me.carda.awesome_notifications.notifications.receivers.ReplyActionReceiver" android:exported="true"/>
+        <receiver android:name="me.carda.awesome_notifications.notifications.receivers.ScheduledReceiver" android:exported="true"/>
+        
+        <service android:name="me.carda.awesome_notifications.notifications.services.NotificationService" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true"/>
+        <service android:name="me.carda.awesome_notifications.notifications.services.WorkManagerService" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true"/>
     </application>
 
-    <!-- Required to query activities that can process text, see:
-         https://developer.android.com/training/package-visibility?hl=en and
-         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
-
-         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
     <intent>
         <action android:name="android.intent.action.VIEW" />

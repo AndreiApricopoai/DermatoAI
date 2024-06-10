@@ -3,8 +3,10 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  awesome_notifications
   file_selector_windows
   geolocator_windows
+  permission_handler_windows
   url_launcher_windows
 )
 

@@ -5,6 +5,10 @@ import 'package:frontend_flutter/api/api_calls/conversation_api.dart';
 import 'package:frontend_flutter/api/models/requests/conversation_requests/get_all_conversation_messages_request.dart';
 import 'package:frontend_flutter/api/models/requests/conversation_requests/add_message_to_conversation_request.dart';
 import 'package:frontend_flutter/api/models/requests/conversation_requests/create_conversation_request.dart';
+import 'package:frontend_flutter/api/models/requests/conversation_requests/delete_conversation_request.dart';
+import 'package:frontend_flutter/api/models/requests/conversation_requests/patch_conversation_request.dart';
+import 'package:frontend_flutter/api/models/responses/conversation_responses/conversation_response.dart';
+import 'package:frontend_flutter/api/models/responses/base_response.dart';
 
 class ConversationScreen extends StatefulWidget {
   final String conversationId;
@@ -52,34 +56,29 @@ class _ConversationScreenState extends State<ConversationScreen> {
           ),
           PopupMenuButton<String>(
             onSelected: (String value) {
-              // Handle edit or delete
+              if (value == 'edit') {
+                _showEditDialog(context);
+              } else if (value == 'delete') {
+                _showDeleteDialog(context);
+              }
             },
             itemBuilder: (BuildContext context) {
-              return Provider.of<ChatProvider>(context, listen: false).conversations.map((conversation) {
-                return PopupMenuItem<String>(
-                  value: conversation.conversationId!,
+              return [
+                PopupMenuItem<String>(
+                  value: 'edit',
                   child: ListTile(
-                    title: Text(conversation.title ?? 'No Title'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.edit),
-                          onPressed: () {
-                            // Handle edit
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () {
-                            // Handle delete
-                          },
-                        ),
-                      ],
-                    ),
+                    leading: Icon(Icons.edit),
+                    title: Text('Edit'),
                   ),
-                );
-              }).toList();
+                ),
+                PopupMenuItem<String>(
+                  value: 'delete',
+                  child: ListTile(
+                    leading: Icon(Icons.delete),
+                    title: Text('Delete'),
+                  ),
+                ),
+              ];
             },
           ),
         ],
@@ -204,5 +203,103 @@ class _ConversationScreenState extends State<ConversationScreen> {
         );
       }
     }
+  }
+
+  void _showEditDialog(BuildContext context) {
+    TextEditingController titleController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Edit Conversation'),
+          content: TextField(
+            controller: titleController,
+            decoration: InputDecoration(labelText: 'Title'),
+          ),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text('Save'),
+              onPressed: () async {
+                String newTitle = titleController.text.trim();
+                if (newTitle.isNotEmpty) {
+                  try {
+                    PatchConversationRequest patchRequest = PatchConversationRequest(
+                      conversationId: widget.conversationId,
+                      title: newTitle,
+                    );
+
+                    var response = await ConversationApi.patchConversation(patchRequest);
+                    if (response.isSuccess && context.mounted) {
+                      ConversationResponse updatedConversation = response.toConversationResponse();
+                      Provider.of<ChatProvider>(context, listen: false).updateConversation(updatedConversation);
+                      Navigator.of(context).pop(); // Close dialog
+                    } else {
+                      // Handle failure
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to update conversation')),
+                      );
+                    }
+                  } catch (e) {
+                    // Handle error
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('An error occurred')),
+                    );
+                  }
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete this conversation?'),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () async {
+                try {
+                  DeleteConversationRequest request = DeleteConversationRequest(
+                      conversationId: widget.conversationId);
+                  var response = await ConversationApi.deleteConversation(request);
+
+                  if (response.isSuccess && context.mounted) {
+                    Provider.of<ChatProvider>(context, listen: false).removeConversation(widget.conversationId);
+                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.of(context).pop(); // Go back to the previous screen if current conversation is deleted
+                  } else {
+                    // Handle failure
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to delete conversation')),
+                    );
+                  }
+                } catch (e) {
+                  // Handle error
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('An error occurred')),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

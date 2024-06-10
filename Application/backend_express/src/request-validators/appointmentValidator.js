@@ -31,6 +31,7 @@ const updateAppointmentSchema = Joi.object({
 
 const updateAppointmentValidator = (req, res, next) => {
   const payload = req.body;
+  console.log(payload);
   const { error } = updateAppointmentSchema.validate(payload, {
     abortEarly: false
   });

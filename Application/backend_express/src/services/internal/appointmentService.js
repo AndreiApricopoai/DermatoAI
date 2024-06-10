@@ -1,3 +1,4 @@
+const moment = require('moment');
 const Appointment = require("../../models/appointmentModel");
 const User = require("../../models/userModel");
 const {
@@ -26,7 +27,7 @@ const getAppointmentById = async (appointmentId, userId) => {
       id: appointment._id,
       title: appointment.title,
       description: appointment.description,
-      appointmentDate: appointment.appointmentDate,
+      appointmentDate: moment.utc(appointment.appointmentDate).local().format(),
       institutionName: appointment.institutionName,
       address: appointment.address,
     };
@@ -56,7 +57,7 @@ const getAllAppointmentsByUserId = async (userId) => {
       id: appointment._id,
       title: appointment.title,
       description: appointment.description,
-      appointmentDate: appointment.appointmentDate,
+      appointmentDate: moment.utc(appointment.appointmentDate).local().format(),
       institutionName: appointment.institutionName,
       address: appointment.address,
     }));
@@ -87,14 +88,15 @@ const createAppointment = async (userId, payload) => {
       };
     }
 
-    const newAppointment = new Appointment({ userId, ...payload });
+    const utcAppointmentDate = moment.utc(payload.appointmentDate).toDate();
+    const newAppointment = new Appointment({ userId, ...payload, appointmentDate: utcAppointmentDate});
     await newAppointment.save();
 
     const responseData = {
       id: newAppointment._id,
       title: newAppointment.title,
       description: newAppointment.description,
-      appointmentDate: newAppointment.appointmentDate,
+      appointmentDate: moment.utc(newAppointment.appointmentDate).local().format(),
       institutionName: newAppointment.institutionName,
       address: newAppointment.address,
     };
@@ -115,6 +117,8 @@ const createAppointment = async (userId, payload) => {
 };
 
 const updateAppointment = async (appointmentId, userId, updatePayload) => {
+  console.log("Am intrat in updateAppointment");
+
   try {
     const appointment = await Appointment.findOne({
       _id: appointmentId,
@@ -130,18 +134,25 @@ const updateAppointment = async (appointmentId, userId, updatePayload) => {
     }
 
     Object.keys(updatePayload).forEach((key) => {
-      appointment[key] = updatePayload[key];
+      if (key === 'appointmentDate') {
+        appointment[key] = moment.utc(updatePayload[key]).toDate();
+      } else {
+        appointment[key] = updatePayload[key];
+      }
     });
+
     await appointment.save();
 
     const updatedAppointmentData = {
       id: appointment._id,
       title: appointment.title,
       description: appointment.description,
-      appointmentDate: appointment.appointmentDate,
+      appointmentDate: appointment.appointmentDate.toISOString(),
       institutionName: appointment.institutionName,
       address: appointment.address,
     };
+    console.log("updated");
+    console.log(updatedAppointmentData);
 
     return {
       type: ResponseTypes.Success,

@@ -99,7 +99,7 @@ class AuthApi {
     try {
       request() async {
         final url = BaseApi.getUri('auth/logout');
-        final body = jsonEncode(logoutRequest.toJson());
+        final body = logoutRequest.toJson();
         final headers = BaseApi.getHeadersWithAuthorization();
         return await http.delete(url, headers: headers, body: body);
       }
@@ -164,7 +164,7 @@ class AuthApi {
     try {
       request() async {
         final url = BaseApi.getUri('auth/send-verification-email');
-        final body = jsonEncode(sendVerificationEmailRequest.toJson());
+        final body = sendVerificationEmailRequest.toJson();
         final headers = BaseApi.getHeadersWithAuthorization();
         return await http.post(url, headers: headers, body: body);
       }
