@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_flutter/api/api_calls/auth_api.dart';
+import 'package:frontend_flutter/api/api_calls/user_api.dart';
 import 'package:frontend_flutter/api/models/requests/auth_requests/login_request.dart';
 import 'package:frontend_flutter/api/models/requests/auth_requests/reset_password_request.dart';
 import 'package:frontend_flutter/api/models/requests/auth_requests/send_forgot_password_email_request.dart';
+import 'package:frontend_flutter/app/local_storage.dart';
+import 'package:frontend_flutter/app/session_manager.dart';
 import 'package:frontend_flutter/app/snackbar_manager.dart';
 import 'package:frontend_flutter/extensions/exception_extensions.dart';
 
@@ -37,9 +40,11 @@ class ForgotPasswordActions {
   Future<void> sendForgotPasswordEmail() async {
     if (formKey.currentState?.validate() == true) {
       setLoadingState(true);
+
       String email = emailController.text;
       var sendForgotPasswordEmailRequest =
           SendForgotPasswordEmailRequest(email: email);
+
       try {
         var response = await AuthApi.sendForgotPasswordEmail(
             sendForgotPasswordEmailRequest);
@@ -48,8 +53,8 @@ class ForgotPasswordActions {
           if (response.isSuccess) {
             setLoadingState(false);
             setEmailSentState(true);
-            SnackbarManager.showSuccessSnackBar(
-                context, 'Email containing the verification token sent!');
+            SnackbarManager.showSuccessSnackBar(context,
+                'An email containing the verification token was sent!');
           } else {
             if (response.apiResponseCode == 3) {
               SnackbarManager.showWarningSnackBar(
@@ -95,8 +100,34 @@ class ForgotPasswordActions {
 
           if (context.mounted) {
             if (loginResponse.isSuccess) {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/home', (Route<dynamic> route) => false);
+              final extractedInitialProfile =
+                  await UserApi.setInitialProfileInformation();
+
+              if (extractedInitialProfile) {
+                if (context.mounted) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/home',
+                    (Route<dynamic> route) => false,
+                    arguments: {
+                      'actions': [SnackBarActions.successfulResetPassword],
+                    },
+                  );
+                }
+              } else {
+                SessionManager.clearSession();
+                await LocalStorage.clearRefreshToken();
+                if (context.mounted) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/login',
+                    (Route<dynamic> route) => false,
+                    arguments: {
+                      'actions': [SnackBarActions.failedToFetchProfile],
+                    },
+                  );
+                }
+              }
+
+              return;
             } else {
               if (loginResponse.apiResponseCode == 3) {
                 SnackbarManager.showWarningSnackBar(

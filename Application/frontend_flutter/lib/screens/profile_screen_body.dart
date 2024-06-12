@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:frontend_flutter/api/models/requests/auth_requests/send_verification_email_request.dart';
-import 'package:frontend_flutter/api/models/requests/feedback_requests/create_feedback_request.dart';
-import 'package:frontend_flutter/api/models/requests/auth_requests/logout_request.dart';
-import 'package:frontend_flutter/api/models/responses/base_response.dart';
+import 'package:frontend_flutter/actions/profile_actions.dart';
 import 'package:frontend_flutter/api/models/responses/user_responses/get_profile_response.dart';
-import 'package:frontend_flutter/api/models/responses/auth_responses/logout_response.dart';
 import 'package:frontend_flutter/app/session_manager.dart';
-import 'package:frontend_flutter/app/snackbar_manager.dart';
 import 'package:frontend_flutter/data_providers/profile_provider.dart';
-import 'package:frontend_flutter/api/api_calls/feedback_api.dart';
-import 'package:frontend_flutter/api/api_calls/auth_api.dart';
+import 'package:frontend_flutter/app/app_main_theme.dart';
+import 'package:frontend_flutter/widgets/loading_overlay.dart'; 
 import 'package:provider/provider.dart';
 
 class ProfileScreenBody extends StatefulWidget {
@@ -19,207 +14,90 @@ class ProfileScreenBody extends StatefulWidget {
 
 class _ProfileScreenBodyState extends State<ProfileScreenBody> {
   bool _isLoading = false;
+  bool isSearching = false;
+  String searchQuery = "";
 
   @override
   void initState() {
     super.initState();
-    // Fetch profile data when the screen is first built
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<ProfileProvider>(context, listen: false).fetchProfileData();
-    });
+    ProfileActions.checkAndFetchVerifiedStatus(context, _setLoading);
   }
 
-  Future<void> _sendVerificationEmail(BuildContext context, String email) async {
+  void _setLoading(bool isLoading) {
     setState(() {
-      _isLoading = true;
+      _isLoading = isLoading;
     });
-    try {
-      final request = SendVerificationEmailRequest(email: email);
-      final response = await AuthApi.sendVerificationEmail(request);
-      if (response.isSuccess) {
-        SnackbarManager.showSuccessSnackBar(context, 'Verification email sent successfully');
-      } else {
-        SnackbarManager.showErrorSnackBar(context, 'Failed to send verification email');
-      }
-    } catch (e) {
-      SnackbarManager.showErrorSnackBar(context, 'Error: $e');
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
-  Future<bool> _sendFeedback(BuildContext context, String category, String content) async {
-    setState(() {
-      _isLoading = true;
-    });
-    print('Sending feedback: category=$category, content=$content');
-    try {
-      final request = CreateFeedbackRequest(category: category, content: content);
-      final response = await FeedbackApi.sendFeedback(request);
-      print(response.error);
-      if (response.isSuccess) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _logout(BuildContext context) async {
-    final refreshToken = SessionManager.getRefreshToken();
-    if (refreshToken == null) {
-      SnackbarManager.showErrorSnackBar(context, 'No refresh token found');
-      return;
-    }
-
-    final bool? confirmLogout = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Confirm Logout'),
-          content: Text('Are you sure you want to log out?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text('Logout'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmLogout == true) {
-      try {
-        final request = LogoutRequest(refreshToken: refreshToken);
-        final response = await AuthApi.logout(request);
-        if (response.isSuccess) {
-          SessionManager.clearSession();
-          Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
-        } else {
-          SnackbarManager.showErrorSnackBar(context, 'Failed to log out');
-        }
-      } catch (e) {
-        SnackbarManager.showErrorSnackBar(context, 'Error: $e');
-      }
-    }
-  }
-
-  void _showFeedbackDialog(BuildContext context) {
-    final TextEditingController contentController = TextEditingController();
-    String category = 'app';
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Send Feedback'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                value: category,
-                items: ['app', 'bugs', 'usability', 'predictions', 'AIchat', 'other']
-                    .map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    category = newValue;
-                  }
-                },
-                decoration: InputDecoration(labelText: 'Category'),
-              ),
-              TextField(
-                controller: contentController,
-                decoration: InputDecoration(labelText: 'Content'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                bool success = await _sendFeedback(context, category, contentController.text.trim());
-                if(success) {
-                  SnackbarManager.showSuccessSnackBar(context, 'Feedback sent successfully');
-                } else {
-                  SnackbarManager.showErrorSnackBar(context, 'Failed to send feedback');
-                }
-                
-              },
-              child: Text('Send'),
-            ),
-          ],
-        );
+  Widget buildSearchField() {
+    return TextField(
+      autofocus: true,
+      decoration: InputDecoration(
+        hintText: "Enter search query",
+        border: InputBorder.none,
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+      ),
+      style: TextStyle(color: Colors.white, fontSize: 16.0),
+      onChanged: (query) {
+        setState(() {
+          searchQuery = query;
+        });
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Consumer<ProfileProvider>(
-          builder: (context, profileProvider, child) {
-            if (profileProvider.isLoading) {
-              return Center(child: CircularProgressIndicator());
-            }
-            if (profileProvider.errorMessage != null) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(profileProvider.errorMessage!),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              });
-              return Center(
-                child: ElevatedButton(
+    return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 80.0,
+        backgroundColor: AppMainTheme.blueLevelFive,
+        title: isSearching
+            ? buildSearchField()
+            : Text("Profile", style: TextStyle(color: Colors.white)),
+        actions: [
+          isSearching
+              ? IconButton(
+                  icon: Icon(Icons.close, color: Colors.white),
                   onPressed: () {
-                    profileProvider.resetError();
-                    profileProvider.fetchProfileData();
+                    setState(() {
+                      isSearching = false;
+                      searchQuery = ''; // Clear search query
+                    });
                   },
-                  child: Text('Retry'),
+                )
+              : IconButton(
+                  icon: Icon(Icons.search, color: Colors.white),
+                  onPressed: () {
+                    setState(() {
+                      isSearching = true;
+                    });
+                  },
                 ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          Consumer<ProfileProvider>(
+            builder: (context, profileProvider, child) {
+              final profile = profileProvider.profileData ??
+                  GetProfileResponse.fromSession();
+
+              return ProfileView(
+                profile: profile,
+                onSendVerificationEmail: () => ProfileActions.sendVerificationEmail(
+                    context, profile.email!, _setLoading),
+                onSendFeedback: () => ProfileActions.showFeedbackDialog(
+                    context, _setLoading),
+                onLogout: () => ProfileActions.logout(context, _setLoading),
+                onChangePassword: () => ProfileActions.showChangePasswordDialog(
+                    context, _setLoading),
               );
-            }
-            final profile = profileProvider.profileData;
-            if (profile == null) {
-              return Center(child: Text('No profile data available.'));
-            }
-            return ProfileView(
-              profile: profile,
-              onSendVerificationEmail: () => _sendVerificationEmail(context, profile.email!),
-              onSendFeedback: () => _showFeedbackDialog(context),
-              onLogout: () => _logout(context),
-            );
-          },
-        ),
-        if (_isLoading)
-          Container(
-            color: Colors.black45,
-            child: Center(child: CircularProgressIndicator()),
+            },
           ),
-      ],
+          LoadingOverlay(isLoading: _isLoading),
+        ],
+      ),
     );
   }
 }
@@ -229,6 +107,7 @@ class ProfileView extends StatelessWidget {
   final VoidCallback onSendVerificationEmail;
   final VoidCallback onSendFeedback;
   final VoidCallback onLogout;
+  final VoidCallback onChangePassword;
 
   const ProfileView({
     Key? key,
@@ -236,6 +115,7 @@ class ProfileView extends StatelessWidget {
     required this.onSendVerificationEmail,
     required this.onSendFeedback,
     required this.onLogout,
+    required this.onChangePassword,
   }) : super(key: key);
 
   @override
@@ -248,7 +128,8 @@ class ProfileView extends StatelessWidget {
           Center(
             child: CircleAvatar(
               radius: 50,
-              backgroundColor: profile.verified ?? false ? Colors.green : Colors.red,
+              backgroundColor:
+                  profile.verified ?? false ? Colors.green : Colors.red,
               child: profile.profilePhoto == null
                   ? Text(
                       '${profile.firstName?[0] ?? ''}${profile.lastName?[0] ?? ''}',
@@ -300,6 +181,14 @@ class ProfileView extends StatelessWidget {
           ),
           SizedBox(height: 16),
           ElevatedButton(
+            onPressed: onChangePassword,
+            child: Text('Change Password'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+            ),
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
             onPressed: onLogout,
             child: Text('Logout'),
             style: ElevatedButton.styleFrom(
@@ -328,5 +217,18 @@ class ProfileView extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+extension GetProfileResponseFromSession on GetProfileResponse {
+  static GetProfileResponse fromSession() {
+    return GetProfileResponse(
+        firstName: SessionManager.getFirstName(),
+        lastName: SessionManager.getLastName(),
+        email: SessionManager.getEmail(),
+        profilePhoto: SessionManager.getProfilePhoto(),
+        verified: SessionManager.getVerified(),
+        isSuccess: true,
+        apiResponseCode: 1);
   }
 }

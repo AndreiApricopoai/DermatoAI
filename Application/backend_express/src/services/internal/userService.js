@@ -23,6 +23,7 @@ const getProfileInformation = async (userId) => {
       email: user.email,
       profilePhoto: user.profilePhoto,
       verified: user.verified,
+      isGoogleUser: user.googleId ? true : false,
     };
 
     return {

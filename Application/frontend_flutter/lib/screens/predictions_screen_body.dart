@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_flutter/api/models/responses/prediction_responses/prediction_response.dart';
 import 'package:frontend_flutter/screens/prediction_details_screen.dart';
-import 'package:frontend_flutter/utils/app_main_theme.dart';
+import 'package:frontend_flutter/app/app_main_theme.dart';
+import 'package:frontend_flutter/widgets/text_title.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend_flutter/data_providers/predictions_provider.dart';
 
@@ -29,11 +31,11 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 80.0,
+        toolbarHeight: 65.0,
         backgroundColor: AppMainTheme.blueLevelFive,
         title: isSearching
             ? buildSearchField()
-            : Text("My Predictions", style: TextStyle(color: Colors.white)),
+            : TextTitle(color: Colors.white, text: 'Predictions', fontSize: 24.0, fontFamily: GoogleFonts.roboto, fontWeight: FontWeight.w400,),
         actions: [
           isSearching
               ? IconButton(

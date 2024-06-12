@@ -1,10 +1,8 @@
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend_flutter/api/api_constants.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import 'package:frontend_flutter/utils/app_main_theme.dart';
+import 'package:frontend_flutter/app/app_main_theme.dart';
 import 'package:frontend_flutter/widgets/button_outline_icon.dart';
 import 'package:frontend_flutter/widgets/button_rounded.dart';
 import 'package:frontend_flutter/widgets/button_text.dart';
@@ -14,7 +12,6 @@ import 'package:frontend_flutter/widgets/input_password.dart';
 import 'package:frontend_flutter/validators/input_validators.dart';
 import 'package:frontend_flutter/widgets/text_title.dart';
 import 'package:frontend_flutter/widgets/loading_overlay.dart';
-
 import '../actions/register_actions.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -32,7 +29,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   late RegisterActions _registerActions;
 
   final String termsUrl = '${ApiConstants.baseUrlStaticFiles}terms';
@@ -137,8 +135,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   style: const TextStyle(
-                    color: Colors.black, // Default text color
-                    height: 1.5, // Adjust the line spacing
+                    color: Colors.black,
+                    height: 1.5,
                   ),
                   children: <TextSpan>[
                     const TextSpan(
@@ -174,7 +172,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 25),
               CustomElevatedButton(
-                onPressed: _isLoading ? () {} : () => _registerActions.handleRegister(),
+                onPressed: _isLoading
+                    ? () {}
+                    : () => _registerActions.handleRegister(),
                 text: 'Create Account',
                 buttonColor: AppMainTheme.blueLevelFour,
                 textColor: AppMainTheme.white,

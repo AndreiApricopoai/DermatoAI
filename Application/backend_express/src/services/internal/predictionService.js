@@ -42,7 +42,6 @@ const getPredictionById = async (predictionId, userId) => {
       status: prediction.status,
       createdAt: prediction.createdAt,
     };
-    console.log("Prediction status request made:");
 
     return {
       type: ResponseTypes.Success,

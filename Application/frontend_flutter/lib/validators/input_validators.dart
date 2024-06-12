@@ -31,8 +31,8 @@ class InputValidators {
     if (value == null || value.isEmpty) {
       return 'Password is required';
     }
-    if (value.length < 3) {
-      return 'Password must be at least 3 characters';
+    if (value.length < 7) {
+      return 'Password must be at least 7 characters';
     }
     return null;
   }
@@ -50,6 +50,20 @@ class InputValidators {
   static String? verificationTokenValidator(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter the verification token';
+    }
+    return null;
+  }
+
+  static String? feedbackContentValidator(String? value) {
+    value = value?.trim();
+    if (value == null || value.isEmpty) {
+      return 'Content is required';
+    }
+    if (value.length < 10) {
+      return 'Content must be at least 10 characters';
+    }
+    if (value.length > 1000) {
+      return 'Content must be less than 1000 characters';
     }
     return null;
   }

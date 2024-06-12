@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:frontend_flutter/utils/app_main_theme.dart';
+import 'package:frontend_flutter/app/app_main_theme.dart';
 import 'package:frontend_flutter/widgets/input_general_field.dart';
 import 'package:frontend_flutter/widgets/button_rounded.dart';
 import 'package:frontend_flutter/validators/input_validators.dart';
 import 'package:frontend_flutter/widgets/input_password.dart';
-import 'package:frontend_flutter/widgets/text_title.dart';
 import 'package:frontend_flutter/widgets/loading_overlay.dart';
 import '../actions/forgot_password_actions.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
+
   @override
   _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
 }
@@ -24,6 +25,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   bool _isLoading = false;
   bool _emailSent = false;
   late ForgotPasswordActions _forgotPasswordActions;
+
+  String _instructionText =
+      'Please enter your email address to receive a verification token. You will be guided in the next steps to reset your password.';
 
   @override
   void initState() {
@@ -55,6 +59,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   void _setEmailSentState(bool emailSent) {
     setState(() {
       _emailSent = emailSent;
+      _instructionText =
+          'Paste the verification token you received in your email along with your new password to reset your current password';
     });
   }
 
@@ -64,7 +70,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       children: [
         Scaffold(
           appBar: AppBar(
-            title: const Text('Forgot Password'),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back,
+                  color: AppMainTheme.blueLevelFive, size: 25),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            title: Text(
+              'Forgot Password',
+              style: GoogleFonts.roboto(
+                color: AppMainTheme.blueLevelFive,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.only(left: 40, right: 40, top: 25),
@@ -74,11 +91,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 30),
-                  const TextTitle(
-                    text: 'Forgot Password',
-                    color: AppMainTheme.blueLevelFour,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w400,
+                  Text(
+                    _instructionText,
+                    style: GoogleFonts.roboto(
+                      color: AppMainTheme.infoGray,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                   const SizedBox(height: 40),
                   if (!_emailSent)
@@ -135,18 +154,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     onPressed: _isLoading
                         ? () {}
                         : !_emailSent
-                            ? () => _forgotPasswordActions.sendForgotPasswordEmail()
+                            ? () =>
+                                _forgotPasswordActions.sendForgotPasswordEmail()
                             : () => _forgotPasswordActions.resetPassword(),
                     text: !_emailSent
                         ? 'Send Verification Email'
                         : 'Reset Password',
                     buttonColor: AppMainTheme.blueLevelFour,
                     textColor: AppMainTheme.white,
-                    fontSize: 17,
+                    fontSize: 15,
                     fontWeight: FontWeight.w500,
                     fontFamily: GoogleFonts.roboto,
-                    width: 230,
-                    height: 50,
+                    width: 180,
+                    height: 45,
                   ),
                 ],
               ),

@@ -2,7 +2,6 @@ const Joi = require("joi");
 const { regexPatterns } = require("../utils/constants");
 const { handleValidationError } = require("../utils/validatorUtils");
 
-// Register validation schema using DermatoAI account
 const registerSchema = Joi.object({
   firstName: Joi.string()
     .trim()
@@ -17,8 +16,8 @@ const registerSchema = Joi.object({
     .required()
     .regex(regexPatterns.nameRegex),
   email: Joi.string().trim().email().required().regex(regexPatterns.emailRegex),
-  password: Joi.string().min(3).required(),
-  confirmPassword: Joi.string().min(3).required().valid(Joi.ref("password")),
+  password: Joi.string().min(7).required(),
+  confirmPassword: Joi.string().min(7).required().valid(Joi.ref("password")),
 }).unknown(false);
 
 const registerValidator = (req, res, next) => {
@@ -29,10 +28,9 @@ const registerValidator = (req, res, next) => {
   next();
 };
 
-// Login validation schema using DermatoAI account
 const loginSchema = Joi.object({
   email: Joi.string().trim().email().required().regex(regexPatterns.emailRegex),
-  password: Joi.string().min(3).required(),
+  password: Joi.string().min(7).required(),
 }).unknown(false);
 
 const loginValidator = (req, res, next) => {
@@ -43,7 +41,6 @@ const loginValidator = (req, res, next) => {
   next();
 };
 
-// Authentication using Google OAuth validation schema
 const googleAuthSchema = Joi.object({
   _id: Joi.string().required(),
   firstName: Joi.string()
@@ -81,7 +78,6 @@ const googleAuthValidator = (req, res, next) => {
   next();
 };
 
-// Email validation schema for email verification
 const emailSchema = Joi.object({
   email: Joi.string().trim().email().required().regex(regexPatterns.emailRegex),
 }).unknown(false);
@@ -94,11 +90,10 @@ const emailValidator = (req, res, next) => {
   next();
 };
 
-// Change password validation schema
 const changePasswordSchema = Joi.object({
-  oldPassword: Joi.string().min(3).required(),
-  password: Joi.string().min(3).required(),
-  confirmPassword: Joi.string().min(3).required().valid(Joi.ref("password")),
+  oldPassword: Joi.string().min(7).required(),
+  password: Joi.string().min(7).required(),
+  confirmPassword: Joi.string().min(7).required().valid(Joi.ref("password")),
 }).unknown(false);
 
 const changePasswordValidator = (req, res, next) => {
@@ -111,11 +106,10 @@ const changePasswordValidator = (req, res, next) => {
   next();
 };
 
-// Reset password validation schema
 const resetPasswordSchema = Joi.object({
   forgotPasswordToken: Joi.string().required(),
-  password: Joi.string().min(3).required(),
-  confirmPassword: Joi.string().min(3).required().valid(Joi.ref("password")),
+  password: Joi.string().min(7).required(),
+  confirmPassword: Joi.string().min(7).required().valid(Joi.ref("password")),
 }).unknown(false);
 
 const resetPasswordValidator = (req, res, next) => {

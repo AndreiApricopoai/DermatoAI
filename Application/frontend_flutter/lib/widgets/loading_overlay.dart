@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_flutter/app/app_main_theme.dart';
 
 class LoadingOverlay extends StatelessWidget {
   final bool isLoading;
@@ -8,16 +9,19 @@ class LoadingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!isLoading) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return const Stack(
       children: [
         Opacity(
           opacity: 0.5,
-          child: ModalBarrier(dismissible: false, color: Colors.black),
+          child: ModalBarrier(dismissible: false, color: Colors.grey),
         ),
         Center(
-          child: CircularProgressIndicator(strokeWidth: 7.0,),
+          child: CircularProgressIndicator(
+            strokeWidth: 7.0,
+            color: AppMainTheme.blueLevelFive,
+          ),
         ),
       ],
     );

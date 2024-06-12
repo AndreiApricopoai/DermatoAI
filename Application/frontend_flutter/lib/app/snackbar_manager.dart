@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 class SnackbarManager {
   static void _showSnackBar(
@@ -8,7 +9,10 @@ class SnackbarManager {
     int durationInSeconds = 3,
     double? fontSize,
   }) {
-    ScaffoldMessenger.of(context).clearSnackBars();
+    final scaffoldMessenger = ScaffoldMessenger.maybeOf(context);
+    if (scaffoldMessenger == null) return;
+
+    scaffoldMessenger.clearSnackBars();
     final snackBar = SnackBar(
       content: Text(message,
           style: TextStyle(
@@ -22,11 +26,11 @@ class SnackbarManager {
         label: 'Dismiss',
         textColor: Colors.white,
         onPressed: () {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          scaffoldMessenger.hideCurrentSnackBar();
         },
       ),
     );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    scaffoldMessenger.showSnackBar(snackBar);
   }
 
   static void showSuccessSnackBar(
@@ -68,4 +72,56 @@ class SnackbarManager {
         durationInSeconds: durationInSeconds,
         fontSize: fontSize);
   }
+
+  static void performSnackBarAction(int actionCode, BuildContext context) {
+    if (!context.mounted) {
+      return;
+    }
+
+    switch (actionCode) {
+      case SnackBarActions.successfulRegistrationEmailSending:
+        _scheduleSnackBar(() {
+          SnackbarManager.showSuccessSnackBar(context,
+              "Registered successfully, an email was sent to verify your account. Please check your email.");
+        }, context);
+        SnackbarManager.showSuccessSnackBar(context,
+            "Registered successfully, an email was sent to verify your account. Please check your email.");
+        break;
+      case SnackBarActions.successfulResetPassword:
+        _scheduleSnackBar(() {
+          SnackbarManager.showSuccessSnackBar(
+              context, "Password reset successfully.");
+        }, context);
+        break;
+      case SnackBarActions.failedRegistrationEmailSending:
+        _scheduleSnackBar(() {
+          SnackbarManager.showErrorSnackBar(context,
+              "Failed to send verification email. Please try again from profile page.");
+        }, context);
+        break;
+      case SnackBarActions.failedToFetchProfile:
+        _scheduleSnackBar(() {
+          SnackbarManager.showErrorSnackBar(
+              context, "Failed to fetch profile information. Please try again later to connect to your account.");
+        }, context);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static void _scheduleSnackBar(VoidCallback callback, BuildContext context) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) {
+        callback();
+      }
+    });
+  }
+}
+
+class SnackBarActions {
+  static const int successfulRegistrationEmailSending = 1;
+  static const int failedRegistrationEmailSending = 2;
+  static const int successfulResetPassword = 3;
+  static const int failedToFetchProfile = 4;
 }

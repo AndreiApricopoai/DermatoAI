@@ -193,13 +193,14 @@ class AuthApi {
     try {
       request() async {
         final url = BaseApi.getUri('auth/change-password');
-        final body = jsonEncode(changePasswordRequest.toJson());
+        final body = changePasswordRequest.toJson();
         final headers = BaseApi.getHeadersWithAuthorization();
         return await http.post(url, headers: headers, body: body);
       }
 
       var response = await BaseApi.performRequestWithRetry(request);
       var jsonResponse = jsonDecode(response.body);
+      print(jsonResponse);
       ChangePasswordResponse changePasswordResponse =
           ChangePasswordResponse.fromJson(jsonResponse);
 

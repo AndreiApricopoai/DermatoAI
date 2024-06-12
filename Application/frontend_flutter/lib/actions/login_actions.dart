@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:frontend_flutter/api/api_calls/user_api.dart';
 import 'package:frontend_flutter/api/api_constants.dart';
+import 'package:frontend_flutter/app/local_storage.dart';
 import 'package:frontend_flutter/app/session_manager.dart';
 import 'package:frontend_flutter/extensions/exception_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -55,11 +57,14 @@ class LoginActions {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      throw 'Could not launch google login url';
+      if (context.mounted) {
+        SnackbarManager.showErrorSnackBar(context,
+            "An error occurred while trying to handle the google login");
+      }
     }
   }
 
-  void _handleGoogleCallback(Uri uri) {
+  void _handleGoogleCallback(Uri uri) async {
     final responseStr = uri.queryParameters['response'];
     if (responseStr != null) {
       final response = json.decode(responseStr);
@@ -73,8 +78,22 @@ class LoginActions {
         if (accesToken != null && accesToken.isNotEmpty) {
           SessionManager.setAccessToken(accesToken);
         }
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
+        final extractedInitialProfile =
+            await UserApi.setInitialProfileInformation();
+
+        if (context.mounted) {
+          if (extractedInitialProfile) {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                '/home', (Route<dynamic> route) => false);
+          } else {
+            SessionManager.clearSession();
+            await LocalStorage.clearRefreshToken();
+            if (context.mounted) {
+              SnackbarManager.showErrorSnackBar(context,
+                  'Failed to fetch profile information. Please try again later to connect to your account.');
+            }
+          }
+        }
       } else {
         SnackbarManager.showErrorSnackBar(context, 'Google login failed');
       }
@@ -96,8 +115,21 @@ class LoginActions {
         var response = await AuthApi.login(loginRequest, rememberMe);
         if (context.mounted) {
           if (response.isSuccess) {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-                '/home', (Route<dynamic> route) => false);
+            final extractedInitialProfile =
+                await UserApi.setInitialProfileInformation();
+            if (extractedInitialProfile) {
+              if (context.mounted) {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/home', (Route<dynamic> route) => false);
+              }
+            } else {
+              SessionManager.clearSession();
+              await LocalStorage.clearRefreshToken();
+              if (context.mounted) {
+                SnackbarManager.showErrorSnackBar(context,
+                    'Failed to fetch profile information. Please try again later to connect to your account.');
+              }
+            }
           } else {
             if (response.apiResponseCode == 3) {
               SnackbarManager.showWarningSnackBar(

@@ -117,8 +117,6 @@ const createAppointment = async (userId, payload) => {
 };
 
 const updateAppointment = async (appointmentId, userId, updatePayload) => {
-  console.log("Am intrat in updateAppointment");
-
   try {
     const appointment = await Appointment.findOne({
       _id: appointmentId,
@@ -151,8 +149,6 @@ const updateAppointment = async (appointmentId, userId, updatePayload) => {
       institutionName: appointment.institutionName,
       address: appointment.address,
     };
-    console.log("updated");
-    console.log(updatedAppointmentData);
 
     return {
       type: ResponseTypes.Success,

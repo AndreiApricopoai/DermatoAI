@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_flutter/app/snackbar_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:frontend_flutter/utils/app_main_theme.dart';
+import 'package:frontend_flutter/app/app_main_theme.dart';
 import 'package:frontend_flutter/widgets/button_outline_icon.dart';
 import 'package:frontend_flutter/widgets/button_rounded.dart';
 import 'package:frontend_flutter/widgets/button_text.dart';
@@ -23,6 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _rememberMe = false;
   bool _isLoading = false;
+  bool _actionsPerformed = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   late LoginActions _loginActions;
@@ -55,6 +57,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_actionsPerformed) {
+        final arguments = ModalRoute.of(context)?.settings.arguments as Map?;
+        if (arguments != null && arguments.containsKey('actions')) {
+          final List<int>? actions = arguments['actions'];
+          if (actions != null) {
+            for (int action in actions) {
+              SnackbarManager.performSnackBarAction(action, context);
+            }
+          }
+          _actionsPerformed = true;
+        }
+      }
+    });
     return Stack(
       children: [
         Scaffold(
@@ -132,7 +148,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: _isLoading
                             ? () {}
                             : () {
-                                Navigator.pushNamed(context, '/forgot_password');
+                                Navigator.pushNamed(
+                                    context, '/forgot_password');
                               },
                         text: 'Forgot Password?',
                         fontSize: 13,

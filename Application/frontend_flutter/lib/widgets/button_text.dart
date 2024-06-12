@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend_flutter/utils/app_main_theme.dart';
+import 'package:frontend_flutter/app/app_main_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomTextButton extends StatelessWidget {

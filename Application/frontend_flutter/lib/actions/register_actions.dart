@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:frontend_flutter/api/api_calls/user_api.dart';
 import 'package:frontend_flutter/api/api_constants.dart';
+import 'package:frontend_flutter/app/local_storage.dart';
 import 'package:frontend_flutter/app/session_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uni_links/uni_links.dart';
@@ -47,7 +49,7 @@ class RegisterActions {
     }, onError: (err) {
       if (context.mounted) {
         SnackbarManager.showErrorSnackBar(context,
-            "An error occurred while trying to handle the google register");
+            "An error occurred while trying to handle the google registration");
       }
     });
   }
@@ -84,11 +86,14 @@ class RegisterActions {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      throw 'Could not launch google register url';
+      if (context.mounted) {
+        SnackbarManager.showErrorSnackBar(context,
+            "An error occurred while trying to handle the google registration");
+      }
     }
   }
 
-  void _handleGoogleCallback(Uri uri) {
+  void _handleGoogleCallback(Uri uri) async {
     final responseStr = uri.queryParameters['response'];
     if (responseStr != null) {
       final response = json.decode(responseStr);
@@ -102,13 +107,35 @@ class RegisterActions {
         if (accesToken != null && accesToken.isNotEmpty) {
           SessionManager.setAccessToken(accesToken);
         }
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
+        final extractedInitialProfile =
+            await UserApi.setInitialProfileInformation();
+
+        if (context.mounted) {
+          if (extractedInitialProfile) {
+            if (context.mounted) {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/home', (Route<dynamic> route) => false);
+            }
+          } else {
+            SessionManager.clearSession();
+            await LocalStorage.clearRefreshToken();
+            if (context.mounted) {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                '/login',
+                (Route<dynamic> route) => false,
+                arguments: {
+                  'actions': [SnackBarActions.failedToFetchProfile],
+                },
+              );
+            }
+          }
+        }
       } else {
-        SnackbarManager.showErrorSnackBar(context, 'Google register failed');
+        SnackbarManager.showErrorSnackBar(
+            context, 'Google registration failed');
       }
     } else {
-      SnackbarManager.showErrorSnackBar(context, 'Google register failed');
+      SnackbarManager.showErrorSnackBar(context, 'Google registration failed');
     }
     setLoadingState(false);
   }
@@ -133,24 +160,48 @@ class RegisterActions {
         var response = await AuthApi.register(registerRequest);
         if (context.mounted) {
           if (response.isSuccess) {
+            final extractedInitialProfile =
+                await UserApi.setInitialProfileInformation();
+
             final emailSent = (response.sentVerificationEmail != null &&
                     response.sentVerificationEmail == true)
                 ? true
                 : false;
-
-            if (emailSent) {
-              SnackbarManager.showSuccessSnackBar(context,
-                  'Account created successfully. Please check your email to verify your account.');
+            if (emailSent && extractedInitialProfile) {
+              if (context.mounted) {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/home',
+                  (Route<dynamic> route) => false,
+                  arguments: {
+                    'actions': [
+                      SnackBarActions.successfulRegistrationEmailSending
+                    ],
+                  },
+                );
+              }
+            } else if (!extractedInitialProfile) {
+              SessionManager.clearSession();
+              await LocalStorage.clearRefreshToken();
+              if (context.mounted) {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/login',
+                  (Route<dynamic> route) => false,
+                  arguments: {
+                    'actions': [SnackBarActions.failedToFetchProfile],
+                  },
+                );
+              }
             } else {
-              SnackbarManager.showWarningSnackBar(context,
-                  'Account created successfully. An error occurred while sending the verification email. Please try again later.');
+              if (context.mounted) {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/home',
+                  (Route<dynamic> route) => false,
+                  arguments: {
+                    'actions': [SnackBarActions.failedRegistrationEmailSending],
+                  },
+                );
+              }
             }
-
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              '/home',
-              (Route<dynamic> route) => false,
-              arguments: emailSent,
-            );
           } else {
             if (response.apiResponseCode == 3) {
               SnackbarManager.showWarningSnackBar(
