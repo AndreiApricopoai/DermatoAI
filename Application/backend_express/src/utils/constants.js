@@ -8,7 +8,7 @@ const regexPatterns = {
 const dermatologicalChat = {
   model: "gpt-3.5-turbo",
   context: "You are a helpful dermatological doctor.",
-  maxTokens: 20,
+  maxTokens: 100,
 };
 
 const getAzureBlobUrl = (blobName) => {

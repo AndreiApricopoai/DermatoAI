@@ -13,7 +13,6 @@ class PhotoHandler {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image == null) return null;
     final processedImage = await _processImage(File(image.path));
-    print(image.path);
     return CreatePredictionRequest(image: processedImage);
   }
 
@@ -26,21 +25,18 @@ class PhotoHandler {
 
   Future<File> _processImage(File file) async {
     final img.Image originalImage = img.decodeImage(file.readAsBytesSync())!;
-    
     if (originalImage.width == 600 && originalImage.height == 450) {
-      // If the image is already 600x450, return the original file
       return file;
     }
 
     final img.Image rotatedImage = _rotateImageIfNeeded(originalImage);
     final img.Image resizedImage = _resizeImage(rotatedImage);
 
-        print(rotatedImage.width);
-    print(rotatedImage.height);
-
     final Directory directory = await getApplicationDocumentsDirectory();
-    final String targetPath = path.join(directory.path, "${DateTime.now().millisecondsSinceEpoch}.jpg");
-    final File resizedFile = File(targetPath)..writeAsBytesSync(img.encodeJpg(resizedImage, quality: 100));
+    final String targetPath = path.join(
+        directory.path, "${DateTime.now().millisecondsSinceEpoch}.jpg");
+    final File resizedFile = File(targetPath)
+      ..writeAsBytesSync(img.encodeJpg(resizedImage, quality: 100));
 
     return resizedFile;
   }
@@ -53,19 +49,9 @@ class PhotoHandler {
   }
 
   img.Image _resizeImage(img.Image image) {
-    // Calculate aspect ratio
-    double aspectRatio = image.width / image.height;
-
-
-    // Calculate new dimensions to fit within 600x450 while maintaining aspect ratio
-    int targetWidth = 600;
-    int targetHeight = (600 / aspectRatio).round();
-
-    if (targetHeight > 450) {
-      targetHeight = 450;
-      targetWidth = (450 * aspectRatio).round();
-    }
-
-    return img.copyResize(image, width: 600, height: 450, interpolation: img.Interpolation.cubic);
+    return img.copyResize(image,
+        width: 600, height: 450, interpolation: img.Interpolation.cubic);
   }
 }
+
+enum PhotoSource { gallery, camera }

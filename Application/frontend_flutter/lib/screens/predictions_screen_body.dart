@@ -57,7 +57,14 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
                 ),
         ],
       ),
-      body: buildPredictionGrid(),
+      body: Consumer<PredictionsProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading) {
+            return Center(child: CircularProgressIndicator());
+          }
+          return buildPredictionGrid(provider.predictions);
+        },
+      ),
     );
   }
 
@@ -78,78 +85,68 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
     );
   }
 
-  Widget buildPredictionGrid() {
-    return Consumer<PredictionsProvider>(
-      builder: (context, provider, child) {
-        List<Prediction> filteredPredictions = provider.predictions
-            .where((prediction) =>
-                prediction.title
-                    ?.toLowerCase()
-                    .contains(searchQuery.toLowerCase()) ??
-                false)
-            .toList();
+  Widget buildPredictionGrid(List<Prediction> predictions) {
+    List<Prediction> filteredPredictions = predictions
+        .where((prediction) =>
+            prediction.title?.toLowerCase().contains(searchQuery.toLowerCase()) ?? false)
+        .toList();
 
-        if (provider.isLoading) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (filteredPredictions.isEmpty) {
-          return Center(child: Text("No results found"));
-        }
-        return GridView.builder(
-          padding: EdgeInsets.all(8),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-          ),
-          itemCount: filteredPredictions.length,
-          itemBuilder: (context, index) {
-            final prediction = filteredPredictions[index];
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          PredictionDetailScreen(prediction: prediction)),
-                );
-              },
-              child: Card(
-                clipBehavior: Clip.antiAlias,
-                child: GridTile(
-                  footer: Container(
-                    padding: EdgeInsets.all(8),
-                    color: Colors.black54,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(prediction.title ?? "Unknown",
-                            style: TextStyle(color: Colors.white)),
-                        Text(prediction.diagnosisName ?? "Unknown",
-                            style: TextStyle(color: Colors.white)),
-                        Text(prediction.createdAt ?? "Date not provided",
-                            style: TextStyle(color: Colors.white)),
-                        SizedBox(height: 4),
-                        Text(
-                          "Status: ${prediction.status}",
-                          style: TextStyle(
-                              color: _getStatusColor(prediction.status),
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                  child: Image.network(
-                    prediction.imageUrl ?? '',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Center(
-                      child: Icon(Icons.broken_image),
-                    ),
-                  ),
-                ),
-              ),
+    if (filteredPredictions.isEmpty) {
+      return Center(child: Text("No results found"));
+    }
+    return GridView.builder(
+      padding: EdgeInsets.all(8),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemCount: filteredPredictions.length,
+      itemBuilder: (context, index) {
+        final prediction = filteredPredictions[index];
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      PredictionDetailScreen(prediction: prediction)),
             );
           },
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            child: GridTile(
+              footer: Container(
+                padding: EdgeInsets.all(8),
+                color: Colors.black54,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(prediction.title ?? "Unknown",
+                        style: TextStyle(color: Colors.white)),
+                    Text(prediction.diagnosisName ?? "Unknown",
+                        style: TextStyle(color: Colors.white)),
+                    Text(prediction.createdAt ?? "Date not provided",
+                        style: TextStyle(color: Colors.white)),
+                    SizedBox(height: 4),
+                    Text(
+                      "Status: ${prediction.status}",
+                      style: TextStyle(
+                          color: _getStatusColor(prediction.status),
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              child: Image.network(
+                prediction.imageUrl ?? '',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Center(
+                  child: Icon(Icons.broken_image),
+                ),
+              ),
+            ),
+          ),
         );
       },
     );

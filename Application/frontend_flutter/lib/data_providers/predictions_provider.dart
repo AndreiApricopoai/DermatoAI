@@ -11,35 +11,30 @@ class PredictionsProvider with ChangeNotifier {
   List<Prediction> get predictions => _predictions;
   bool get isLoading => _isLoading;
 
-  Future<void> fetchPredictions() async {
-    _isLoading = true;
+  void setLoading(bool loading) {
+    _isLoading = loading;
     notifyListeners();
+  }
+
+  Future<void> fetchPredictions() async {
+    setLoading(true);
     try {
-      GetAllPredictionsResponse response =
-          await PredictionApi.getAllPredictions();
+      GetAllPredictionsResponse response = await PredictionApi.getAllPredictions();
       _predictions = response.predictions;
-      for (Prediction prediction in _predictions) {
-        print(prediction.title);
-      }
     } catch (e) {
       print("Failed to fetch predictions: $e");
-      // Handle exceptions by showing an error message or similar
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      setLoading(false);
     }
   }
 
   void addPrediction(Prediction prediction) {
-    int index = _predictions
-        .indexWhere((p) => p.predictionId == prediction.predictionId);
+    int index = _predictions.indexWhere((p) => p.predictionId == prediction.predictionId);
     if (index != -1) {
       if (!_deletedPredictionIds.contains(prediction.predictionId)) {
         _predictions[index] = prediction;
       }
-      // If the prediction already exists, update it
     } else {
-      // Otherwise, add it as a new entry
       _predictions.insert(0, prediction);
     }
     notifyListeners();
@@ -51,3 +46,4 @@ class PredictionsProvider with ChangeNotifier {
     notifyListeners();
   }
 }
+

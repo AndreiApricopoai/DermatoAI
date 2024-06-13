@@ -14,6 +14,7 @@ const {
 } = require("../../responses/apiConstants");
 
 const getPredictionById = async (predictionId, userId) => {
+  console.log("se incearca o treaba !")
   try {
     const prediction = await Prediction.findOne({
       _id: predictionId,

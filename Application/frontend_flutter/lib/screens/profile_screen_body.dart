@@ -25,9 +25,11 @@ class _ProfileScreenBodyState extends State<ProfileScreenBody> {
   }
 
   void _setLoading(bool isLoading) {
-    setState(() {
-      _isLoading = isLoading;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = isLoading;
+      });
+    }
   }
 
   @override
@@ -210,6 +212,7 @@ class ProfileView extends StatelessWidget {
                   title,
                   style: GoogleFonts.roboto(
                     fontSize: 16,
+                    color: Colors.black54,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
