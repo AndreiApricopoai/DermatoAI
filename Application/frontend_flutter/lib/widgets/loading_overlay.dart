@@ -14,8 +14,8 @@ class LoadingOverlay extends StatelessWidget {
     return const Stack(
       children: [
         Opacity(
-          opacity: 0.5,
-          child: ModalBarrier(dismissible: false, color: Colors.grey),
+          opacity: 0.4,
+          child: ModalBarrier(dismissible: false, color: Colors.black),
         ),
         Center(
           child: CircularProgressIndicator(

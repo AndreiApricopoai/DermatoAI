@@ -14,4 +14,5 @@ class AppMainTheme {
   static const Color infoGray = Color(0xFF666666);
   static const Color googleButtonOrange = Color(0xFF339966);
   static const Color slackButtonError = Color(0xFFb30000);
+  static const Color alertDialogClose= Color(0xFFcc0000);
 }

@@ -18,7 +18,6 @@ class ProfileProvider with ChangeNotifier {
       notifyListeners();
       try {
         _profileData = await UserApi.getProfileInformation();
-        print(_profileData?.firstName);
       } catch (e) {
         _errorMessage = 'Failed to load profile data. Please try again.';
       } finally {

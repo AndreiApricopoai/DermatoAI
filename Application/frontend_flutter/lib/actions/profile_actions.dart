@@ -3,101 +3,169 @@ import 'package:frontend_flutter/api/models/requests/auth_requests/change_passwo
 import 'package:frontend_flutter/api/models/requests/auth_requests/send_verification_email_request.dart';
 import 'package:frontend_flutter/api/models/requests/feedback_requests/create_feedback_request.dart';
 import 'package:frontend_flutter/api/models/requests/auth_requests/logout_request.dart';
+import 'package:frontend_flutter/app/app_main_theme.dart';
 import 'package:frontend_flutter/app/session_manager.dart';
 import 'package:frontend_flutter/app/snackbar_manager.dart';
 import 'package:frontend_flutter/api/api_calls/feedback_api.dart';
 import 'package:frontend_flutter/api/api_calls/auth_api.dart';
-import 'package:frontend_flutter/api/api_calls/user_api.dart'; // Import the UserApi
+import 'package:frontend_flutter/api/api_calls/user_api.dart';
 import 'package:frontend_flutter/validators/input_validators.dart';
+import 'package:frontend_flutter/widgets/custom_alert_dialog.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileActions {
-      static Future<void> sendFeedback(BuildContext context, String category,
-      String content, Function(bool) setLoading) async {
+  static Future<void> launchURL(BuildContext context, String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        if (context.mounted) {
+          SnackbarManager.showErrorSnackBar(context, 'Could not launch the page');
+        }
+      }
+    } on Exception {
+      if (context.mounted) {
+        SnackbarManager.showErrorSnackBar(context, 'Could not launch the page');
+      }
+    }
+  }
+
+  static Future<bool> sendFeedback(
+      BuildContext context,
+      String category,
+      String content,
+      Function(bool) setLoading,
+      Function(bool, String) showSnackbar) async {
     setLoading(true);
     try {
       final request =
           CreateFeedbackRequest(category: category, content: content);
       final response = await FeedbackApi.sendFeedback(request);
-      if (response.isSuccess && context.mounted) {
-        SnackbarManager.showSuccessSnackBar(
-            context, 'Feedback sent successfully');
-      } else if (context.mounted) {
-        SnackbarManager.showErrorSnackBar(
-            context, 'Failed to send feedback');
-      }
-    } catch (e) {
-      if (context.mounted) {
-        SnackbarManager.showErrorSnackBar(context, 'Error: $e');
-      }
-    } finally {
       setLoading(false);
+      showSnackbar(
+          response.isSuccess,
+          response.isSuccess
+              ? 'Feedback sent successfully'
+              : 'Failed to send feedback');
+      return response.isSuccess;
+    } catch (e) {
+      setLoading(false);
+      showSnackbar(false, 'Failed to send feedback');
+      return false;
     }
   }
 
   static void showFeedbackDialog(
       BuildContext context, Function(bool) setLoading) {
+    final formKey = GlobalKey<FormState>();
     final TextEditingController contentController = TextEditingController();
     String category = 'app';
 
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Send Feedback'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                value: category,
-                items: [
-                  'app',
-                  'bugs',
-                  'usability',
-                  'predictions',
-                  'AIchat',
-                  'other'
-                ].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    category = newValue;
-                  }
-                },
-                decoration: InputDecoration(labelText: 'Category'),
-              ),
-              TextField(
-                controller: contentController,
-                decoration: InputDecoration(labelText: 'Content'),
-              ),
-            ],
+      builder: (BuildContext dialogContext) {
+        return CustomAlertDialog(
+          title: 'Send Feedback',
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String>(
+                  value: category,
+                  items: [
+                    'app',
+                    'bugs',
+                    'usability',
+                    'predictions',
+                    'AIchat',
+                    'other'
+                  ].map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      category = newValue;
+                    }
+                  },
+                  decoration: InputDecoration(
+                    floatingLabelStyle: const TextStyle(
+                      color: AppMainTheme.blueLevelFive,
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: AppMainTheme.blueLevelFive,
+                        width: 2.0,
+                      ),
+                    ),
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: AppMainTheme.black,
+                        width: 1.0,
+                      ),
+                    ),
+                    labelText: 'Category',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: contentController,
+                  decoration: InputDecoration(
+                    floatingLabelStyle: const TextStyle(
+                      color: AppMainTheme.blueLevelFive,
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: AppMainTheme.blueLevelFive,
+                        width: 2.0,
+                      ),
+                    ),
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: AppMainTheme.black,
+                        width: 1.0,
+                      ),
+                    ),
+                    labelText: 'Content',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  maxLines: 3,
+                  validator: (value) {
+                    return InputValidators.feedbackContentValidator(
+                        value?.trim() ?? '');
+                  },
+                ),
+              ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                final content = contentController.text.trim();
-                final contentError = InputValidators.feedbackContentValidator(content);
-
-                if (contentError != null) {
-                  if (context.mounted) {
-                    SnackbarManager.showErrorSnackBar(context, contentError);
+          cancelButtonText: 'Cancel',
+          confirmButtonText: 'Send',
+          onCancel: () => Navigator.of(dialogContext).pop(),
+          onConfirm: () async {
+            if (formKey.currentState!.validate()) {
+              Navigator.of(dialogContext).pop();
+              await sendFeedback(
+                  context, category, contentController.text.trim(), setLoading,
+                  (isSuccess, message) {
+                Future.delayed(const Duration(milliseconds: 100), () {
+                  if (isSuccess) {
+                    SnackbarManager.showSuccessSnackBar(context, message);
+                  } else {
+                    SnackbarManager.showErrorSnackBar(context, message);
                   }
-                  return;
-                }
-
-                Navigator.of(context).pop();
-                await sendFeedback(context, category, content, setLoading);
-              },
-              child: Text('Send'),
-            ),
-          ],
+                });
+              });
+            }
+          },
         );
       },
     );
@@ -121,7 +189,7 @@ class ProfileActions {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackbarManager.showErrorSnackBar(context, 'Error: $e');
+          SnackbarManager.showErrorSnackBar(context, 'Failed to verify email status.');
         }
       } finally {
         setLoading(false);
@@ -144,38 +212,34 @@ class ProfileActions {
       }
     } catch (e) {
       if (context.mounted) {
-        SnackbarManager.showErrorSnackBar(context, 'Error: $e');
+        SnackbarManager.showErrorSnackBar(context, 'An error occurred while sending verification email');
       }
     } finally {
       setLoading(false);
     }
   }
 
-
   static Future<void> logout(
       BuildContext context, Function(bool) setLoading) async {
     final refreshToken = SessionManager.getRefreshToken();
     if (refreshToken == null && context.mounted) {
-      SnackbarManager.showErrorSnackBar(context, 'No refresh token found');
+      SnackbarManager.showErrorSnackBar(context, 'You are already logged out');
       return;
     }
 
     final bool? confirmLogout = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Confirm Logout'),
-          content: Text('Are you sure you want to log out?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text('Logout'),
-            ),
-          ],
+        return CustomAlertDialog(
+          title: 'Confirm Logout',
+          content: const Text(
+            'Are you sure you want to log out?',
+            style: TextStyle(fontSize: 15),
+          ),
+          cancelButtonText: 'Cancel',
+          confirmButtonText: 'Logout',
+          onCancel: () => Navigator.of(context).pop(false),
+          onConfirm: () => Navigator.of(context).pop(true),
         );
       },
     );
@@ -196,7 +260,7 @@ class ProfileActions {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackbarManager.showErrorSnackBar(context, 'Error: $e');
+          SnackbarManager.showErrorSnackBar(context, 'Failed to log out');
         }
       } finally {
         setLoading(false);
@@ -204,8 +268,12 @@ class ProfileActions {
     }
   }
 
-  static Future<void> changePassword(BuildContext context,
-      String currentPassword, String newPassword, Function(bool) setLoading) async {
+  static Future<void> changePassword(
+      BuildContext context,
+      String currentPassword,
+      String newPassword,
+      Function(bool) setLoading,
+      Function(bool, String) showSnackbar) async {
     setLoading(true);
     try {
       final request = ChangePasswordRequest(
@@ -214,88 +282,150 @@ class ProfileActions {
         confirmPassword: newPassword,
       );
       final response = await AuthApi.changePassword(request);
-      if (response.isSuccess && context.mounted) {
-        SnackbarManager.showSuccessSnackBar(
-            context, 'Password changed successfully');
-      } else if (context.mounted) {
-        SnackbarManager.showErrorSnackBar(
-            context, 'Failed to change password');
-      }
-    } catch (e) {
-      if (context.mounted) {
-        SnackbarManager.showErrorSnackBar(context, 'Error: $e');
-      }
-    } finally {
       setLoading(false);
+      showSnackbar(
+          response.isSuccess,
+          response.isSuccess
+              ? 'Password changed successfully'
+              : 'Failed to change password');
+    } catch (e) {
+      setLoading(false);
+      showSnackbar(false, 'Failed to change password');
     }
   }
 
-  static void showChangePasswordDialog(BuildContext context,
-      Function(bool) setLoading) {
+  static void showChangePasswordDialog(
+      BuildContext context, Function(bool) setLoading) {
+    final formKey = GlobalKey<FormState>();
     final TextEditingController currentPasswordController =
         TextEditingController();
-    final TextEditingController newPasswordController =
-        TextEditingController();
+    final TextEditingController newPasswordController = TextEditingController();
     final TextEditingController confirmPasswordController =
         TextEditingController();
 
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Change Password'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: currentPasswordController,
-                decoration: InputDecoration(labelText: 'Current Password'),
-                obscureText: true,
-              ),
-              TextField(
-                controller: newPasswordController,
-                decoration: InputDecoration(labelText: 'New Password'),
-                obscureText: true,
-              ),
-              TextField(
-                controller: confirmPasswordController,
-                decoration: InputDecoration(labelText: 'Confirm New Password'),
-                obscureText: true,
-              ),
-            ],
+      builder: (BuildContext dialogContext) {
+        return CustomAlertDialog(
+          title: 'Change Password',
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: currentPasswordController,
+                  decoration: InputDecoration(
+                    floatingLabelStyle: const TextStyle(
+                      color: AppMainTheme.blueLevelFive,
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: AppMainTheme.blueLevelFive,
+                        width: 2.0,
+                      ),
+                    ),
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: AppMainTheme.black,
+                        width: 1.0,
+                      ),
+                    ),
+                    labelText: 'Current Password',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  obscureText: true,
+                  validator: (value) {
+                    return InputValidators.passwordValidator(
+                        value?.trim() ?? '');
+                  },
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: newPasswordController,
+                  decoration: InputDecoration(
+                    floatingLabelStyle: const TextStyle(
+                      color: AppMainTheme.blueLevelFive,
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: AppMainTheme.blueLevelFive,
+                        width: 2.0,
+                      ),
+                    ),
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: AppMainTheme.black,
+                        width: 1.0,
+                      ),
+                    ),
+                    labelText: 'New Password',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  obscureText: true,
+                  validator: (value) {
+                    return InputValidators.passwordValidator(
+                        value?.trim() ?? '');
+                  },
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: confirmPasswordController,
+                  decoration: InputDecoration(
+                    floatingLabelStyle: const TextStyle(
+                      color: AppMainTheme.blueLevelFive,
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: AppMainTheme.blueLevelFive,
+                        width: 2.0,
+                      ),
+                    ),
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: AppMainTheme.black,
+                        width: 1.0,
+                      ),
+                    ),
+                    labelText: 'Confirm New Password',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  obscureText: true,
+                  validator: (value) {
+                    return InputValidators.confirmPasswordValidator(
+                        value?.trim() ?? '', newPasswordController.text.trim());
+                  },
+                ),
+              ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                final currentPassword = currentPasswordController.text.trim();
-                final newPassword = newPasswordController.text.trim();
-                final confirmPassword = confirmPasswordController.text.trim();
-
-                final passwordError =
-                    InputValidators.passwordValidator(newPassword);
-                final confirmPasswordError =
-                    InputValidators.confirmPasswordValidator(
-                        confirmPassword, newPassword);
-
-                if (passwordError != null || confirmPasswordError != null) {
-                  if (context.mounted) {
-                    SnackbarManager.showErrorSnackBar(
-                        context, 'Please check your input.');
+          cancelButtonText: 'Cancel',
+          confirmButtonText: 'Change',
+          onCancel: () => Navigator.of(dialogContext).pop(),
+          onConfirm: () async {
+            if (formKey.currentState!.validate()) {
+              Navigator.of(dialogContext).pop();
+              await changePassword(
+                  context,
+                  currentPasswordController.text.trim(),
+                  newPasswordController.text.trim(),
+                  setLoading, (isSuccess, message) {
+                Future.delayed(const Duration(milliseconds: 100), () {
+                  if (isSuccess) {
+                    SnackbarManager.showSuccessSnackBar(context, message);
+                  } else {
+                    SnackbarManager.showErrorSnackBar(context, message);
                   }
-                  return;
-                }
-
-                Navigator.of(context).pop();
-                await changePassword(
-                    context, currentPassword, newPassword, setLoading);
-              },
-              child: Text('Change'),
-            ),
-          ],
+                });
+              });
+            }
+          },
         );
       },
     );

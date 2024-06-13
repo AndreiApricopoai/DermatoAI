@@ -12,6 +12,8 @@ class CustomElevatedButton extends StatelessWidget {
   final double letterSpacing;
   final double width;
   final double height;
+  final double paddingHeight;
+  final double paddingWidth;
   final VoidCallback onPressed;
 
   const CustomElevatedButton({
@@ -23,6 +25,8 @@ class CustomElevatedButton extends StatelessWidget {
     this.fontWeight = FontWeight.w300,
     this.fontFamily = GoogleFonts.roboto,
     this.letterSpacing = 0.0,
+    this.paddingHeight = 32.0,
+    this.paddingWidth = 12.0,
     this.width = 230,
     this.height = 50,
     required this.onPressed,
@@ -38,9 +42,9 @@ class CustomElevatedButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: buttonColor,
           shape: const StadiumBorder(),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 32.0,
-            vertical: 12.0,
+          padding: EdgeInsets.symmetric(
+            horizontal: paddingHeight,
+            vertical: paddingWidth,
           ),
         ),
         child: Text(
