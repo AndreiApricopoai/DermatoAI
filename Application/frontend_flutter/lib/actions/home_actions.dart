@@ -8,20 +8,9 @@ import 'package:frontend_flutter/api/models/responses/prediction_responses/predi
 import 'package:frontend_flutter/app/photo_handler.dart';
 import 'package:frontend_flutter/app/snackbar_manager.dart';
 import 'package:frontend_flutter/data_providers/predictions_provider.dart';
-import 'package:frontend_flutter/extensions/exception_extensions.dart';
 import 'package:provider/provider.dart';
 
 class HomeActions {
-  static void addPredictionSafely(BuildContext context, Prediction prediction) {
-      print("mergeeeeeeeeeeeeeee");
-      final provider = Provider.of<PredictionsProvider>(context, listen: false);
-      provider.addPrediction(prediction);
-    
-    if (prediction.predictionId != null) {
-      checkPredictionStatus(prediction.predictionId!, context);
-    }
-  }
-
   static void checkPredictionStatus(String predictionId, BuildContext context) {
     const Duration checkInterval = Duration(seconds: 10);
     const Duration timeout = Duration(minutes: 2);
@@ -69,7 +58,8 @@ class HomeActions {
     }
   }
 
-static Future<Prediction?> handlePhotoSelection(PhotoSource source, BuildContext context) async {
+  static Future<Prediction?> handlePhotoSelection(
+      PhotoSource source, BuildContext context) async {
     final photoHandler = PhotoHandler();
     Prediction? prediction;
 
@@ -85,7 +75,8 @@ static Future<Prediction?> handlePhotoSelection(PhotoSource source, BuildContext
         throw Exception('No image selected');
       }
 
-      final response = await PredictionApi.createPrediction(createPredictionRequest);
+      final response =
+          await PredictionApi.createPrediction(createPredictionRequest);
 
       if (response.isSuccess) {
         prediction = response.toPrediction();
@@ -94,10 +85,10 @@ static Future<Prediction?> handlePhotoSelection(PhotoSource source, BuildContext
       }
     } catch (e) {
       if (context.mounted) {
-        SnackbarManager.showErrorSnackBar(context, 'Failed to create prediction');
+        SnackbarManager.showErrorSnackBar(
+            context, 'Failed to create prediction');
       }
     }
-
     return prediction;
   }
 }

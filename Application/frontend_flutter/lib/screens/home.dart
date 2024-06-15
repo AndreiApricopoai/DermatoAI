@@ -176,7 +176,8 @@ class _HomeScreenState extends State<HomeScreen> {
     String? profilePhoto = SessionManager.getProfilePhoto();
     String firstName = SessionManager.getFirstName() ?? '';
     String lastName = SessionManager.getLastName() ?? '';
-    String initials = '${firstName.isNotEmpty ? firstName[0] : ''}${lastName.isNotEmpty ? lastName[0] : ''}';
+    String initials =
+        '${firstName.isNotEmpty ? firstName[0] : ''}${lastName.isNotEmpty ? lastName[0] : ''}';
 
     return GestureDetector(
       onTap: () => _onItemTapped(index),
@@ -198,7 +199,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   )
                 : CircleAvatar(
                     radius: 13,
-                    backgroundColor: isSelected ? AppMainTheme.white : AppMainTheme.white.withOpacity(0.8),
+                    backgroundColor: isSelected
+                        ? AppMainTheme.white
+                        : AppMainTheme.white.withOpacity(0.8),
                     child: Text(
                       initials,
                       style: const TextStyle(
@@ -242,7 +245,8 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Wrap(
             children: <Widget>[
               ListTile(
-                leading: const Icon(Icons.photo_library, color: AppMainTheme.blueLevelFive),
+                leading: const Icon(Icons.photo_library,
+                    color: AppMainTheme.blueLevelFive),
                 title: const Text('Choose from Gallery'),
                 onTap: () async {
                   Navigator.of(context).pop();
@@ -250,7 +254,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_camera,color: AppMainTheme.blueLevelFive,),
+                leading: const Icon(
+                  Icons.photo_camera,
+                  color: AppMainTheme.blueLevelFive,
+                ),
                 title: const Text('Take a Photo'),
                 onTap: () async {
                   Navigator.of(context).pop();
@@ -264,19 +271,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _handlePhotoSelection(PhotoSource source, BuildContext context) async {
+  Future<void> _handlePhotoSelection(
+      PhotoSource source, BuildContext context) async {
     final provider = Provider.of<PredictionsProvider>(context, listen: false);
     provider.setLoading(true);
 
-    Prediction? prediction = await HomeActions.handlePhotoSelection(source, context);
+    Prediction? prediction =
+        await HomeActions.handlePhotoSelection(source, context);
 
     provider.setLoading(false);
 
     if (prediction != null) {
       provider.addPrediction(prediction);
-    
-    if (prediction.predictionId != null) {
-      HomeActions.checkPredictionStatus(prediction.predictionId!, context);
-    }    }
+
+      if (prediction.predictionId != null) {
+        HomeActions.checkPredictionStatus(prediction.predictionId!, context);
+      }
+    }
   }
 }

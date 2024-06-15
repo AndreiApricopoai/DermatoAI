@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend_flutter/api/models/responses/prediction_responses/prediction_response.dart';
 import 'package:frontend_flutter/screens/prediction_details_screen.dart';
 import 'package:frontend_flutter/app/app_main_theme.dart';
+import 'package:frontend_flutter/widgets/loading_overlay.dart';
 import 'package:frontend_flutter/widgets/text_title.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -30,40 +31,63 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 65.0,
-        backgroundColor: AppMainTheme.blueLevelFive,
-        title: isSearching
-            ? buildSearchField()
-            : TextTitle(color: Colors.white, text: 'Predictions', fontSize: 24.0, fontFamily: GoogleFonts.roboto, fontWeight: FontWeight.w400,),
-        actions: [
-          isSearching
-              ? IconButton(
-                  icon: Icon(Icons.close, color: Colors.white),
-                  onPressed: () {
-                    setState(() {
-                      isSearching = false;
-                      searchQuery = ''; // Clear search query
-                    });
-                  },
-                )
-              : IconButton(
-                  icon: Icon(Icons.search, color: Colors.white),
-                  onPressed: () {
-                    setState(() {
-                      isSearching = true;
-                    });
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              AppBar(
+                toolbarHeight: 65.0,
+                backgroundColor: AppMainTheme.blueLevelFive,
+                title: isSearching
+                    ? buildSearchField()
+                    : TextTitle(
+                        color: Colors.white,
+                        text: 'Predictions',
+                        fontSize: 24.0,
+                        fontFamily: GoogleFonts.roboto,
+                        fontWeight: FontWeight.w400,
+                      ),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10.0),
+                    child: isSearching
+                        ? IconButton(
+                            icon: Icon(Icons.close, color: Colors.white),
+                            onPressed: () {
+                              setState(() {
+                                isSearching = false;
+                                searchQuery = ''; // Clear search query
+                              });
+                            },
+                          )
+                        : IconButton(
+                            icon: Icon(Icons.search, color: Colors.white),
+                            onPressed: () {
+                              setState(() {
+                                isSearching = true;
+                              });
+                            },
+                          ),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: Consumer<PredictionsProvider>(
+                  builder: (context, provider, child) {
+                    return buildPredictionGrid(provider.predictions);
                   },
                 ),
+              ),
+            ],
+          ),
+          Consumer<PredictionsProvider>(
+            builder: (context, provider, child) {
+              return provider.isLoading
+                  ? LoadingOverlay(isLoading: provider.isLoading)
+                  : SizedBox.shrink();
+            },
+          ),
         ],
-      ),
-      body: Consumer<PredictionsProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return Center(child: CircularProgressIndicator());
-          }
-          return buildPredictionGrid(provider.predictions);
-        },
       ),
     );
   }
@@ -74,7 +98,7 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
       decoration: InputDecoration(
         hintText: "Enter prediction title",
         border: InputBorder.none,
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
       ),
       style: TextStyle(color: Colors.white, fontSize: 16.0),
       onChanged: (value) {
@@ -92,7 +116,27 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
         .toList();
 
     if (filteredPredictions.isEmpty) {
-      return Center(child: Text("No results found"));
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.search_off,
+              size: 70,
+              color: Colors.grey,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'No predictions found.',
+              style: GoogleFonts.roboto(
+                fontSize: 16.0,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      );
     }
     return GridView.builder(
       padding: EdgeInsets.all(8),
@@ -113,42 +157,81 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
                       PredictionDetailScreen(prediction: prediction)),
             );
           },
-          child: Card(
-            clipBehavior: Clip.antiAlias,
-            child: GridTile(
-              footer: Container(
-                padding: EdgeInsets.all(8),
-                color: Colors.black54,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(prediction.title ?? "Unknown",
-                        style: TextStyle(color: Colors.white)),
-                    Text(prediction.diagnosisName ?? "Unknown",
-                        style: TextStyle(color: Colors.white)),
-                    Text(prediction.createdAt ?? "Date not provided",
-                        style: TextStyle(color: Colors.white)),
-                    SizedBox(height: 4),
-                    Text(
-                      "Status: ${prediction.status}",
-                      style: TextStyle(
-                          color: _getStatusColor(prediction.status),
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-              child: Image.network(
-                prediction.imageUrl ?? '',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Center(
-                  child: Icon(Icons.broken_image),
-                ),
+          child: buildPredictionCard(prediction),
+        );
+      },
+    );
+  }
+
+  Widget buildPredictionCard(Prediction prediction) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      elevation: 5,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Image.network(
+              prediction.imageUrl ?? '',
+              fit: BoxFit.cover,
+              width: double.infinity,
+              errorBuilder: (context, error, stackTrace) => Center(
+                child: Icon(Icons.broken_image),
               ),
             ),
           ),
-        );
-      },
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  prediction.title ?? "Unknown",
+                  style: GoogleFonts.roboto(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w600,
+                    color: AppMainTheme.blueLevelFive,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4),
+                if (prediction.diagnosisName != null)
+                  Text(
+                    prediction.diagnosisName!,
+                    style: GoogleFonts.roboto(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w500,
+                      color: getDiagnosisColor(prediction.diagnosisName!),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                SizedBox(height: 4),
+                Text(
+                  prediction.createdAt ?? "Date not provided",
+                  style: GoogleFonts.roboto(
+                    fontSize: 12.0,
+                    color: Colors.grey,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "Status: ${prediction.status}",
+                  style: GoogleFonts.roboto(
+                    fontSize: 14.0,
+                    fontWeight: FontWeight.bold,
+                    color: _getStatusColor(prediction.status),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -162,6 +245,25 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
         return Colors.green;
       default:
         return Colors.white; // Default color for unknown status
+    }
+  }
+
+  Color getDiagnosisColor(String diagnosisName) {
+    switch (diagnosisName.toLowerCase()) {
+      case "actinic keratosis":
+        return Colors.orange;
+      case "basal cell carcinoma":
+      case "melanoma":
+      case "squamous cell carcinoma":
+        return Colors.red;
+      case "dermatofibroma":
+      case "pigmented benign keratosis":
+      case "nevus":
+        return Colors.green;
+      case "vascular lesion":
+        return Colors.purple;
+      default:
+        return Colors.grey;
     }
   }
 }

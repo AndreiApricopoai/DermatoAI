@@ -3,9 +3,11 @@ import 'package:frontend_flutter/api/models/responses/base_response.dart';
 class GetLocationsResponse extends BaseApiResponse {
   final List<Clinic> clinics;
 
-  GetLocationsResponse.fromJson(Map<String, dynamic> json)
-      : clinics = (json['data']! as List).map((item) => Clinic.fromJson(item as Map<String, dynamic>)).toList(),
-        super.fromJson(json);
+  GetLocationsResponse.fromJson(super.json)
+      : clinics = (json['data']! as List)
+            .map((item) => Clinic.fromJson(item as Map<String, dynamic>))
+            .toList(),
+        super.fromJson();
 }
 
 class Clinic {
@@ -32,7 +34,6 @@ class Clinic {
   });
 
   factory Clinic.fromJson(Map<String, dynamic> json) {
-      print(json);
     return Clinic(
       name: json['name'],
       location: Location.fromJson(json['location']),

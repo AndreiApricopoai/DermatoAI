@@ -31,7 +31,7 @@ const findDermatologicalClinics = async (latitude, longitude, radius) => {
         ? clinic.opening_hours.open_now
           ? "Open"
           : "Closed"
-        : "Not Available",
+        : "Schedule not available",
       placeId: clinic.place_id,
       googleMapsLink: getGoogleMapsPlaceUrl(clinic.place_id),
       address: clinic.vicinity,
