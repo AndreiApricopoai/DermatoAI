@@ -111,6 +111,7 @@ class PredictionApi {
       var jsonResponse = jsonDecode(response.body);
       GetPredictionResponse predictionResponse =
           GetPredictionResponse.fromJson(jsonResponse);
+
       return predictionResponse;
     } on SocketException {
       throw Exception(

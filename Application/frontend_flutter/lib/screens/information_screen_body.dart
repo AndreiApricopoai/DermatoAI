@@ -94,13 +94,13 @@ class InformationScreenBody extends StatelessWidget {
       case 'vascular lesion':
       case 'actinic keratosis':
       case 'nevus (mole)':
-        return Colors.yellow.withOpacity(0.3);
+        return Colors.orange.withOpacity(0.3);
       case 'squamous cell carcinoma':
       case 'melanoma':
       case 'basal cell carcinoma':
         return Colors.red.withOpacity(0.3);
       default:
-        return Colors.green.withOpacity(0.3);
+        return Colors.yellow.withOpacity(0.3);
     }
   }
 }

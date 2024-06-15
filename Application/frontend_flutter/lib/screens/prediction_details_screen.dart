@@ -1,19 +1,18 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:frontend_flutter/api/api_calls/prediction_api.dart';
-import 'package:frontend_flutter/api/models/requests/prediction_requests/delete_prediction_request.dart';
-import 'package:frontend_flutter/api/models/requests/prediction_requests/patch_prediction_request.dart';
 import 'package:frontend_flutter/api/models/responses/prediction_responses/prediction_response.dart';
+import 'package:frontend_flutter/app/app_main_theme.dart';
 import 'package:frontend_flutter/data_providers/predictions_provider.dart';
-import 'package:intl/intl.dart';
+import 'package:frontend_flutter/widgets/button_outline_icon.dart';
+import 'package:frontend_flutter/widgets/loading_overlay.dart';
+import 'package:frontend_flutter/widgets/text_title.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:frontend_flutter/actions/predictions_actions.dart';
 
 class PredictionDetailScreen extends StatefulWidget {
   final Prediction prediction;
-  bool _isLoading = false;
 
-  PredictionDetailScreen({required this.prediction});
+  const PredictionDetailScreen({super.key, required this.prediction});
 
   @override
   _PredictionDetailScreenState createState() => _PredictionDetailScreenState();
@@ -22,201 +21,212 @@ class PredictionDetailScreen extends StatefulWidget {
 class _PredictionDetailScreenState extends State<PredictionDetailScreen> {
   late Prediction prediction;
 
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
     prediction = widget.prediction;
   }
 
+  void setLoading(bool isLoading) {
+    setState(() {
+      _isLoading = isLoading;
+    });
+  }
+
+  void updatePrediction(Prediction updatedPrediction) {
+    setState(() {
+      prediction = updatedPrediction;
+    });
+  }
+
+  void deletePrediction(String predictionId) {
+    Provider.of<PredictionsProvider>(context, listen: false)
+        .deletePrediction(predictionId);
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Widget> content = [
-      Text("Title: ${prediction.title}"),
-      if (prediction.description != null)
-        Text("Description: ${prediction.description}"),
-      Text("Created On: ${prediction.createdAt}"),
-      Image.network(prediction.imageUrl ?? '', fit: BoxFit.cover),
-    ];
-    if (prediction.status == "pending") {
-      content.add(Text("Status: ${prediction.status}",
-          style: TextStyle(color: Colors.orange)));
-    } else if (prediction.status == "processed") {
-      content.addAll([
-        Text("Diagnosis: ${prediction.diagnosisName}"),
-        Text("Diagnosis Code: ${prediction.diagnosisCode}"),
-        Text("Diagnosis Type: ${prediction.diagnosisType}"),
-        Text("Confidence Level: ${prediction.confidenceLevel}%"),
-        Text("Status: ${prediction.status}",
-            style: TextStyle(color: Colors.green)),
-      ]);
-      if (prediction.isHealthy == true) {
-        content.add(Text("Healthy", style: TextStyle(color: Colors.green)));
-      } else if (prediction.isHealthy == false) {
-        content.add(Text("Unhealthy", style: TextStyle(color: Colors.red)));
-      } else {
-        content.add(Text("Unknown", style: TextStyle(color: Colors.grey)));
-      }
-    } else if (prediction.status == "failed") {
-      content.add(Text("Status: ${prediction.status}",
-          style: TextStyle(color: Colors.red)));
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(prediction.title ?? "Prediction Detail"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () => _showEditDialog(context),
+      Center(
+        child: Text(
+          prediction.title ?? "No Title",
+          style: GoogleFonts.lato(
+            fontSize: 26.0,
+            fontWeight: FontWeight.bold,
+            color: AppMainTheme.blueLevelFive,
           ),
-          IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () => _showDeleteDialog(context),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: content,
         ),
       ),
-    );
-  }
-
-  void _showLoadingDialog(bool show) {
-    if (show) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return Dialog(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(width: 20),
-                  Text("Processing..."),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    } else {
-      Navigator.of(context, rootNavigator: true).pop('dialog');
-    }
-  }
-
-  void _showEditDialog(BuildContext context) {
-    TextEditingController titleController =
-        TextEditingController(text: prediction.title);
-    TextEditingController descriptionController =
-        TextEditingController(text: prediction.description);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Edit Prediction'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: InputDecoration(labelText: 'Title'),
-              ),
-              TextField(
-                controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Description'),
+      const SizedBox(height: 20),
+      if (prediction.description != null && prediction.description!.isNotEmpty)
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                spreadRadius: 2,
+                blurRadius: 5,
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            prediction.description!,
+            style: GoogleFonts.lato(
+              fontSize: 16.0,
+              color: Colors.grey[800],
             ),
-            TextButton(
-              child: Text('Save'),
-              onPressed: () async {
-                _showLoadingDialog(true); // Show loading dialog
-                try {
-                  PatchPredictionRequest patchRequest = PatchPredictionRequest(
-                    predictionId: prediction.predictionId!,
-                    title: titleController.text,
-                    description: descriptionController.text,
-                  );
-
-                  var response =
-                      await PredictionApi.patchPrediction(patchRequest);
-                  if (response.isSuccess == true && context.mounted) {
-                    Prediction updatedPrediction = response.toPrediction();
-                    Provider.of<PredictionsProvider>(context, listen: false)
-                        .addPrediction(updatedPrediction);
-                    setState(() {
-                      prediction =
-                          updatedPrediction; // Update local state to refresh UI
-                    });
-                  }
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content:
-                        Text("Failed to update prediction: ${e.toString()}"),
-                  ));
-                }
-                _showLoadingDialog(false); // Hide loading dialog
-                Navigator.of(context).pop(); // Close dialog
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showDeleteDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Confirm Deletion'),
-          content: Text('Are you sure you want to delete this prediction?'),
-          actions: [
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            TextButton(
-              child: Text('Delete'),
-              onPressed: () async {
-                _showLoadingDialog(true); // Show loading dialog
-                try {
-                  DeletePredictionRequest request = DeletePredictionRequest(
-                      predictionId: prediction.predictionId!);
-                  var response = await PredictionApi.deletePrediction(request);
-
-                  if (response.isSuccess == true && context.mounted) {
-                    Provider.of<PredictionsProvider>(context, listen: false)
-                        .deletePrediction(prediction.predictionId!);
-                    Navigator.of(context).pop(); // Close dialog
-                    Navigator.of(context).pop(); // Go back to list
-                  }
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content:
-                        Text("Failed to delete prediction: ${e.toString()}"),
-                  ));
-                }
-                _showLoadingDialog(false); // Hide loading dialog
-              },
+          ),
+        ),
+      if (prediction.description != null && prediction.description!.isNotEmpty)
+        const SizedBox(height: 20),
+      Text(
+        "Created on: ${prediction.createdAt}",
+        style: GoogleFonts.lato(
+          fontSize: 14.0,
+          color: Colors.grey[600],
+        ),
+      ),
+      const SizedBox(height: 20),
+      ClipRRect(
+        borderRadius: BorderRadius.circular(15.0),
+        child: Image.network(
+          prediction.imageUrl ?? '',
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => const Center(
+            child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
+          ),
+        ),
+      ),
+      const SizedBox(height: 20),
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 2,
+              blurRadius: 5,
             ),
           ],
-        );
-      },
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (prediction.diagnosisName != null)
+            PredictionActions.buildKeyValuePair(
+              "Diagnosis",
+              prediction.isHealthy == true
+                  ? "Healthy"
+                  : prediction.diagnosisName ?? 'N/A',
+              prediction.isHealthy == true ? Colors.green : Colors.black,
+            ),
+          if (prediction.diagnosisName != null && prediction.isHealthy == false)
+            const SizedBox(height: 10),
+          if (prediction.isHealthy == false)
+            PredictionActions.buildKeyValuePair(
+              "Diagnosis Type",
+              PredictionActions.formatDiagnosisType(prediction.diagnosisType),
+              PredictionActions.getDiagnosisColor(prediction.diagnosisType),
+            ),
+          if (prediction.isHealthy == false ||
+              prediction.confidenceLevel != null)
+            const SizedBox(height: 10),
+          if (prediction.confidenceLevel != null)
+            PredictionActions.buildKeyValuePair(
+              "Probability",
+              "${(prediction.confidenceLevel! * 100).toStringAsFixed(2)}%",
+              Colors.black,
+            ),
+          if (prediction.diagnosisName != null ||
+              prediction.isHealthy == false ||
+              prediction.confidenceLevel != null)
+            const SizedBox(height: 10),
+          PredictionActions.buildKeyValuePair(
+            "Status",
+            prediction.status!,
+            PredictionActions.getStatusColor(prediction.status!),
+          ),
+        ]),
+      ),
+      const SizedBox(height: 30),
+      if (prediction.status == 'processed' && prediction.isHealthy == false)
+        Center(
+          child: CustomOutlinedButton(
+            backgroundColor: AppMainTheme.blueLevelFive,
+            text: 'Ask DermatoAI',
+            textColor: Colors.white,
+            borderColor: AppMainTheme.blueLevelThree,
+            pressColor: Colors.teal,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            fontFamily: GoogleFonts.lato,
+            width: 240,
+            height: 50,
+            iconSize: 35,
+            iconColor: Colors.white,
+            elementsSpacing: 10,
+            icon: const AssetImage('assets/icons/app_logo_white.png'),
+            onPressed: () {
+              // Navigate to the AI chat screen
+            },
+          ),
+        ),
+    ];
+
+    return Scaffold(
+      backgroundColor: Colors.blueGrey[50],
+      appBar: AppBar(
+        toolbarHeight: 65.0,
+        backgroundColor: AppMainTheme.blueLevelFive,
+        title: const TextTitle(
+          color: Colors.white,
+          text: 'Details',
+          fontSize: 21.0,
+          fontFamily: GoogleFonts.roboto,
+          fontWeight: FontWeight.w400,
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.white),
+            onPressed: () => PredictionActions.showEditDialog(
+                context, prediction, setLoading, updatePrediction),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 10.0),
+            child: IconButton(
+              icon: const Icon(Icons.delete, color: Colors.white),
+              onPressed: () => PredictionActions.showDeleteDialog(
+                  context, prediction, setLoading, deletePrediction),
+            ),
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.blueGrey[50],
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 80.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: content,
+              ),
+            ),
+          ),
+          if (_isLoading) LoadingOverlay(isLoading: _isLoading),
+        ],
+      ),
     );
   }
 }

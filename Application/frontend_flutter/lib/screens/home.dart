@@ -26,10 +26,10 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _actionsPerformed = false;
 
   static final List<Widget> _widgetOptions = <Widget>[
-    PredictionsScreenBody(),
+    const PredictionsScreenBody(),
     ChatScreenBody(),
     const InformationScreenBody(),
-    LocationsScreenBody(),
+    const LocationsScreenBody(),
     AppointmentsScreenBody(),
     const ProfileScreenBody(),
   ];
@@ -285,7 +285,8 @@ class _HomeScreenState extends State<HomeScreen> {
       provider.addPrediction(prediction);
 
       if (prediction.predictionId != null) {
-        HomeActions.checkPredictionStatus(prediction.predictionId!, context);
+        HomeActions.checkPredictionStatus(
+            prediction.predictionId!, context, provider);
       }
     }
   }

@@ -8,10 +8,10 @@ import 'package:frontend_flutter/api/models/responses/prediction_responses/predi
 import 'package:frontend_flutter/app/photo_handler.dart';
 import 'package:frontend_flutter/app/snackbar_manager.dart';
 import 'package:frontend_flutter/data_providers/predictions_provider.dart';
-import 'package:provider/provider.dart';
 
 class HomeActions {
-  static void checkPredictionStatus(String predictionId, BuildContext context) {
+  static void checkPredictionStatus(
+      String predictionId, BuildContext context, PredictionsProvider provider) {
     const Duration checkInterval = Duration(seconds: 10);
     const Duration timeout = Duration(minutes: 2);
 
@@ -30,10 +30,7 @@ class HomeActions {
         if (prediction.status != "pending") {
           t.cancel();
           Prediction processedPrediction = prediction.toPrediction();
-          if (context.mounted) {
-            Provider.of<PredictionsProvider>(context, listen: false)
-                .addPrediction(processedPrediction);
-          }
+          provider.addPrediction(processedPrediction);
         }
       } catch (error) {
         if (context.mounted) {

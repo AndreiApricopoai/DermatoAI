@@ -30,12 +30,19 @@ class PredictionsProvider with ChangeNotifier {
 
   void addPrediction(Prediction prediction) {
     int index = _predictions.indexWhere((p) => p.predictionId == prediction.predictionId);
+          print("0000000000000000000000000000000000000");
+
     if (index != -1) {
+      print("1111111111111111111111111111111111111111111111111111");
       if (!_deletedPredictionIds.contains(prediction.predictionId)) {
         _predictions[index] = prediction;
+              print("22222222222222222222222222222222222222222222222222222222222222222");
+
       }
     } else {
-      _predictions.insert(0, prediction);
+                print("444444444444444444444444444444444444444444444444");
+
+      _predictions.add(prediction);
     }
     notifyListeners();
   }

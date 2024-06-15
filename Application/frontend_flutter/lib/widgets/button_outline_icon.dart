@@ -8,6 +8,7 @@ class CustomOutlinedButton extends StatelessWidget {
   final double borderWidth;
   final Color textColor;
   final Color pressColor;
+  final Color backgroundColor;
   final double fontSize;
   final FontWeight fontWeight;
   final Function fontFamily;
@@ -24,6 +25,7 @@ class CustomOutlinedButton extends StatelessWidget {
     super.key,
     this.text = 'Default Text',
     this.borderColor = AppMainTheme.black,
+    this.backgroundColor = AppMainTheme.defaultBackground,
     this.borderWidth = 1.0,
     this.textColor = AppMainTheme.black,
     this.pressColor = AppMainTheme.black,
@@ -48,6 +50,7 @@ class CustomOutlinedButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
+          backgroundColor: backgroundColor,
           foregroundColor: pressColor,
           side: BorderSide(
             color: borderColor,

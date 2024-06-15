@@ -21,7 +21,8 @@ class ProfileActions {
         await launchUrl(uri);
       } else {
         if (context.mounted) {
-          SnackbarManager.showErrorSnackBar(context, 'Could not launch the page');
+          SnackbarManager.showErrorSnackBar(
+              context, 'Could not launch the page');
         }
       }
     } on Exception {
@@ -134,6 +135,9 @@ class ProfileActions {
                       ),
                     ),
                     labelText: 'Content',
+                    labelStyle: TextStyle(
+                      color: AppMainTheme.black.withOpacity(0.6),
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -189,7 +193,8 @@ class ProfileActions {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackbarManager.showErrorSnackBar(context, 'Failed to verify email status.');
+          SnackbarManager.showErrorSnackBar(
+              context, 'Failed to verify email status.');
         }
       } finally {
         setLoading(false);
@@ -212,7 +217,8 @@ class ProfileActions {
       }
     } catch (e) {
       if (context.mounted) {
-        SnackbarManager.showErrorSnackBar(context, 'An error occurred while sending verification email');
+        SnackbarManager.showErrorSnackBar(
+            context, 'An error occurred while sending verification email');
       }
     } finally {
       setLoading(false);
@@ -332,6 +338,9 @@ class ProfileActions {
                       ),
                     ),
                     labelText: 'Current Password',
+                    labelStyle: TextStyle(
+                      color: AppMainTheme.black.withOpacity(0.6),
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -362,6 +371,9 @@ class ProfileActions {
                       ),
                     ),
                     labelText: 'New Password',
+                    labelStyle: TextStyle(
+                      color: AppMainTheme.black.withOpacity(0.6),
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -392,6 +404,9 @@ class ProfileActions {
                       ),
                     ),
                     labelText: 'Confirm New Password',
+                    labelStyle: TextStyle(
+                      color: AppMainTheme.black.withOpacity(0.6),
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),

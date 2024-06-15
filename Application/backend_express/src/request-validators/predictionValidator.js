@@ -12,7 +12,7 @@ const diagnosisTypeOptions = Object.values(DIAGNOSIS_TYPE);
 
 const updateUserPredictionSchema = Joi.object({
   title: Joi.string().trim().min(1).max(100).optional(),
-  description: Joi.string().trim().max(1000).optional()
+  description: Joi.string().trim().max(1000).allow('').optional()
 })
   .or("title", "description")
   .unknown(false);

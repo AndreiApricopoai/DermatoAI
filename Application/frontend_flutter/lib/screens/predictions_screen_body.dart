@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 import 'package:frontend_flutter/data_providers/predictions_provider.dart';
 
 class PredictionsScreenBody extends StatefulWidget {
+  const PredictionsScreenBody({super.key});
+
   @override
   _PredictionsScreenState createState() => _PredictionsScreenState();
 }
@@ -40,7 +42,7 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
                 backgroundColor: AppMainTheme.blueLevelFive,
                 title: isSearching
                     ? buildSearchField()
-                    : TextTitle(
+                    : const TextTitle(
                         color: Colors.white,
                         text: 'Predictions',
                         fontSize: 24.0,
@@ -52,16 +54,16 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
                     padding: const EdgeInsets.only(right: 10.0),
                     child: isSearching
                         ? IconButton(
-                            icon: Icon(Icons.close, color: Colors.white),
+                            icon: const Icon(Icons.close, color: Colors.white),
                             onPressed: () {
                               setState(() {
                                 isSearching = false;
-                                searchQuery = ''; // Clear search query
+                                searchQuery = '';
                               });
                             },
                           )
                         : IconButton(
-                            icon: Icon(Icons.search, color: Colors.white),
+                            icon: const Icon(Icons.search, color: Colors.white),
                             onPressed: () {
                               setState(() {
                                 isSearching = true;
@@ -84,7 +86,7 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
             builder: (context, provider, child) {
               return provider.isLoading
                   ? LoadingOverlay(isLoading: provider.isLoading)
-                  : SizedBox.shrink();
+                  : const SizedBox.shrink();
             },
           ),
         ],
@@ -100,7 +102,7 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
         border: InputBorder.none,
         hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
       ),
-      style: TextStyle(color: Colors.white, fontSize: 16.0),
+      style: const TextStyle(color: Colors.white, fontSize: 16.0),
       onChanged: (value) {
         setState(() {
           searchQuery = value;
@@ -112,7 +114,10 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
   Widget buildPredictionGrid(List<Prediction> predictions) {
     List<Prediction> filteredPredictions = predictions
         .where((prediction) =>
-            prediction.title?.toLowerCase().contains(searchQuery.toLowerCase()) ?? false)
+            prediction.title
+                ?.toLowerCase()
+                .contains(searchQuery.toLowerCase()) ??
+            false)
         .toList();
 
     if (filteredPredictions.isEmpty) {
@@ -139,15 +144,17 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
       );
     }
     return GridView.builder(
-      padding: EdgeInsets.all(8),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      padding: const EdgeInsets.all(8),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
+        childAspectRatio: 0.75,
       ),
       itemCount: filteredPredictions.length,
       itemBuilder: (context, index) {
-        final prediction = filteredPredictions[index];
+        final prediction =
+            filteredPredictions[filteredPredictions.length - 1 - index];
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -170,64 +177,70 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
       ),
       elevation: 5,
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Expanded(
+          Positioned.fill(
             child: Image.network(
               prediction.imageUrl ?? '',
               fit: BoxFit.cover,
-              width: double.infinity,
-              errorBuilder: (context, error, stackTrace) => Center(
-                child: Icon(Icons.broken_image),
+              errorBuilder: (context, error, stackTrace) => const Center(
+                child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  prediction.title ?? "Unknown",
-                  style: GoogleFonts.roboto(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.w600,
-                    color: AppMainTheme.blueLevelFive,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 4),
-                if (prediction.diagnosisName != null)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    prediction.diagnosisName!,
+                    prediction.title ?? "Title not provided",
                     style: GoogleFonts.roboto(
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.w500,
-                      color: getDiagnosisColor(prediction.diagnosisName!),
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                SizedBox(height: 4),
-                Text(
-                  prediction.createdAt ?? "Date not provided",
-                  style: GoogleFonts.roboto(
-                    fontSize: 12.0,
-                    color: Colors.grey,
+                  if (prediction.diagnosisName != null)
+                    Text(
+                      prediction.diagnosisName ?? "",
+                      style: GoogleFonts.roboto(
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w500,
+                        color: getDiagnosisColor(prediction.diagnosisName!),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  if (prediction.diagnosisName != null)
+                    const SizedBox(height: 4),
+                  Text(
+                    prediction.createdAt ?? "Date not provided",
+                    style: GoogleFonts.roboto(
+                      fontSize: 11.0,
+                      color: Colors.grey[300],
+                    ),
                   ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  "Status: ${prediction.status}",
-                  style: GoogleFonts.roboto(
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.bold,
-                    color: _getStatusColor(prediction.status),
+                  const SizedBox(height: 1),
+                  Text(
+                    prediction.status!,
+                    style: GoogleFonts.roboto(
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.bold,
+                      color: _getStatusColor(prediction.status),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -236,7 +249,7 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
   }
 
   Color _getStatusColor(String? status) {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case "failed":
         return Colors.red;
       case "pending":
@@ -244,13 +257,15 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
       case "processed":
         return Colors.green;
       default:
-        return Colors.white; // Default color for unknown status
+        return Colors.white;
     }
   }
 
   Color getDiagnosisColor(String diagnosisName) {
     switch (diagnosisName.toLowerCase()) {
       case "actinic keratosis":
+      case "nevus":
+      case "vascular lesion":
         return Colors.orange;
       case "basal cell carcinoma":
       case "melanoma":
@@ -258,12 +273,11 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
         return Colors.red;
       case "dermatofibroma":
       case "pigmented benign keratosis":
-      case "nevus":
+        return Colors.yellow;
+      case "healthy":
         return Colors.green;
-      case "vascular lesion":
-        return Colors.purple;
       default:
-        return Colors.grey;
+        return Colors.grey.shade300;
     }
   }
 }
