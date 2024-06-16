@@ -132,7 +132,7 @@ class _PredictionsScreenState extends State<PredictionsScreenBody> {
             ),
             const SizedBox(height: 10),
             Text(
-              'No predictions found.',
+              'No predictions available.',
               style: GoogleFonts.roboto(
                 fontSize: 16.0,
                 fontWeight: FontWeight.w500,

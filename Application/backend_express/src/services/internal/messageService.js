@@ -30,7 +30,7 @@ const getAllMessagesByConversationId = async (
     }
 
     const query = Message.find({ conversationId });
-    query.sort({ createdAt: -1 });
+    query.sort({ createdAt: 1 });
 
     if (limit > 0) {
       const skip = (page - 1) * limit;

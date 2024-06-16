@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_flutter/api/models/requests/conversation_requests/create_conversation_request.dart';
 import 'package:frontend_flutter/api/models/responses/prediction_responses/prediction_response.dart';
 import 'package:frontend_flutter/app/app_main_theme.dart';
+import 'package:frontend_flutter/app/snackbar_manager.dart';
 import 'package:frontend_flutter/data_providers/predictions_provider.dart';
+import 'package:frontend_flutter/screens/messages_screen.dart';
 import 'package:frontend_flutter/widgets/button_outline_icon.dart';
 import 'package:frontend_flutter/widgets/loading_overlay.dart';
 import 'package:frontend_flutter/widgets/text_title.dart';
+import 'package:frontend_flutter/api/api_calls/conversation_api.dart';
+import 'package:frontend_flutter/data_providers/chat_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend_flutter/actions/predictions_actions.dart';
@@ -44,6 +49,47 @@ class _PredictionDetailScreenState extends State<PredictionDetailScreen> {
   void deletePrediction(String predictionId) {
     Provider.of<PredictionsProvider>(context, listen: false)
         .deletePrediction(predictionId);
+  }
+
+  Future<void> _createConversationWithPrefilledMessage() async {
+    setLoading(true);
+
+    String title = '${prediction.title} - Discussion';
+    String prefilledMessage =
+        'What can you tell me about ${prediction.diagnosisName}? Could you provide some information on its origins, possible treatments, and lifestyle changes that might help?';
+
+    try {
+      var createRequest = CreateConversationRequest(title: title);
+      var createResponse =
+          await ConversationApi.createConversation(createRequest);
+
+      if (createResponse.isSuccess) {
+        var conversation = createResponse.toConversationResponse();
+        Provider.of<ChatProvider>(context, listen: false)
+            .addConversation(conversation);
+
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ConversationScreen(
+              conversationId: conversation.conversationId!,
+              prefilledMessage: prefilledMessage,
+            ),
+          ),
+        );
+      } else {
+        if (context.mounted) {
+          SnackbarManager.showErrorSnackBar(
+              context, 'Failed to create the conversation');
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        SnackbarManager.showErrorSnackBar(
+            context, 'An error occurred while creating the conversation');
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   @override
@@ -171,9 +217,7 @@ class _PredictionDetailScreenState extends State<PredictionDetailScreen> {
             iconColor: Colors.white,
             elementsSpacing: 10,
             icon: const AssetImage('assets/icons/app_logo_white.png'),
-            onPressed: () {
-              // Navigate to the AI chat screen
-            },
+            onPressed: () => _createConversationWithPrefilledMessage(),
           ),
         ),
     ];

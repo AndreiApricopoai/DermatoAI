@@ -86,4 +86,26 @@ class InputValidators {
     }
     return null;
   }
+
+  static String? createConversationValidator(String? value) {
+    value = value?.trim();
+    if (value == null || value.isEmpty) {
+      return 'Title is required';
+    }
+    if (value.length > 100) {
+      return 'Title must be between 1 and 100 characters';
+    }
+    return null;
+  }
+
+  static String? updateConversationValidator(String? value) {
+    value = value?.trim();
+    if (value != null && value.isEmpty) {
+      return 'Title cannot be empty';
+    }
+    if (value != null && value.length > 100) {
+      return 'Title must be between 1 and 100 characters';
+    }
+    return null;
+  }
 }

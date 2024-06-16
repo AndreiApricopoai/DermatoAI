@@ -150,7 +150,7 @@ class _LocationsScreenBodyState extends State<LocationsScreenBody> {
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              'No clinics found.',
+                              'No clinics available.',
                               style: GoogleFonts.roboto(
                                 fontSize: 16.0,
                                 fontWeight: FontWeight.w500,

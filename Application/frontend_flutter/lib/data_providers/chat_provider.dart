@@ -5,17 +5,20 @@ import 'package:frontend_flutter/api/models/responses/conversation_responses/mes
 class ChatProvider with ChangeNotifier {
   List<ConversationResponse> _conversations = [];
   Map<String, List<MessageResponse>> _messages = {};
+  bool _isLoaded = false;
 
   List<ConversationResponse> get conversations => _conversations;
   Map<String, List<MessageResponse>> get messages => _messages;
+  bool get isLoaded => _isLoaded;
 
   void setConversations(List<ConversationResponse> conversations) {
     _conversations = conversations;
+    _isLoaded = true;
     notifyListeners();
   }
 
   void addConversation(ConversationResponse conversation) {
-    _conversations.add(conversation);
+    _conversations.insert(0, conversation);
     notifyListeners();
   }
 
@@ -44,6 +47,11 @@ class ChatProvider with ChangeNotifier {
     } else {
       _messages[conversationId] = [message];
     }
+    notifyListeners();
+  }
+
+  void setIsLoaded(bool isLoaded) {
+    _isLoaded = isLoaded;
     notifyListeners();
   }
 }

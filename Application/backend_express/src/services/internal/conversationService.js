@@ -27,6 +27,7 @@ const getConversationById = async (conversationId, userId) => {
     responseData = {
       id: conversation._id,
       title: conversation.title,
+      createdAt: conversation.createdAt,
     };
 
     return {
@@ -47,13 +48,14 @@ const getConversationById = async (conversationId, userId) => {
 const getAllConversationsByUserId = async (userId) => {
   try {
     const conversations = await Conversation.find({ userId })
-      .select("_id title")
-      .sort({ createdAt: 1 })
+      .select("_id title createdAt")
+      .sort({ createdAt: -1 })
       .exec();
 
     const formattedConversations = conversations.map((convo) => ({
       id: convo._id,
       title: convo.title,
+      createdAt: convo.createdAt,
     }));
 
     return {
@@ -89,6 +91,7 @@ const createConversation = async (userId, payload) => {
     const responseData = {
       id: newConversation._id.toString(),
       title: newConversation.title,
+      createdAt: newConversation.createdAt,
     };
 
     return {
@@ -129,6 +132,7 @@ const updateConversation = async (conversationId, userId, updatePayload) => {
     const updatedConversationData = {
       id: conversation._id,
       title: conversation.title,
+      createdAt: conversation.createdAt,
     };
 
     return {
