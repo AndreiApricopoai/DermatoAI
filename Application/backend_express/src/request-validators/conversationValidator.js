@@ -32,7 +32,7 @@ const updateConversationValidator = (req, res, next) => {
 };
 
 const messageSchema = Joi.object({
-  messageContent: Joi.string().trim().min(1).max(1000).required(),
+  messageContent: Joi.string().trim().min(1).max(10000).required(),
 }).unknown(false);
 
 const addMessageValidator = (req, res, next) => {
