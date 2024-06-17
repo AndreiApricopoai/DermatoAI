@@ -70,7 +70,7 @@ class CustomOutlinedButton extends StatelessWidget {
                 fontSize: fontSize,
                 fontWeight: fontWeight,
                 letterSpacing: letterSpacing,
-                ),
+              ),
             ),
             SizedBox(width: elementsSpacing),
             ImageIcon(

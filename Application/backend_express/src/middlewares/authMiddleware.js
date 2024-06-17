@@ -3,7 +3,6 @@ const ApiResponse = require("../responses/apiResponse");
 const { isValidJwt, extractPayloadJwt } = require("../utils/authUtils");
 const { StatusCodes, TokenMessages } = require("../responses/apiConstants");
 
-// Helper function to validate a token, this is used in all the middleware functions below
 const checkToken = (req, res, token, secretKey, tokenType) => {
   if (!token) {
     ApiResponse.error(res, {
@@ -34,7 +33,6 @@ const checkToken = (req, res, token, secretKey, tokenType) => {
   return true;
 };
 
-// Middleware to validate access token in the Authorization header
 const checkAccessToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
 
@@ -55,7 +53,6 @@ const checkAccessToken = (req, res, next) => {
   if (checkResult) next();
 };
 
-// Middleware to validate refresh token in the request body
 const checkRefreshToken = (req, res, next) => {
   const { refreshToken } = req.body;
   const checkResult = checkToken(
@@ -68,7 +65,6 @@ const checkRefreshToken = (req, res, next) => {
   if (checkResult) next();
 };
 
-// Middleware to validate email verification token in the query parameters
 const checkEmailVerificationToken = (req, res, next) => {
   const { token } = req.query;
   const checkResult = checkToken(
@@ -81,7 +77,6 @@ const checkEmailVerificationToken = (req, res, next) => {
   if (checkResult) next();
 };
 
-// Middleware to validate forgot password token in the request body
 const checkForgotPasswordToken = (req, res, next) => {
   const { forgotPasswordToken } = req.body;
   const checkResult = checkToken(
@@ -94,7 +89,6 @@ const checkForgotPasswordToken = (req, res, next) => {
   if (checkResult) next();
 };
 
-// Middleware to validate worker token in the request body
 const checkWorkerToken = (req, res, next) => {
   const { workerToken } = req.body;
   const checkResult = checkToken(

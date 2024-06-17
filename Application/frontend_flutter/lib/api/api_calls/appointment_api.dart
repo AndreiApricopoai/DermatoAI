@@ -64,7 +64,9 @@ class AppointmentApi {
     try {
       request() async {
         final url = BaseApi.getUri('appointments');
+
         final body = createAppointmentRequest.toJson();
+
         final headers = BaseApi.getHeadersWithAuthorization();
         return await http.post(url, headers: headers, body: body);
       }

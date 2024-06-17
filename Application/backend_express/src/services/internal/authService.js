@@ -22,7 +22,6 @@ const {
   AuthMessages,
 } = require("../../responses/apiConstants");
 
-// Login function for DermatoAI account
 const login = async (payload) => {
   try {
     const email = payload.email.toLowerCase();
@@ -111,7 +110,6 @@ const login = async (payload) => {
   }
 };
 
-// Register function for DermatoAI account
 const register = async (payload) => {
   try {
     const { firstName, lastName, email, password } = payload;
@@ -196,7 +194,6 @@ const register = async (payload) => {
   }
 };
 
-// Google OAuth callback function
 const handleGoogleCallback = async (payload) => {
   try {
     const { _id, firstName, lastName } = payload;
@@ -260,7 +257,6 @@ const handleGoogleCallback = async (payload) => {
   }
 };
 
-// Logout function from both DermatoAI and Google accounts
 const logout = async (userId, refreshToken) => {
   try {
     const refreshTokenHash = getTokenHash(refreshToken);
@@ -292,7 +288,6 @@ const logout = async (userId, refreshToken) => {
   }
 };
 
-// Get a new access token using a refresh token
 const getAccessToken = async (userId, refreshToken) => {
   try {
     const refreshTokenHash = getTokenHash(refreshToken);
@@ -358,7 +353,6 @@ const getAccessToken = async (userId, refreshToken) => {
   }
 };
 
-// Send a verification email to the user
 const sendVerificationEmail = async (email) => {
   try {
     const user = await User.findOne({ email: email.toLowerCase() }).exec();
@@ -432,7 +426,6 @@ const sendVerificationEmail = async (email) => {
   }
 };
 
-// Verify the user's email address
 const verifyEmail = async (verificationToken) => {
   try {
     const tokenPayload = extractPayloadJwt(verificationToken);
@@ -483,7 +476,6 @@ const verifyEmail = async (verificationToken) => {
   }
 };
 
-// Change the user's password
 const changePassword = async (userId, payload) => {
   try {
     const { oldPassword, password } = payload;
@@ -534,7 +526,6 @@ const changePassword = async (userId, payload) => {
   }
 };
 
-// Send a forgot password email to the user
 const sendForgotPasswordEmail = async (email) => {
   try {
     const user = await User.findOne({ email: email.toLowerCase() }).exec();
@@ -605,7 +596,6 @@ const sendForgotPasswordEmail = async (email) => {
   }
 };
 
-// Reset the user's password
 const resetPassword = async (userId, payload) => {
   try {
     const { forgotPasswordToken, password } = payload;

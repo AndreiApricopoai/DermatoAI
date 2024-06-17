@@ -101,8 +101,8 @@ class SnackbarManager {
         break;
       case SnackBarActions.failedToFetchProfile:
         _scheduleSnackBar(() {
-          SnackbarManager.showErrorSnackBar(
-              context, "Failed to fetch profile information. Please try again later to connect to your account.");
+          SnackbarManager.showErrorSnackBar(context,
+              "Failed to fetch profile information. Please try again later to connect to your account.");
         }, context);
         break;
       default:

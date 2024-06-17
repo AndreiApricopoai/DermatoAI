@@ -65,7 +65,7 @@ const getImageFromMapsUrl = async (photoReference) => {
     }
 
     const responseImage = {
-      image : `data:image/jpeg;base64,${imageBase64}`
+      image: `data:image/jpeg;base64,${imageBase64}`,
     };
 
     return {

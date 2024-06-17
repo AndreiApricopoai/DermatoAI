@@ -1,5 +1,6 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend_flutter/app/app_main_theme.dart';
 
 class Utils {
   static Future<void> initializeNotifications() async {
@@ -10,7 +11,7 @@ class Utils {
           channelKey: 'appointment_reminders',
           channelName: 'Appointment Reminders',
           channelDescription: 'Notifications for appointment reminders',
-          defaultColor: Color(0xFF9D50DD),
+          defaultColor: AppMainTheme.blueLevelFive,
           ledColor: Colors.white,
           importance: NotificationImportance.High,
         )

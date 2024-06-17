@@ -15,7 +15,9 @@ class GetProfileResponse extends BaseApiResponse {
     this.email,
     this.profilePhoto,
     this.isGoogleUser,
-    this.verified, required super.isSuccess, required super.apiResponseCode,
+    this.verified,
+    required super.isSuccess,
+    required super.apiResponseCode,
   });
 
   GetProfileResponse.fromJson(super.json)
@@ -29,14 +31,13 @@ class GetProfileResponse extends BaseApiResponse {
 
   static GetProfileResponse fromSession() {
     return GetProfileResponse(
-      firstName: SessionManager.getFirstName(),
-      lastName: SessionManager.getLastName(),
-      email: SessionManager.getEmail(),
-      profilePhoto: SessionManager.getProfilePhoto(),
-      verified: SessionManager.getVerified(),
-      isGoogleUser: SessionManager.getIsGoogleUser(),
-      isSuccess: true,
-      apiResponseCode: 1
-    );
+        firstName: SessionManager.getFirstName(),
+        lastName: SessionManager.getLastName(),
+        email: SessionManager.getEmail(),
+        profilePhoto: SessionManager.getProfilePhoto(),
+        verified: SessionManager.getVerified(),
+        isGoogleUser: SessionManager.getIsGoogleUser(),
+        isSuccess: true,
+        apiResponseCode: 1);
   }
 }

@@ -83,7 +83,7 @@ class LocationsProvider with ChangeNotifier {
         GetLocationImageRequest(photoReference: photoReference);
     GetLocationImageResponse response =
         await LocationApi.getLocationImage(request);
-        
+
     _imageCache[photoReference] =
         base64Decode(response.image?.split(',').last ?? '');
     return response.image;

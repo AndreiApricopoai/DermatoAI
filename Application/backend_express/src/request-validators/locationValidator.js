@@ -1,10 +1,10 @@
-const Joi = require('joi');
-const { handleValidationError } = require('../utils/validatorUtils');
+const Joi = require("joi");
+const { handleValidationError } = require("../utils/validatorUtils");
 
 const locationSchema = Joi.object({
   latitude: Joi.number().min(-90).max(90).required(),
   longitude: Joi.number().min(-180).max(180).required(),
-  radius: Joi.number().min(1).max(50000).required() 
+  radius: Joi.number().min(1).max(50000).required(),
 }).unknown(false);
 
 const coordinatesValidator = (req, res, next) => {
@@ -16,12 +16,14 @@ const coordinatesValidator = (req, res, next) => {
 };
 
 const photoReferenceSchema = Joi.object({
-  photoReference: Joi.string().required()
+  photoReference: Joi.string().required(),
 }).unknown(false);
 
 const photoReferenceValidator = (req, res, next) => {
   const payload = req.params;
-  const { error } = photoReferenceSchema.validate(payload, { abortEarly: false });
+  const { error } = photoReferenceSchema.validate(payload, {
+    abortEarly: false,
+  });
 
   if (handleValidationError(error, res)) return;
   next();
@@ -29,5 +31,5 @@ const photoReferenceValidator = (req, res, next) => {
 
 module.exports = {
   coordinatesValidator,
-  photoReferenceValidator
+  photoReferenceValidator,
 };

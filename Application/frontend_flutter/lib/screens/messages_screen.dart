@@ -15,7 +15,7 @@ import 'package:frontend_flutter/api/api_calls/conversation_api.dart';
 
 class ConversationScreen extends StatefulWidget {
   final String conversationId;
-  final String? prefilledMessage; // Add this parameter
+  final String? prefilledMessage;
 
   const ConversationScreen({
     super.key,

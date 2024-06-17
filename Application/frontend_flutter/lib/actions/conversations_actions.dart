@@ -176,8 +176,10 @@ void showDeleteDialog(
     builder: (context) {
       return CustomAlertDialog(
         title: 'Confirm Deletion',
-        content:
-            const Text('Are you sure you want to delete this conversation?'),
+        content: const Text(
+          'Are you sure you want to delete this conversation?',
+          style: TextStyle(fontSize: 15),
+        ),
         cancelButtonText: 'Cancel',
         confirmButtonText: 'Delete',
         onCancel: () => Navigator.of(context).pop(),

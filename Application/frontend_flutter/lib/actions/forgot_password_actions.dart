@@ -126,7 +126,6 @@ class ForgotPasswordActions {
                   );
                 }
               }
-
               return;
             } else {
               if (loginResponse.apiResponseCode == 3) {

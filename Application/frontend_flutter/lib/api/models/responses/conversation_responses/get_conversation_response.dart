@@ -21,7 +21,7 @@ class GetConversationResponse extends BaseApiResponse {
     );
   }
 
-    static String? formatDate(String? isoDate) {
+  static String? formatDate(String? isoDate) {
     if (isoDate == null) return null;
     DateTime date = DateTime.parse(isoDate);
     return DateFormat('dd-MM-yyyy').format(date);

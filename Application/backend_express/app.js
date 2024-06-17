@@ -29,7 +29,7 @@ app.get("/", (req, res) => {
 });
 app.get("/ping", (req, res) => {
   res.status(200).send();
-}); 
+});
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", userRoutes);
 app.use("/api/predictions", predictionRoutes);

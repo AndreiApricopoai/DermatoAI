@@ -15,7 +15,7 @@ class AddMessageToConversationRequest {
     });
   }
 
-    String getUrl(String baseUrl) {
+  String getUrl(String baseUrl) {
     return '$baseUrl/$conversationId/messages';
   }
 }

@@ -13,14 +13,14 @@ class LocationApi {
     try {
       request() async {
         final queryParameters = getLocationsRequest.toQueryParameters();
-        final url = BaseApi.getUriWithQueryParameters('locations', queryParameters);
+        final url =
+            BaseApi.getUriWithQueryParameters('locations', queryParameters);
         final headers = BaseApi.getHeadersWithAuthorization();
         return await http.get(url, headers: headers);
       }
 
       var response = await BaseApi.performRequestWithRetry(request);
       var jsonResponse = jsonDecode(response.body);
-      print (jsonResponse);
       GetLocationsResponse getLocationsResponse =
           GetLocationsResponse.fromJson(jsonResponse);
       return getLocationsResponse;
@@ -38,7 +38,8 @@ class LocationApi {
       GetLocationImageRequest getLocationImageRequest) async {
     try {
       request() async {
-        final urlSuffix = getLocationImageRequest.getUrl('locations/fetch-image');
+        final urlSuffix =
+            getLocationImageRequest.getUrl('locations/fetch-image');
         final url = BaseApi.getUri(urlSuffix);
         final headers = BaseApi.getHeadersWithAuthorization();
         return await http.get(url, headers: headers);
@@ -49,7 +50,6 @@ class LocationApi {
       GetLocationImageResponse getLocationImageResponse =
           GetLocationImageResponse.fromJson(jsonResponse);
       return getLocationImageResponse;
-
     } on SocketException {
       throw Exception(
           'Unable to connect to the server. Please check your internet connection');

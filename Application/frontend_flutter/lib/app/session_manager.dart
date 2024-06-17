@@ -52,7 +52,6 @@ class SessionManager {
     _profilePhoto = profilePhoto;
   }
 
-  
   static String? getProfilePhoto() {
     return _profilePhoto;
   }

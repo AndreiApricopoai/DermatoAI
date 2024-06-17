@@ -19,11 +19,11 @@ class PatchAppointmentRequest {
 
   String toJson() {
     final Map<String, dynamic> data = {};
-    if (title != null) data['title'] = title;
-    if (description != null) data['description'] = description;
+    if (title != null && title!.isNotEmpty) data['title'] = title;
+    if (description != null && description!.isNotEmpty) data['description'] = description;
     if (appointmentDate != null) data['appointmentDate'] = appointmentDate?.toIso8601String();
-    if (institutionName != null) data['institutionName'] = institutionName;
-    if (address != null) data['address'] = address;
+    if (institutionName != null && institutionName!.isNotEmpty) data['institutionName'] = institutionName;
+    if (address != null && address!.isNotEmpty) data['address'] = address;
     return json.encode(data);
   }
 

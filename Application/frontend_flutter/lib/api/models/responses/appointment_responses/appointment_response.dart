@@ -13,11 +13,13 @@ class AppointmentResponse extends BaseApiResponse {
       : id = json['data']?['id'],
         title = json['data']?['title'],
         description = json['data']?['description'],
-        appointmentDate = json['data']['appointmentDate'] != null ? DateTime.parse(json['data']['appointmentDate']) : DateTime.now(),
+        appointmentDate = json['data']['appointmentDate'] != null
+            ? DateTime.parse(json['data']['appointmentDate'])
+            : DateTime.now(),
         institutionName = json['data']?['institutionName'],
         address = json['data']?['address'],
         super.fromJson();
-  
+
   Appointment toAppointment() {
     return Appointment(
       id: id,

@@ -19,7 +19,9 @@ class Appointment {
       : id = json['id'],
         title = json['title'],
         description = json['description'],
-        appointmentDate = json['appointmentDate'] != null ? DateTime.parse(json['appointmentDate']) : DateTime.now(),
+        appointmentDate = json['appointmentDate'] != null
+            ? DateTime.parse(json['appointmentDate'])
+            : DateTime.now(),
         institutionName = json['institutionName'],
         address = json['address'];
 

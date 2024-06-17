@@ -22,7 +22,7 @@ class AddMessageToConversationResponse extends BaseApiResponse {
     );
   }
 
-    MessageResponse toAssistantMessageResponse() {
+  MessageResponse toAssistantMessageResponse() {
     return MessageResponse(
       messageId: assistantMessageId,
       sender: 'assistant',

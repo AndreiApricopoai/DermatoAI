@@ -119,7 +119,7 @@ class _ChatScreenBodyState extends State<ChatScreenBody> {
             },
           ),
           if (_isLoading)
-            LoadingOverlay(isLoading: _isLoading), // Overlay for loading
+            LoadingOverlay(isLoading: _isLoading),
         ],
       ),
     );
@@ -215,7 +215,7 @@ class _ChatScreenBodyState extends State<ChatScreenBody> {
               conversation.title ?? 'No Title',
               style: GoogleFonts.roboto(
                 fontSize: 18.0,
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.w500,
                 color: AppMainTheme.blueLevelFive,
               ),
             ),

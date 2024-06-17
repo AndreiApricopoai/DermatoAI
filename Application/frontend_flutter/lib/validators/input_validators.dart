@@ -108,4 +108,49 @@ class InputValidators {
     }
     return null;
   }
+
+  static String? appointmentTitleValidator(String? value) {
+    value = value?.trim();
+    if (value == null || value.isEmpty) {
+      return 'Title is required';
+    }
+    if (value.isEmpty || value.length > 100) {
+      return 'Title must be between 1 and 100 characters';
+    }
+    return null;
+  }
+
+  static String? appointmentDescriptionValidator(String? value) {
+    value = value?.trim();
+    if (value != null && value.length > 500) {
+      return 'Description must be less than 500 characters';
+    }
+    return null;
+  }
+
+  static String? appointmentDateValidator(DateTime? value) {
+    if (value == null) {
+      return 'Appointment date is required';
+    }
+    if (value.isBefore(DateTime.now())) {
+      return 'Appointment date must be in the future';
+    }
+    return null;
+  }
+
+  static String? institutionNameValidator(String? value) {
+    value = value?.trim();
+    if (value != null && value.length > 100) {
+      return 'Institution name must be less than 100 characters';
+    }
+    return null;
+  }
+
+  static String? addressValidator(String? value) {
+    value = value?.trim();
+    if (value != null && value.length > 200) {
+      return 'Address must be less than 200 characters';
+    }
+    return null;
+  }
 }

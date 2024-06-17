@@ -13,7 +13,6 @@ const messageController = require("../controllers/messageController");
 const router = express.Router();
 router.use(checkAccessToken);
 
-// Conversation routes
 router.get("/:id", validateParamId, conversationController.getConversation);
 router.get("/", conversationController.getAllConversations);
 router.post(
@@ -33,7 +32,6 @@ router.delete(
   conversationController.deleteConversation
 );
 
-// Message routes for a specific conversation
 router.get(
   "/:conversationId/messages",
   validateParamId,

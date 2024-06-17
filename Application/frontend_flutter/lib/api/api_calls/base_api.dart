@@ -10,9 +10,11 @@ class BaseApi {
     return Uri.parse('$baseUrlApi$endpoint');
   }
 
-  static Uri getUriWithQueryParameters(String endpoint, Map<String, String> queryParameters) {
+  static Uri getUriWithQueryParameters(
+      String endpoint, Map<String, String> queryParameters) {
     var baseUrlApi = ApiConstants.baseUrlApi;
-    return Uri.parse('$baseUrlApi$endpoint').replace(queryParameters: queryParameters);
+    return Uri.parse('$baseUrlApi$endpoint')
+        .replace(queryParameters: queryParameters);
   }
 
   static Map<String, String> getHeaders() {
@@ -32,7 +34,7 @@ class BaseApi {
     };
   }
 
-    static Map<String, String> getAuthorizationHeaders() {
+  static Map<String, String> getAuthorizationHeaders() {
     String? accessToken = SessionManager.getAccessToken();
     if (accessToken == null) {
       throw Exception('You must be logged in to perform this action.');

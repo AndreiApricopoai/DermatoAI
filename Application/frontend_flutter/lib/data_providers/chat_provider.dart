@@ -4,7 +4,7 @@ import 'package:frontend_flutter/api/models/responses/conversation_responses/mes
 
 class ChatProvider with ChangeNotifier {
   List<ConversationResponse> _conversations = [];
-  Map<String, List<MessageResponse>> _messages = {};
+  final Map<String, List<MessageResponse>> _messages = {};
   bool _isLoaded = false;
 
   List<ConversationResponse> get conversations => _conversations;
@@ -29,7 +29,8 @@ class ChatProvider with ChangeNotifier {
   }
 
   void updateConversation(ConversationResponse updatedConversation) {
-    int index = _conversations.indexWhere((conv) => conv.conversationId == updatedConversation.conversationId);
+    int index = _conversations.indexWhere(
+        (conv) => conv.conversationId == updatedConversation.conversationId);
     if (index != -1) {
       _conversations[index] = updatedConversation;
       notifyListeners();

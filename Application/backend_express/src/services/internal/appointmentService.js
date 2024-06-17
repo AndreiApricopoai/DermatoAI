@@ -1,4 +1,4 @@
-const moment = require('moment');
+const moment = require("moment");
 const Appointment = require("../../models/appointmentModel");
 const User = require("../../models/userModel");
 const {
@@ -50,10 +50,19 @@ const getAppointmentById = async (appointmentId, userId) => {
 const getAllAppointmentsByUserId = async (userId) => {
   try {
     const appointments = await Appointment.find({ userId })
-      .sort({ dateTime: 1 })
+      .sort({ createdAt: -1 })
       .exec();
 
-    const formattedAppointments = appointments.map((appointment) => ({
+    const localTime = moment().local().format("YYYY-MM-DDTHH:mm:ss");
+    const futureAppointments = appointments.filter(
+      (appointment) =>
+        moment
+          .utc(appointment.appointmentDate)
+          .format("YYYY-MM-DDTHH:mm:ss")
+          .localeCompare(localTime) > 0
+    );
+
+    const formattedAppointments = futureAppointments.map((appointment) => ({
       id: appointment._id,
       title: appointment.title,
       description: appointment.description,
@@ -89,14 +98,21 @@ const createAppointment = async (userId, payload) => {
     }
 
     const utcAppointmentDate = moment.utc(payload.appointmentDate).toDate();
-    const newAppointment = new Appointment({ userId, ...payload, appointmentDate: utcAppointmentDate});
+    const newAppointment = new Appointment({
+      userId,
+      ...payload,
+      appointmentDate: utcAppointmentDate,
+    });
     await newAppointment.save();
 
     const responseData = {
       id: newAppointment._id,
       title: newAppointment.title,
       description: newAppointment.description,
-      appointmentDate: moment.utc(newAppointment.appointmentDate).local().format(),
+      appointmentDate: moment
+        .utc(newAppointment.appointmentDate)
+        .local()
+        .format(),
       institutionName: newAppointment.institutionName,
       address: newAppointment.address,
     };
@@ -132,7 +148,7 @@ const updateAppointment = async (appointmentId, userId, updatePayload) => {
     }
 
     Object.keys(updatePayload).forEach((key) => {
-      if (key === 'appointmentDate') {
+      if (key === "appointmentDate") {
         appointment[key] = moment.utc(updatePayload[key]).toDate();
       } else {
         appointment[key] = updatePayload[key];

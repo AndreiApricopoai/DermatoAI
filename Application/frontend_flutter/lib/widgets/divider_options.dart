@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:frontend_flutter/app/app_main_theme.dart';
 
 class OptionsDivider extends StatelessWidget {
-
   final Color color;
   final double thickness;
   final double width;
@@ -16,7 +15,7 @@ class OptionsDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  SizedBox(
+    return SizedBox(
       width: width,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

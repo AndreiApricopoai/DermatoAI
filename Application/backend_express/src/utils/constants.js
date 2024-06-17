@@ -8,7 +8,7 @@ const regexPatterns = {
 const dermatologicalChat = {
   model: "gpt-3.5-turbo",
   context: "You are a helpful dermatological doctor.",
-  maxTokens: 100,
+  maxTokens: 350,
 };
 
 const getAzureBlobUrl = (blobName) => {
@@ -24,7 +24,7 @@ const getAzureBlobSasUrl = (blobUrl) => {
 };
 
 const getVerificationUrl = (token) => {
-  const verificationUrl = `http://192.168.1.5:3000/api/auth/verify-email?token=${token}`;
+  const verificationUrl = `http://192.168.100.7:3000/api/auth/verify-email?token=${token}`;
   return verificationUrl;
 };
 

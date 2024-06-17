@@ -10,7 +10,7 @@ const validateImage = async (req, res, next) => {
     if (!req.file || !req.file.buffer) {
       return ApiResponse.error(res, {
         statusCode: StatusCodes.BadRequest,
-        error: ImageUploadMessages.NoImageUploaded
+        error: ImageUploadMessages.NoImageUploaded,
       });
     }
 
@@ -24,16 +24,15 @@ const validateImage = async (req, res, next) => {
     ) {
       return ApiResponse.error(res, {
         statusCode: StatusCodes.BadRequest,
-        error: ImageUploadMessages.InvalidImage
+        error: ImageUploadMessages.InvalidImage,
       });
     }
-
     next();
   } catch (error) {
     console.error("Image validation error:", error);
     return ApiResponse.error(res, {
       statusCode: StatusCodes.InternalServerError,
-      error: ImageUploadMessages.ValidationFailed
+      error: ImageUploadMessages.ValidationFailed,
     });
   }
 };

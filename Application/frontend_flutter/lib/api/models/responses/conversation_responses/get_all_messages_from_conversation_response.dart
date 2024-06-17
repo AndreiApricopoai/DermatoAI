@@ -4,7 +4,7 @@ import 'package:frontend_flutter/api/models/responses/conversation_responses/mes
 class GetAllConversationMessagesResponse extends BaseApiResponse {
   final List<MessageResponse> messages;
 
-  GetAllConversationMessagesResponse.fromJson(Map<String, dynamic> json)
+  GetAllConversationMessagesResponse.fromJson(super.json)
       : messages = (json['data']! as List).map((item) => MessageResponse.fromJson(item as Map<String, dynamic>)).toList(),
-        super.fromJson(json);
+        super.fromJson();
 }

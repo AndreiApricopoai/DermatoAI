@@ -28,6 +28,8 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  flutter_launcher_icons: ^0.13.1
+  flutter_datetime_picker_plus: ^2.2.0
   disable_battery_optimization: ^1.1.1
   awesome_notifications: ^0.9.3+1
   permission_handler: ^11.3.1
@@ -67,10 +69,14 @@ dev_dependencies:
   flutter_lints: ^3.0.0
 
 flutter_launcher_name:
-  name: "yourNewAppLauncherName"
+  name: "DermatoAI"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+flutter_icons:
+  image_path: "assets/icons/app_logo_blue2.png" 
+  android: true
+  ios: true
 
 # The following section is specific to Flutter packages.
 flutter:

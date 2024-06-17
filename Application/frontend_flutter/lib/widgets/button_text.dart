@@ -3,7 +3,6 @@ import 'package:frontend_flutter/app/app_main_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomTextButton extends StatelessWidget {
-
   final String text;
   final double fontSize;
   final FontWeight fontWeight;

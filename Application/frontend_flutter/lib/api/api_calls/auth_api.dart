@@ -200,7 +200,6 @@ class AuthApi {
 
       var response = await BaseApi.performRequestWithRetry(request);
       var jsonResponse = jsonDecode(response.body);
-      print(jsonResponse);
       ChangePasswordResponse changePasswordResponse =
           ChangePasswordResponse.fromJson(jsonResponse);
 

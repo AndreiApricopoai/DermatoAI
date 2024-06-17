@@ -14,7 +14,6 @@ const {
 } = require("../../responses/apiConstants");
 
 const getPredictionById = async (predictionId, userId) => {
-  console.log("se incearca o treaba !")
   try {
     const prediction = await Prediction.findOne({
       _id: predictionId,
@@ -77,7 +76,7 @@ const getAllPredictionsByUserId = async (userId) => {
       diagnosisType: prediction.diagnosisType,
       confidenceLevel: prediction.confidenceLevel,
       status: prediction.status,
-      createdAt: prediction.createdAt
+      createdAt: prediction.createdAt,
     }));
 
     return {
@@ -217,7 +216,7 @@ const updatePredictionUser = async (predictionId, userId, updatePayload) => {
       diagnosisType: prediction.diagnosisType,
       confidenceLevel: prediction.confidenceLevel,
       status: prediction.status,
-      createdAt: prediction.createdAt
+      createdAt: prediction.createdAt,
     };
     return {
       type: ResponseTypes.Success,
@@ -282,7 +281,7 @@ const updatePredictionWorker = async (
       diagnosisType: prediction.diagnosisType,
       confidenceLevel: prediction.confidenceLevel,
       status: prediction.status,
-      createdAt: prediction.createdAt
+      createdAt: prediction.createdAt,
     };
 
     return {

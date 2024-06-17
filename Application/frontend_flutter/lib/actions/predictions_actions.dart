@@ -130,8 +130,10 @@ class PredictionActions {
       builder: (context) {
         return CustomAlertDialog(
           title: 'Confirm Deletion',
-          content:
-              const Text('Are you sure you want to delete this prediction?'),
+          content: const Text(
+            'Are you sure you want to delete this prediction?',
+            style: TextStyle(fontSize: 15),
+          ),
           cancelButtonText: 'Cancel',
           confirmButtonText: 'Delete',
           onCancel: () => Navigator.of(context).pop(),
