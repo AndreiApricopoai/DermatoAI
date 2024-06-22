@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  flutter_native_splash: ^2.4.0
   flutter_launcher_icons: ^0.13.1
   flutter_datetime_picker_plus: ^2.2.0
   disable_battery_optimization: ^1.1.1
@@ -79,6 +80,23 @@ flutter_icons:
   ios: true
 
 # The following section is specific to Flutter packages.
+
+
+# flutter_native_splash-development.yaml
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/icons/app_logo_white.png
+  branding: assets/icons/app_logo_white.png
+  color_dark: "#121212"
+  image_dark: assets/icons/app_logo_white.png
+  branding_dark: assets/icons/app_logo_white.png
+  android_12:
+    image: assets/icons/app_logo_white.png
+    icon_background_color: "#ffffff"
+    image_dark: assets/icons/app_logo_white.png
+    icon_background_color_dark: "#121212"
+  web: false
+
 flutter:
   assets:
     - assets/icons/
