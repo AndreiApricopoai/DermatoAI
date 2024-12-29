@@ -8,4 +8,4 @@ For the modeling, I used pre-trained architectures to develop multi-label classi
 
 This repository brings together the technical and research aspects of my thesis, showcasing everything from the app’s functionality to the methods and models behind it.
 
-This is the link to my demo video: [here](https://www.youtube.com/watch?v=o_u51RkaXoA&ab_channel=AndreiApricopoai)
+This is the link to my demo video: [here](https://www.youtube.com/watch?v=W2V31aT8fvQ&ab_channel=AndreiApricopoai)
